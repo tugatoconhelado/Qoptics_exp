@@ -122,4 +122,5 @@ class TCSPCLogic(LogicBase):
 
     def send_data(self):
         data = np.random.rand(1000)
+        self.data = data
         self.sig_data.emit(data)
