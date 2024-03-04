@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>925</width>
+    <height>767</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <layout class="QVBoxLayout" name="main_layout" stretch="2,1">
+      <item>
+       <layout class="QHBoxLayout" name="top_layout">
+        <item>
+         <widget class="PlotWidget" name="counts_histogram_plot" native="true"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="bottom_layout" stretch="1,2">
+        <item>
+         <layout class="QHBoxLayout" name="counts_layout">
+          <item>
+           <widget class="PlotWidget" name="counts_plot" native="true"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="status_groupbox">
+          <property name="title">
+           <string>Device State</string>
+          </property>
+          <property name="flat">
+           <bool>false</bool>
+          </property>
+          <property name="checkable">
+           <bool>false</bool>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <item>
+            <layout class="QGridLayout" name="device_state_layout">
+             <item row="0" column="1">
+              <widget class="QCheckBox" name="checkBox">
+               <property name="text">
+                <string>CheckBox</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2">
+              <widget class="QLabel" name="label_5">
+               <property name="text">
+                <string>FIFO Usage</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QCheckBox" name="checkBox_2">
+               <property name="text">
+                <string>CheckBox</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="2">
+              <widget class="QLabel" name="label_4">
+               <property name="text">
+                <string>FIFO Overflow</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>Sync</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>Measurement</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="3">
+              <widget class="QCheckBox" name="checkBox_3">
+               <property name="text">
+                <string>CheckBox</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="3">
+              <widget class="QCheckBox" name="checkBox_4">
+               <property name="text">
+                <string>CheckBox</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QLabel" name="status_log_label">
+             <property name="text">
+              <string>Status Log</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>925</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="file_menu">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <widget class="QMenu" name="conver_menu">
+     <property name="title">
+      <string>Convert</string>
+     </property>
+     <addaction name="sdt_files_action"/>
+     <addaction name="fifo_files_action"/>
+    </widget>
+    <addaction name="save_action"/>
+    <addaction name="save_as_action"/>
+    <addaction name="load_action"/>
+    <addaction name="conver_menu"/>
+    <addaction name="separator"/>
+    <addaction name="clear_spc_memory_action"/>
+    <addaction name="separator"/>
+    <addaction name="exit_action"/>
+   </widget>
+   <widget class="QMenu" name="parameters_menu">
+    <property name="title">
+     <string>Parameters</string>
+    </property>
+    <addaction name="system_parameters_action"/>
+    <addaction name="display_parameters_action"/>
+    <addaction name="separator"/>
+    <addaction name="save_settings_action"/>
+   </widget>
+   <widget class="QMenu" name="menuDisplay">
+    <property name="title">
+     <string>Display</string>
+    </property>
+    <addaction name="action2D_Curve"/>
+    <addaction name="action2D_Data_Processing"/>
+   </widget>
+   <widget class="QMenu" name="menuInfo">
+    <property name="title">
+     <string>Info</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="file_menu"/>
+   <addaction name="parameters_menu"/>
+   <addaction name="menuDisplay"/>
+   <addaction name="menuInfo"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="save_action">
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="load_action">
+   <property name="text">
+    <string>Load</string>
+   </property>
+  </action>
+  <action name="actionSave_as">
+   <property name="text">
+    <string>Save as</string>
+   </property>
+  </action>
+  <action name="exit_action">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="system_parameters_action">
+   <property name="text">
+    <string>System Parameters</string>
+   </property>
+  </action>
+  <action name="display_parameters_action">
+   <property name="text">
+    <string>Display Parameters</string>
+   </property>
+  </action>
+  <action name="action2D_Curve">
+   <property name="text">
+    <string>2D Curve</string>
+   </property>
+  </action>
+  <action name="action2D_Data_Processing">
+   <property name="text">
+    <string>2D Data Processing</string>
+   </property>
+  </action>
+  <action name="clear_spc_memory_action">
+   <property name="text">
+    <string>Clear SPC Memory</string>
+   </property>
+  </action>
+  <action name="sdt_files_action">
+   <property name="text">
+    <string>SDT Files</string>
+   </property>
+  </action>
+  <action name="fifo_files_action">
+   <property name="text">
+    <string>FIFO Files</string>
+   </property>
+  </action>
+  <action name="save_as_action">
+   <property name="text">
+    <string>Save as</string>
+   </property>
+  </action>
+  <action name="save_settings_action">
+   <property name="text">
+    <string>Save settings</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PlotWidget</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

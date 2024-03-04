@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>tcsps_system_parameters_dialog</class>
+ <widget class="QDialog" name="tcsps_system_parameters_dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>504</width>
+    <height>439</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>System Parameters</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="params_layout">
+     <item>
+      <layout class="QVBoxLayout" name="left_layout">
+       <item>
+        <widget class="QGroupBox" name="tac_groupbox">
+         <property name="title">
+          <string>TAC</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="tac_range_label">
+            <property name="text">
+             <string>Range</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="tac_range_spinbox">
+            <property name="suffix">
+             <string> E-8 sec</string>
+            </property>
+            <property name="decimals">
+             <number>3</number>
+            </property>
+            <property name="maximum">
+             <double>10000000000000000139372116959414099130712064.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>5.003000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="tac_gain_label">
+            <property name="text">
+             <string>Gain</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="tac_gain_spinbox">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>15</number>
+            </property>
+            <property name="value">
+             <number>1</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="tac_offset_label">
+            <property name="text">
+             <string>Offset</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="tac_offset_spinbox">
+            <property name="suffix">
+             <string> %</string>
+            </property>
+            <property name="maximum">
+             <double>100.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>3.920000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="tac_limit_low_label">
+            <property name="text">
+             <string>Limit Low</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="tac_limit_low_spinbox">
+            <property name="suffix">
+             <string> %</string>
+            </property>
+            <property name="maximum">
+             <double>100000000000000004764729344.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="tac_limit_high_label">
+            <property name="text">
+             <string>Limit High</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="tac_limit_high_spinbox">
+            <property name="suffix">
+             <string> %</string>
+            </property>
+            <property name="maximum">
+             <double>100000000000000004764729344.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="tac_time_chan_label">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Time/Chan</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="tac_time_chan_edit">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>1.22E-11 sec</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="tac_time_div_label">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Time/Div</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QLineEdit" name="tac_time_div_edit">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>5.00E-9 sec</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="time_groupbox">
+         <property name="title">
+          <string>Time</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_3">
+          <item row="0" column="0">
+           <widget class="QLabel" name="time_collection_label">
+            <property name="text">
+             <string>Collection</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="time_repeat_label">
+            <property name="text">
+             <string>Repeat</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="time_display_label">
+            <property name="text">
+             <string>Display</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="time_collection_spinbox">
+            <property name="suffix">
+             <string> sec</string>
+            </property>
+            <property name="maximum">
+             <number>999999999</number>
+            </property>
+            <property name="value">
+             <number>1800</number>
+            </property>
+            <property name="displayIntegerBase">
+             <number>10</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="time_repeat_spinbox">
+            <property name="suffix">
+             <string> sec</string>
+            </property>
+            <property name="maximum">
+             <number>999999999</number>
+            </property>
+            <property name="value">
+             <number>1800</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="time_display_spinbox">
+            <property name="prefix">
+             <string/>
+            </property>
+            <property name="suffix">
+             <string> sec</string>
+            </property>
+            <property name="decimals">
+             <number>3</number>
+            </property>
+            <property name="value">
+             <double>4.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="right_layout">
+       <item>
+        <widget class="QGroupBox" name="sync_groupbox">
+         <property name="title">
+          <string>SYNC</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_2">
+          <item row="0" column="0">
+           <widget class="QLabel" name="sync_zc_level_label">
+            <property name="text">
+             <string>ZC Level</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="sync_freq_divider_label">
+            <property name="text">
+             <string>Freq Divider</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="sync_threshold_label">
+            <property name="text">
+             <string>Threshold</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="sync_freq_divider_spinbox">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>4</number>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="sync_zc_level_spinbox">
+            <property name="suffix">
+             <string> mV</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="sync_threshold_spinbox">
+            <property name="suffix">
+             <string> mV</string>
+            </property>
+            <property name="minimum">
+             <double>-999999999999999.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>10000000000000000000.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>-41.180000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="sync_holdoff_label">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Holdoff</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="sync_delay_label">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Delay</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="sync_holdoff_spinbox">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="suffix">
+             <string> ns</string>
+            </property>
+            <property name="value">
+             <double>4.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="sync_delay_spinbox">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="suffix">
+             <string> ns</string>
+            </property>
+            <property name="decimals">
+             <number>1</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="cfd_groupbox">
+         <property name="title">
+          <string>CFD</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_4">
+          <item row="0" column="0">
+           <widget class="QLabel" name="cfd_limit_low_label">
+            <property name="text">
+             <string>Limit Low</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="cfd_limit_low_spinbox">
+            <property name="suffix">
+             <string> mV</string>
+            </property>
+            <property name="minimum">
+             <double>-10000000000000000000.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>1000000000000000000.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>-49.020000000000003</double>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="cfd_zc_level_label">
+            <property name="text">
+             <string>ZC Level</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="cfd_zc_level_spinbox">
+            <property name="suffix">
+             <string> mV</string>
+            </property>
+            <property name="minimum">
+             <double>-999999999999999.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>1000000000000000000000.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>-9.830000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="cfd_limit_high_label">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Limit High</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="cfd_hold_label">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Hold</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="cfd_limit_high_spinbox">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="suffix">
+             <string> mV</string>
+            </property>
+            <property name="minimum">
+             <double>-10000000000000000.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>9999999999999999583119736832.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>80.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="cfd_hold_spinbox">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="suffix">
+             <string> ns</string>
+            </property>
+            <property name="maximum">
+             <double>10000000000000000000.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>5.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="measurement_groupbox">
+         <property name="title">
+          <string>Measurement Control</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_5">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_20">
+            <property name="text">
+             <string>Operation Mode</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="measurement_combobox">
+            <item>
+             <property name="text">
+              <string>Fifo</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Single</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Oscilloscope</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>F(t,x,y)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>F(t,T)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Fi(T)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Fi(EXT)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Continuous Flow</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>tcsps_system_parameters_dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>tcsps_system_parameters_dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
