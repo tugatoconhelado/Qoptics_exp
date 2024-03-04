@@ -14,7 +14,7 @@ class TCSPCMainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         loadUi(
-            r'C:\Users\Nicky\OneDrive - Universidad Católica de Chile\Documents\Scripts\QuDX\QuDX\experiments\TCSPC\tcspc.ui',
+            r'C:\EXP\python\Qoptics_exp\src\qudi\gui\tcspc\tcspc.ui',
             self
         )
 
@@ -52,7 +52,7 @@ class TCSPC_parameters_editor(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        loadUi(r'C:\Users\Nicky\OneDrive - Universidad Católica de Chile\Documents\Scripts\QuDX\QuDX\experiments\TCSPC\tcsps_system_parameters.ui', self)
+        loadUi(r'C:\EXP\python\Qoptics_exp\src\qudi\gui\tcspc\tcsps_system_parameters.ui', self)
 
         self._current_values = self.get_parameters()
 
