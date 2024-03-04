@@ -322,7 +322,9 @@ if __name__ == '__main__':
     print(SPCdata)
     print('hola mundo')
     tcspc = SPCDllWrapper()
-    ini_file_path = os.path.abspath('C:\Program Files (x86)\BH\SPCM\spcm.ini')
+
+    #ini_file_path = os.path.abspath('C:\Program Files (x86)\BH\SPCM\spcm.ini')
+    ini_file_path = os.path.abspath(r'C:\Users\Nicky\OneDrive - Universidad Católica de Chile\Documents\Scripts\Qoptics_exp\spcm_test.ini')
     init_status, args = tcspc.SPC_init(ini_file_path)
     print(f'Init status: {init_status} with args: {args}')
 
@@ -367,11 +369,11 @@ if __name__ == '__main__':
     #print(f'Read parameters from ini file status: {status} with data: {data} and ini_file: {ini_file}')
     #print(f'cfd_zc_level: {data.cfd_zc_level}')
 
-    test_ini_file = os.path.abspath('C:\EXP\python\Qoptics_exp\spcm_test.ini')
+    #test_ini_file = os.path.abspath('C:\EXP\python\Qoptics_exp\spcm_test.ini')
 
     # Save to file
-    status, data, dest_ini_file, source_ini_file, with_comments = tcspc.SPC_save_parameters_to_inifile(data, test_ini_file, ini_file_path, 0)
-    print(f'Save parameters to ini file status: {status} with data: {data}, dest_ini_file: {dest_ini_file}, source_ini_file: {source_ini_file} and with_comments: {with_comments}')
+    #status, data, dest_ini_file, source_ini_file, with_comments = tcspc.SPC_save_parameters_to_inifile(data, test_ini_file, ini_file_path, 0)
+    #print(f'Save parameters to ini file status: {status} with data: {data}, dest_ini_file: {dest_ini_file}, source_ini_file: {source_ini_file} and with_comments: {with_comments}')
 
 
     
