@@ -267,7 +267,6 @@ class SPCDllWrapper:
 
     def SPC_init(self, ini_file: str):
 
-        print('Initialising with ini file: ', ini_file)
         arg1 = ini_file.encode('utf-8')
         ret = self.__SPC_init(arg1)
         return ret, ini_file
@@ -359,7 +358,7 @@ class SPCDllWrapper:
     def SPC_test_state(self, mod_no, state):
 
         arg1 = c_short(mod_no)
-        arg2 = c_short(state)
+        arg2 = state
         ret = self.__SPC_test_state(arg1, byref(arg2))
         return ret, arg1, arg2
 
@@ -373,27 +372,87 @@ class SPCDllWrapper:
         arg6 = c_short(var_to)
         ret = self.__SPC_read_data_block(arg1, arg2, arg3, arg4, arg5, arg6, data)
         return ret, arg1, arg2, arg3, arg4, arg5, arg6, data
+    
+    def SPC_read_data_page(self, mod_no, first_page, last_page, data):
+            
+        arg1 = c_short(mod_no)
+        arg2 = c_long(first_page)
+        arg3 = c_long(last_page)
+        ret = self.__SPC_read_data_page(arg1, arg2, arg3, data)
+        return ret, arg1, arg2, arg3, data
+    
+    def SPC_read_data_frame(self, mod_no, frame, page, data):
+                
+        arg1 = c_short(mod_no)
+        arg2 = c_long(frame)
+        arg3 = c_long(page)
+        ret = self.__SPC_read_data_frame(arg1, arg2, arg3, data)
+        return ret, arg1, arg2, arg3, data
+    
+    def SPC_enable_sequencer(self, mod_no, enable):
 
+        arg1 = c_short(mod_no)
+        arg2 = c_short(enable)
+        ret = self.__SPC_enable_sequencer(arg1, arg2)
+        return ret, arg1, arg2
+    
+    def translate_status(self, status):
+        
+        # Define the status codes
+        status_codes = {
+            0: 'SPC_OVERFL',
+            1: 'SPC_OVERFLOW',
+            2: 'SPC_TIME_OVER',
+            3: 'SPC_COLTIM_OVER',
+            4: 'SPC_CMD_STOP',
+            5: 'SPC_REPTIM_OVER',
+            6: 'SPC_SEQ_GAP',
+            7: 'SPC_ARMED',
+            8: 'SPC_COLTIM_2OVER',
+            9: 'SPC_REPTIM_2OVER',
+            10: 'SPC_FOVFL',
+            11: 'SPC_FEMPTY',
+            12: 'SPC_WAIT_TRG',
+            13: 'SPC_SEQ_GAP150',
+            14: 'SPC_SEQ_STOP',
+            15: 'SPC_HFILL_NRDY'
+        }
+
+        # Convert the byte string to an integer
+        status = int.from_bytes(status, byteorder='little')
+        binary_str = bin(status)[2:]
+        binary_str = binary_str.zfill(16)
+        binary_str = binary_str[::-1]
+        status_msg = []
+        # Check each status code
+        for bit_index, code in status_codes.items():
+            if binary_str[bit_index] == '1':
+                status_msg.append(code)
+        return status_msg
+    
 if __name__ == '__main__':
+
+    import time
+    import matplotlib.pyplot as plt
 
     print(SPCdata)
     print('hola mundo')
     tcspc = SPCDllWrapper()
 
     #ini_file_path = os.path.abspath('C:\Program Files (x86)\BH\SPCM\spcm.ini')
-    ini_file_path = os.path.abspath(r'C:\EXP\python\Qoptics_exp\spcm_test.ini')
+    ini_file_path = os.path.abspath(r'C:\EXP\python\Qoptics_exp\new_settings.ini')
     init_status, args = tcspc.SPC_init(ini_file_path)
     print(f'Init status: {init_status} with args: {args}')
 
-    status, mode, force_use, in_use = tcspc.SPC_set_mode(130, 1, 1)
-    print(f'Get mode status: {status} with mode: {mode} and force_use: {force_use} and in_use: {in_use}')
+    #status, mode, force_use, in_use = tcspc.SPC_set_mode(130, 1, 1)
+    #print(f'Get mode status: {status} with mode: {mode} and force_use: {force_use} and in_use: {in_use}')
 
     module_no = 0
     init_status, args = tcspc.SPC_get_init_status(module_no)
     print(f'Init status of module {module_no}: {init_status} with args: {args}')
 
     status, mod_no, data = tcspc.SPC_get_parameters(module_no)
-    print(f'Get parameters status: {status} with mod_no: {mod_no} and data: {data.cfd_zc_level}')
+    print(f'Get parameters status: {status} with mod_no: {mod_no} and data collect time: {data.collect_time}')
 
     # Parameter Read write test
     #data.cfd_zc_level = -5.29
@@ -431,32 +490,55 @@ if __name__ == '__main__':
     #print(f'Read parameters from ini file status: {status} with data: {data} and ini_file: {ini_file}')
     #print(f'cfd_zc_level: {data.cfd_zc_level}')
 
-    #test_ini_file = os.path.abspath('C:\EXP\python\Qoptics_exp\spcm_test.ini')
+    test_ini_file = os.path.abspath('C:\EXP\python\Qoptics_exp\spcm_test.ini')
 
     # Save to file
-    #status, data, dest_ini_file, source_ini_file, with_comments = tcspc.SPC_save_parameters_to_inifile(data, test_ini_file, ini_file_path, 0)
+    #status, data, dest_ini_file, source_ini_file, with_comments = tcspc.SPC_save_parameters_to_inifile(data, test_ini_file, ini_file_path, 1)
     #print(f'Save parameters to ini file status: {status} with data: {data}, dest_ini_file: {dest_ini_file}, source_ini_file: {source_ini_file} and with_comments: {with_comments}')
 
     status, mod_no, adc_resolution, no_of_routing_bits, mem_info = tcspc.SPC_configure_memory(module_no, 10, 3, SPCMemConfig())
     print(f'Configure memory status: {status} with adc_resolution: {adc_resolution}, no_of_routing_bits: {no_of_routing_bits} and mem_info: {mem_info}')
     no_of_blocks = mem_info.max_block_no
 
-    status, mod_no, page = tcspc.SPC_set_page(module_no, 0)
+    page_no = 0
+
+    status, mod_no, page = tcspc.SPC_set_page(module_no, page_no)
     print(f'Set page status: {status} with mod_no: {mod_no} and page: {page}')
 
-    status, block, mod_no, page, fill_value = tcspc.SPC_fill_memory(module_no, 0, 0, 0)
+    status, block, mod_no, page, fill_value = tcspc.SPC_fill_memory(module_no, 0, page_no, 1)
     print(f'Fill memory status: {status} with block: {block}, page: {page} and fill_value: {fill_value}')
 
     status, mod_no = tcspc.SPC_start_measurement(module_no)
     print(f'Start measurement status: {status} with mod_no: {mod_no}')
 
-    state_var = 0
+    state_var = c_short()
     status, mod_no, state = tcspc.SPC_test_state(module_no, state_var)
     print(f'Test state status: {status} with mod_no: {mod_no} and state: {bytes(state)}')
+    tcspc.translate_status(state)
 
-    status, mod_no, block, page, reduction_factor, var_from, var_to, data = tcspc.SPC_read_data_block(module_no, 0, 0, 1, 0, 0, c_ushort(0))
-    print(f'Read data block status: {status} with mod_no: {mod_no}, block: {block}, page: {page}, reduction_factor: {reduction_factor}, var_from: {var_from}, var_to: {var_to} and data: {data}')
+    red_factor = 4
+    no_of_points = int(mem_info.block_length / red_factor)
+    print(f'Max block no: {mem_info.max_block_no}')
+    print(f'Blocks per frame: {mem_info.blocks_per_frame}')
+    print(f'Frames per page: {mem_info.frames_per_page}')
+    print(f'Max page: {mem_info.maxpage}')
+    print(f'Block length: {mem_info.block_length}')
+    print(f'No of points: {no_of_points}')
+    data_buffer = (c_ushort * no_of_points)()
 
+    print('Sleeping for a sec')
+    time.sleep(1)
 
+    state_var = c_short()
+    status, mod_no, state = tcspc.SPC_test_state(module_no, state_var)
+    print(f'Test state status: {status} with mod_no: {mod_no} and state: {bytes(state)}')
+    tcspc.translate_status(state)
 
     
+
+    status, mod_no, block, page, reduction_factor, var_from, var_to, data = tcspc.SPC_read_data_block(module_no, 0, page_no, red_factor, 0, no_of_points - 1, data_buffer)
+    print(f'Read data block status: {status} with mod_no: {mod_no}, block: {block}, page: {page}, reduction_factor: {reduction_factor}, var_from: {var_from}, var_to: {var_to} and data: {data}')
+    print(f'Data list: {list(data_buffer)}')
+
+    #plt.plot(data_buffer)
+    #plt.show()
