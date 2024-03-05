@@ -277,6 +277,14 @@ class SPCDllWrapper:
         ret = self.__SPC_get_init_status(arg1)
         return ret, arg1
 
+    def SPC_set_mode(self, mode, force_use, in_use):
+
+        arg1 = c_short(mode)
+        arg2 = c_short(force_use)
+        arg3 = c_int(in_use)
+        ret = self.__SPC_set_mode(arg1, arg2, byref(arg3))
+        return ret, arg1, arg2, arg3
+
     def SPC_get_parameters(self, mod_no: int):
         arg1 = c_short(mod_no)
         arg2 = SPCdata()
@@ -317,6 +325,55 @@ class SPCDllWrapper:
         ret = self.__SPC_save_parameters_to_inifile(arg1, arg2, arg3, arg4)
         return ret, arg1, arg2, arg3, arg4
 
+    def SPC_configure_memory(self, mod_no, adc_resolution, no_of_routing_bits, mem_info):
+
+        arg1 = c_short(mod_no)
+        arg2 = c_short(adc_resolution)
+        arg3 = c_short(no_of_routing_bits)
+        arg4 = mem_info
+        ret = self.__SPC_configure_memory(arg1, arg2, arg3, arg4)
+        return ret, arg1, arg2, arg3, arg4
+    
+    def SPC_set_page(self, mod_no, page):
+
+        arg1 = c_short(mod_no)
+        arg2 = c_long(page)
+        ret = self.__SPC_set_page(arg1, arg2)
+        return ret, arg1, arg2
+
+    def SPC_fill_memory(self, mod_no, block, page, fill_value):
+
+        arg1 = c_short(mod_no)
+        arg2 = c_long(block)
+        arg3 = c_long(page)
+        arg4 = c_ushort(fill_value)
+        ret = self.__SPC_fill_memory(arg1, arg2, arg3, arg4)
+        return ret, arg1, arg2, arg3, arg4
+
+    def SPC_start_measurement(self, mod_no):
+
+        arg1 = c_short(mod_no)
+        ret = self.__SPC_start_measurement(arg1)
+        return ret, arg1
+
+    def SPC_test_state(self, mod_no, state):
+
+        arg1 = c_short(mod_no)
+        arg2 = c_short(state)
+        ret = self.__SPC_test_state(arg1, byref(arg2))
+        return ret, arg1, arg2
+
+    def SPC_read_data_block(self, mod_no, block, page, reduction_factor, var_from, var_to, data):
+            
+        arg1 = c_short(mod_no)
+        arg2 = c_long(block)
+        arg3 = c_long(page)
+        arg4 = c_short(reduction_factor)
+        arg5 = c_short(var_from)
+        arg6 = c_short(var_to)
+        ret = self.__SPC_read_data_block(arg1, arg2, arg3, arg4, arg5, arg6, data)
+        return ret, arg1, arg2, arg3, arg4, arg5, arg6, data
+
 if __name__ == '__main__':
 
     print(SPCdata)
@@ -324,9 +381,12 @@ if __name__ == '__main__':
     tcspc = SPCDllWrapper()
 
     #ini_file_path = os.path.abspath('C:\Program Files (x86)\BH\SPCM\spcm.ini')
-    ini_file_path = os.path.abspath(r'C:\Users\Nicky\OneDrive - Universidad Católica de Chile\Documents\Scripts\Qoptics_exp\spcm_test.ini')
+    ini_file_path = os.path.abspath(r'C:\EXP\python\Qoptics_exp\spcm_test.ini')
     init_status, args = tcspc.SPC_init(ini_file_path)
     print(f'Init status: {init_status} with args: {args}')
+
+    status, mode, force_use, in_use = tcspc.SPC_set_mode(130, 1, 1)
+    print(f'Get mode status: {status} with mode: {mode} and force_use: {force_use} and in_use: {in_use}')
 
     module_no = 0
     init_status, args = tcspc.SPC_get_init_status(module_no)
@@ -334,35 +394,37 @@ if __name__ == '__main__':
 
     status, mod_no, data = tcspc.SPC_get_parameters(module_no)
     print(f'Get parameters status: {status} with mod_no: {mod_no} and data: {data.cfd_zc_level}')
-    data.cfd_zc_level = -5.29
-    print(f'Setting cfd_zc_level to {data.cfd_zc_level}')
 
-    status, mod_no, data = tcspc.SPC_set_parameters(module_no, data)
-    print(f'Set parameters status: {status} with mod_no: {mod_no} and data: {data.cfd_zc_level}')
+    # Parameter Read write test
+    #data.cfd_zc_level = -5.29
+    #print(f'Setting cfd_zc_level to {data.cfd_zc_level}')
 
-    status, mod_no, data = tcspc.SPC_get_parameters(module_no)
-    print(f'Get parameters status: {status} with mod_no: {mod_no} and data: {data.cfd_zc_level}')
+    #status, mod_no, data = tcspc.SPC_set_parameters(module_no, data)
+    #print(f'Set parameters status: {status} with mod_no: {mod_no} and data: {data.cfd_zc_level}')
 
-    status, mod_no, param_id, value = tcspc.SPC_get_parameter(module_no, 2)
-    print(f'Get parameter status: {status} with mod_no: {mod_no}, param_id: {param_id} and value: {value}')
+    #status, mod_no, data = tcspc.SPC_get_parameters(module_no)
+    #print(f'Get parameters status: {status} with mod_no: {mod_no} and data: {data.cfd_zc_level}')
 
-    status, mod_no, param_id, value = tcspc.SPC_set_parameter(module_no, 2, 0.0)
-    print(f'Set parameter status: {status} with mod_no: {mod_no}, param_id: {param_id} and value: {value}')
+    #status, mod_no, param_id, value = tcspc.SPC_get_parameter(module_no, 2)
+    #print(f'Get parameter status: {status} with mod_no: {mod_no}, param_id: {param_id} and value: {value}')
 
-    status, mod_no, data = tcspc.SPC_get_parameters(module_no)
-    print(f'Get parameters status: {status} with mod_no: {mod_no} and data: {data.cfd_zc_level}')
+    #status, mod_no, param_id, value = tcspc.SPC_set_parameter(module_no, 2, 0.0)
+    #print(f'Set parameter status: {status} with mod_no: {mod_no}, param_id: {param_id} and value: {value}')
 
-    status, mod_no, param_id, value = tcspc.SPC_get_parameter(module_no, 2)
-    print(f'Get parameter status: {status} with mod_no: {mod_no}, param_id: {param_id} and value: {value}')
+    #status, mod_no, data = tcspc.SPC_get_parameters(module_no)
+    #print(f'Get parameters status: {status} with mod_no: {mod_no} and data: {data.cfd_zc_level}')
 
-    status, mod_no, param_id, value = tcspc.SPC_set_parameter(module_no, 2, -5.3)
-    print(f'Set parameter status: {status} with mod_no: {mod_no}, param_id: {param_id} and value: {value}')
+    #status, mod_no, param_id, value = tcspc.SPC_get_parameter(module_no, 2)
+    #print(f'Get parameter status: {status} with mod_no: {mod_no}, param_id: {param_id} and value: {value}')
 
-    status, mod_no, param_id, value = tcspc.SPC_get_parameter(module_no, 2)
-    print(f'Get parameter status: {status} with mod_no: {mod_no}, param_id: {param_id} and value: {value}')
+    #status, mod_no, param_id, value = tcspc.SPC_set_parameter(module_no, 2, -5.3)
+    #print(f'Set parameter status: {status} with mod_no: {mod_no}, param_id: {param_id} and value: {value}')
 
-    status, mod_no, data = tcspc.SPC_get_parameters(module_no)
-    print(f'Get parameters status: {status} with mod_no: {mod_no} and data: {data.cfd_zc_level}')
+    #status, mod_no, param_id, value = tcspc.SPC_get_parameter(module_no, 2)
+    #print(f'Get parameter status: {status} with mod_no: {mod_no}, param_id: {param_id} and value: {value}')
+
+    #status, mod_no, data = tcspc.SPC_get_parameters(module_no)
+    #print(f'Get parameters status: {status} with mod_no: {mod_no} and data: {data.cfd_zc_level}')
 
     # Read from file
     #status, data, ini_file = tcspc.SPC_read_parameters_from_inifile(data, ini_file_path)
@@ -374,6 +436,27 @@ if __name__ == '__main__':
     # Save to file
     #status, data, dest_ini_file, source_ini_file, with_comments = tcspc.SPC_save_parameters_to_inifile(data, test_ini_file, ini_file_path, 0)
     #print(f'Save parameters to ini file status: {status} with data: {data}, dest_ini_file: {dest_ini_file}, source_ini_file: {source_ini_file} and with_comments: {with_comments}')
+
+    status, mod_no, adc_resolution, no_of_routing_bits, mem_info = tcspc.SPC_configure_memory(module_no, 10, 3, SPCMemConfig())
+    print(f'Configure memory status: {status} with adc_resolution: {adc_resolution}, no_of_routing_bits: {no_of_routing_bits} and mem_info: {mem_info}')
+    no_of_blocks = mem_info.max_block_no
+
+    status, mod_no, page = tcspc.SPC_set_page(module_no, 0)
+    print(f'Set page status: {status} with mod_no: {mod_no} and page: {page}')
+
+    status, block, mod_no, page, fill_value = tcspc.SPC_fill_memory(module_no, 0, 0, 0)
+    print(f'Fill memory status: {status} with block: {block}, page: {page} and fill_value: {fill_value}')
+
+    status, mod_no = tcspc.SPC_start_measurement(module_no)
+    print(f'Start measurement status: {status} with mod_no: {mod_no}')
+
+    state_var = 0
+    status, mod_no, state = tcspc.SPC_test_state(module_no, state_var)
+    print(f'Test state status: {status} with mod_no: {mod_no} and state: {bytes(state)}')
+
+    status, mod_no, block, page, reduction_factor, var_from, var_to, data = tcspc.SPC_read_data_block(module_no, 0, 0, 1, 0, 0, c_ushort(0))
+    print(f'Read data block status: {status} with mod_no: {mod_no}, block: {block}, page: {page}, reduction_factor: {reduction_factor}, var_from: {var_from}, var_to: {var_to} and data: {data}')
+
 
 
     
