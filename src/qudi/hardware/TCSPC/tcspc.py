@@ -284,9 +284,9 @@ class SPCDllWrapper:
         ret = self.__SPC_set_mode(arg1, arg2, byref(arg3))
         return ret, arg1, arg2, arg3
 
-    def SPC_get_parameters(self, mod_no: int):
+    def SPC_get_parameters(self, mod_no: int, SPC_data: SPCdata = SPCdata()):
         arg1 = c_short(mod_no)
-        arg2 = SPCdata()
+        arg2 = SPC_data
         ret = self.__SPC_get_parameters(arg1, arg2)
         return ret, arg1, arg2
     
@@ -297,9 +297,9 @@ class SPCDllWrapper:
         ret = self.__SPC_get_parameter(arg1, arg2, byref(arg3))
         return ret, arg1, arg2, arg3
     
-    def SPC_set_parameters(self, mod_no: int, data: SPCdata):
+    def SPC_set_parameters(self, mod_no: int, SPC_data: SPCdata):
         arg1 = c_short(mod_no)
-        arg2 = data
+        arg2 = SPC_data
         ret = self.__SPC_set_parameters(arg1, arg2)
         return ret, arg1, arg2
     
@@ -358,7 +358,7 @@ class SPCDllWrapper:
     def SPC_test_state(self, mod_no, state):
 
         arg1 = c_short(mod_no)
-        arg2 = state
+        arg2 = c_short(state)
         ret = self.__SPC_test_state(arg1, byref(arg2))
         return ret, arg1, arg2
 

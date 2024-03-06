@@ -58,31 +58,26 @@ class TCSPC_parameters_editor(QDialog):
 
     def get_parameters(self):
     
+        # Uses the sames keys as the TCSPC config itself
         parameter_dict = {
-            'TAC': {
-                'range': self.tac_range_spinbox.value(),
-                'gain': self.tac_gain_spinbox.value(),
-                'offset': self.tac_offset_spinbox.value(),
-                'limit_high': self.tac_limit_high_spinbox.value(),
-                'limit_low': self.tac_limit_low_spinbox.value()
-            },
-            'Time': {
-                'collection': self.time_collection_spinbox.value(),
-                'repeat': self.time_repeat_spinbox.value(),
-                'display': self.time_display_spinbox.value(),
-            },
-            'Sync': {
-                'zc_level': self.sync_zc_level_spinbox.value(),
-                'freq_divider': self.sync_freq_divider_spinbox.value(),
-                'threshold': self.sync_threshold_spinbox.value()
-            },
-            'CFD': {
-                'limit_low': self.cfd_limit_low_spinbox.value(),
-                'zc_level': self.cfd_zc_level_spinbox.value(),
-            },
-            'Measurement': {
-                'mode': self.measurement_combobox.currentText(),
-            }
+            'tac_range': self.tac_range_spinbox.value(),
+            'tac_gain': self.tac_gain_spinbox.value(),
+            'tac_offset': self.tac_offset_spinbox.value(),
+            'tac_limit_high': self.tac_limit_high_spinbox.value(),
+            'tac_limit_low': self.tac_limit_low_spinbox.value(),
+    
+            'collect_time': self.time_collection_spinbox.value(),
+            'repeat_time': self.time_repeat_spinbox.value(),
+            'display_time': self.time_display_spinbox.value(),
+        
+            'sync_zc_level': self.sync_zc_level_spinbox.value(),
+            'sync_freq_div': self.sync_freq_divider_spinbox.value(),
+            'sync_threshold': self.sync_threshold_spinbox.value(),
+        
+            'cfd_limit_low': self.cfd_limit_low_spinbox.value(),
+            'cfd_zc_level': self.cfd_zc_level_spinbox.value(),
+
+            'mode': self.measurement_combobox.currentText(),
         }
         return parameter_dict
     
@@ -93,29 +88,29 @@ class TCSPC_parameters_editor(QDialog):
 
     def reject(self):
 
-        self._update_values(self._current_values)
+        self.update_values(self._current_values)
         super().reject()
 
-    def _update_values(self, new_values):
+    def update_values(self, new_values):
 
-        self.tac_range_spinbox.setValue(new_values['TAC']['range'])
-        self.tac_gain_spinbox.setValue(new_values['TAC']['gain'])
-        self.tac_offset_spinbox.setValue(new_values['TAC']['offset'])
-        self.tac_limit_high_spinbox.setValue(new_values['TAC']['limit_high'])
-        self.tac_limit_low_spinbox.setValue(new_values['TAC']['limit_low'])
+        self.tac_range_spinbox.setValue(new_values['tac_range'])
+        self.tac_gain_spinbox.setValue(new_values['tac_gain'])
+        self.tac_offset_spinbox.setValue(new_values['tac_offset'])
+        self.tac_limit_high_spinbox.setValue(new_values['tac_limit_high'])
+        self.tac_limit_low_spinbox.setValue(new_values['tac_limit_low'])
 
-        self.time_collection_spinbox.setValue(new_values['Time']['collection'])
-        self.time_repeat_spinbox.setValue(new_values['Time']['repeat'])
-        self.time_display_spinbox.setValue(new_values['Time']['display'])
+        self.time_collection_spinbox.setValue(new_values['collect_time'])
+        self.time_repeat_spinbox.setValue(new_values['repeat_time'])
+        self.time_display_spinbox.setValue(new_values['display_time'])
 
-        self.sync_zc_level_spinbox.setValue(new_values['Sync']['zc_level'])
-        self.sync_freq_divider_spinbox.setValue(new_values['Sync']['freq_divider'])
-        self.sync_threshold_spinbox.setValue(new_values['Sync']['threshold'])
+        self.sync_zc_level_spinbox.setValue(new_values['sync_zc_level'])
+        self.sync_freq_divider_spinbox.setValue(new_values['sync_freq_div'])
+        self.sync_threshold_spinbox.setValue(new_values['sync_threshold'])
 
-        self.cfd_limit_low_spinbox.setValue(new_values['CFD']['limit_low'])
-        self.cfd_zc_level_spinbox.setValue(new_values['CFD']['zc_level'])
+        self.cfd_limit_low_spinbox.setValue(new_values['cfd_limit_low'])
+        self.cfd_zc_level_spinbox.setValue(new_values['cfd_zc_level'])
 
-        self.measurement_combobox.setCurrentText(new_values['Measurement']['mode'])
+        self.measurement_combobox.setCurrentText(new_values['mode'])
         
         return new_values
 

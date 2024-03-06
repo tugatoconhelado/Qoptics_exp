@@ -27,8 +27,8 @@ def test_state(tcspc, module_no, print_status=False):
 
 def empty_memory_bank(tcspc, module_no, mem_info):
 
-    status, mod_no, block, page, fill_value = tcspc.SPC_fill_memory(module_no, -1, -1, 1)
-    #print(f'Fill memory status: {status} with block: {block}, page: {page} and fill_value: {fill_value}')
+    status, mod_no, block, page, fill_value = tcspc.SPC_fill_memory(module_no, 0, 0, 1)
+    print(f'Fill memory status: {status} with block: {block}, page: {page} and fill_value: {fill_value}')
     continue_fill = True
     while continue_fill:
         status_code = test_state(tcspc, module_no)
@@ -45,7 +45,7 @@ def initialise_tcspc():
 
     tcspc = SPCDllWrapper()
 
-    ini_file_path = os.path.abspath(r'C:\EXP\python\Qoptics_exp\new_settings.ini')
+    ini_file_path = os.path.abspath(r'C:\EXP\python\Qoptics_exp\spcm_test.ini')
     init_status, args = tcspc.SPC_init(ini_file_path)
     print(f'Init status: {init_status} with args: {args}')
 
@@ -53,7 +53,7 @@ def initialise_tcspc():
     init_status, args = tcspc.SPC_get_init_status(module_no)
     print(f'Init status of module {module_no}: {init_status} with args: {args}')
 
-    status, mode, force_use, in_use = tcspc.SPC_set_mode(130, 1, 1)
+    status, mode, force_use, in_use = tcspc.SPC_set_mode(130, 1, 2)
     print(f'Get mode status: {status} with mode: {mode} and force_use: {force_use} and in_use: {in_use}')
 
     init_status, args = tcspc.SPC_get_init_status(module_no)
@@ -65,9 +65,9 @@ def initialise_tcspc():
     return tcspc
 
 
-def configure_memory(tcspc, module_no, page_no=1):
+def configure_memory(tcspc, module_no, page_no=0):
 
-    status, mod_no, adc_resolution, no_of_routing_bits, mem_info = tcspc.SPC_configure_memory(module_no, 6, 0, SPCMemConfig())
+    status, mod_no, adc_resolution, no_of_routing_bits, mem_info = tcspc.SPC_configure_memory(module_no, 10, 0, SPCMemConfig())
     print(f'Configure memory status: {status} with adc_resolution: {adc_resolution}, no_of_routing_bits: {no_of_routing_bits} and mem_info: {mem_info}')
     no_of_blocks = mem_info.max_block_no
 
@@ -108,7 +108,7 @@ while continue_acquisition:
     status_code = tcspc.translate_status(state)
     #print(f'Status code: {status_code}')
 
-    status, mod_no, block, page, reduction_factor, var_from, var_to, data = tcspc.SPC_read_data_block(module_no, 0, 1, red_factor, 0, no_of_points - 1, copy.copy(data_buffer))
+    status, mod_no, block, page, reduction_factor, var_from, var_to, data = tcspc.SPC_read_data_block(module_no, 0, 0, red_factor, 0, no_of_points - 1, copy.copy(data_buffer))
     print(f'Read data block status: {status} with mod_no: {mod_no}, block: {block}, page: {page}, reduction_factor: {reduction_factor}, var_from: {var_from}, var_to: {var_to} and data: {data}')
     print(f'Data list: {list(copy.copy(data))}')
     
