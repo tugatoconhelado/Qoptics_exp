@@ -7,7 +7,7 @@ from ctypes import (
     c_short, c_void_p, c_float, c_ushort, Structure,
     c_ulong, c_long, c_uint, c_uint64, byref
 )
-from qudi.hardware.TCSPC.spc_def import (
+from qudi.hardware.tcspc.spc_def import (
     SPCdata, SPCModInfo, SPC_EEP_Data, SPC_Adjust_Para,
     SPCMemConfig, PhotStreamInfo, PhotInfo, PhotInfo64,
     rate_values
@@ -358,7 +358,7 @@ class SPCDllWrapper:
     def SPC_test_state(self, mod_no, state):
 
         arg1 = c_short(mod_no)
-        arg2 = c_short(state)
+        arg2 = c_short(0)
         ret = self.__SPC_test_state(arg1, byref(arg2))
         return ret, arg1, arg2
 
@@ -395,7 +395,20 @@ class SPCDllWrapper:
         arg2 = c_short(enable)
         ret = self.__SPC_enable_sequencer(arg1, arg2)
         return ret, arg1, arg2
-    
+
+    def SPC_read_rates(self, mod_no, rate_values):
+
+        arg1 = c_short(mod_no)
+        arg2 = rate_values
+        ret = self.__SPC_read_rates(arg1, arg2)
+        return ret, arg1, arg2
+
+    def SPC_clear_rates(self, mod_no):
+            
+        arg1 = c_short(mod_no)
+        ret = self.__SPC_clear_rates(arg1)
+        return ret, arg1
+
     def translate_status(self, status):
         
         # Define the status codes

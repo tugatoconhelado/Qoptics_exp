@@ -39,9 +39,11 @@ class TCSPCLogic(LogicBase):
     #_counter_value = StatusVar(name='counter_value', default=0)
 
     # Declare connectors to other logic modules or hardware modules to interact with
-    #_template_hardware = Connector(name='template_hardware',
-    #                               interface='TemplateInterface',
-    #                               optional=True)
+    _tcspc_hardware = Connector(name='tcspc_hardware',
+                                   interface='TCSPCHardware',
+                                   optional=True)
+    sig_parameters = QtCore.Signal(dict)
+    sig_rate_values = QtCore.Signal(tuple)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -51,12 +53,22 @@ class TCSPCLogic(LogicBase):
 
         # Set up a Qt timer to send periodic signals according to _increment_interval
         self.__timer = QtCore.QTimer(parent=self)
-        self.__timer.setInterval(1000 * 0.1)  # Interval in milliseconds
+        self.__timer.setInterval(1000 * 0.5)  # Interval in milliseconds
         self.__timer.setSingleShot(False)
         # Connect timeout signal to increment slot
         self.__timer.timeout.connect(self.send_data, QtCore.Qt.QueuedConnection)
-        # Start timer
-        self.__timer.start()
+
+        self.__rates_timer = QtCore.QTimer(parent=self)
+        self.__rates_timer.setInterval(1000)  # Interval in milliseconds
+        self.__rates_timer.setSingleShot(False)
+        # Connect timeout signal to increment slot
+        self.__rates_timer.timeout.connect(self.get_rates, QtCore.Qt.QueuedConnection)
+
+        # Initialise hardware module
+        self._tcspc_hardware().initialise_tcspc()
+        self._tcspc_hardware().clear_rates(0)
+
+        self.__rates_timer.start()
 
     def on_deactivate(self) -> None:
         # Stop timer and delete
@@ -64,9 +76,55 @@ class TCSPCLogic(LogicBase):
         self.__timer.timeout.disconnect()
         self.__timer = None
 
+        self.__rates_timer.stop()
+        self.__rates_timer.timeout.disconnect()
+        self.__rates_timer = None
+
+    def get_rates(self):
+
+        self.log.info('Getting rates')
+        rates = self._tcspc_hardware().read_rate_counter(0)
+        print(rates)
+        rate_values = (
+            rates.sync_rate,
+            rates.cfd_rate,
+            rates.tac_rate,
+            rates.adc_rate
+        )
+        print(rate_values)
+        self.sig_rate_values.emit(rate_values)
+        self.log.info(f'Rates: {rate_values}')
+
+    def start_measurement(self):
+        self.__timer.start()
+        self.log.info('Measurement started')
+
+        self._tcspc_hardware().configure_memory(0)
+        self._tcspc_hardware().start_single_mode_measurement(0, 0)
+
+        self.continue_acquisition = True
+        self.__timer.start()
+           
     def stop_measurement(self):
         self.__timer.stop()
         self.log.info('Measurement stopped')
+
+    @QtCore.Slot(dict)
+    def set_parameters(self, params: dict):
+
+        self.log.info(f'Setting parameters to {params}')
+        for key, value in params.items():
+            if key != 'mode':
+                self._tcspc_hardware().set_SPC_params(key, value)
+        self._tcspc_hardware().set_SPC_params_to_module(0)
+        self.get_parameters(params)
+
+    def get_parameters(self, params):
+
+        self.log.info('Getting parameters')
+        params = self._tcspc_hardware().get_SPC_params(params, 0)
+        print(params)
+        self.sig_parameters.emit(params)
 
     def save_data(self):
 
@@ -121,6 +179,17 @@ class TCSPCLogic(LogicBase):
         self.log.info('Data loaded')
 
     def send_data(self):
-        data = np.random.rand(1000)
-        self.data = data
-        self.sig_data.emit(data)
+        #data = np.random.rand(1000)
+        #self.data = data
+        readed_data = np.array([])
+        if self.continue_acquisition:
+            readed_data = self._tcspc_hardware().read_data_from_tcspc(0)
+            readed_data = np.array(readed_data)
+            status_code = self._tcspc_hardware().test_state(0)
+            #self.log.info(f'Status code: {status_code}')
+            self.data = readed_data
+            self.sig_data.emit(self.data)
+            #if 'SPC_TIME_OVER' in status_code:
+            #    self.log.info('SPC acquisition time over')
+            #    self.continue_acquisition = False
+            #    self.__timer.stop()

@@ -3,20 +3,20 @@ from ctypes import (
     c_short, c_void_p, c_float, c_ushort, Structure,
     c_ulong, c_long, c_uint, c_uint64, byref
 )
-from qudi.hardware.TCSPC.spc_def import (
+from qudi.hardware.tcspc.spc_def import (
     SPCdata, SPCModInfo, SPC_EEP_Data, SPC_Adjust_Para,
     SPCMemConfig, PhotStreamInfo, PhotInfo, PhotInfo64,
     rate_values
 )
 import time
-from qudi.hardware.TCSPC.tcspc import SPCDllWrapper
+from qudi.hardware.tcspc.tcspc import SPCDllWrapper
 import os
 import matplotlib.pyplot as plt
 import copy
 
 def test_state(tcspc, module_no, print_status=False):
 
-    state_var = c_short()
+    state_var = 0
     status, mod_no, state = tcspc.SPC_test_state(module_no, state_var)
     #print(f'Test state status: {status} with mod_no: {mod_no} and state: {bytes(state)}')
     status_code = tcspc.translate_status(state)
@@ -53,7 +53,7 @@ def initialise_tcspc():
     init_status, args = tcspc.SPC_get_init_status(module_no)
     print(f'Init status of module {module_no}: {init_status} with args: {args}')
 
-    status, mode, force_use, in_use = tcspc.SPC_set_mode(130, 1, 2)
+    status, mode, force_use, in_use = tcspc.SPC_set_mode(0, 1, 2)
     print(f'Get mode status: {status} with mode: {mode} and force_use: {force_use} and in_use: {in_use}')
 
     init_status, args = tcspc.SPC_get_init_status(module_no)

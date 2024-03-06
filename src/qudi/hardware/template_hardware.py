@@ -8,6 +8,7 @@ from qudi.interface.template_interface import TemplateInterface
 from qudi.core.statusvariable import StatusVar
 from qudi.core.configoption import ConfigOption
 from qudi.util.mutex import Mutex
+from qudi.core.module import Base
 
 
 class TemplateHardware(TemplateInterface):

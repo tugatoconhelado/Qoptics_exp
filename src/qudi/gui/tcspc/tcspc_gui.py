@@ -31,16 +31,21 @@ class TCSPCMainWindow(QMainWindow):
         self.counts_plot.setLabel('left', 'Counts')
         self.counts_plot.showGrid(x=True, y=True)
 
-        bargraph = pg.BarGraphItem(x=[1, 2, 3], height=[1, 1, 1], width=0.6)
-        self.counts_plot.addItem(bargraph)
-        y1 = [5, 5, 7]
-        x = [1, 2, 3]
-        bargraph.setOpts(height=y1)
+        self.bargraph = pg.BarGraphItem(x=[1, 2, 3, 4], height=[1, 1, 1, 1], width=0.6)
+        self.counts_plot.addItem(self.bargraph)
 
         counts_plot_x_axis = self.counts_plot.getAxis('bottom')
-        counts_plot_x_axis.setTicks([[(1, 'a'), (2, 'b'), (3, 'c')]])
+        counts_plot_x_axis.setTicks([[(1, 'SYNC'), (2, 'CFD'), (3, 'TAC'), (4, 'ADC')]])
 
-        bargraph.setOpts(height=[10, 15, 12])
+        self.counts_plot.setLogMode(x=False, y=True)
+        self.counts_plot.setYRange(0, 100000000)
+
+        self.bargraph.setOpts(height=[10, 15, 12, 1])
+
+    @Slot(tuple)
+    def update_rates(self, rates):
+
+        self.bargraph.setOpts(height=rates)
 
     @Slot(np.ndarray)
     def update_data(self, data):
@@ -49,6 +54,8 @@ class TCSPCMainWindow(QMainWindow):
 
 class TCSPC_parameters_editor(QDialog):
 
+    change_params_signal = QtCore.Signal(dict)
+    get_params_signal = QtCore.Signal(dict)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -84,11 +91,13 @@ class TCSPC_parameters_editor(QDialog):
     def accept(self):
 
         self._current_values = self.get_parameters()
+        self.change_params_signal.emit(self._current_values)
         super().accept()
 
     def reject(self):
 
         self.update_values(self._current_values)
+        self.get_params_signal.emit(self._current_values)
         super().reject()
 
     def update_values(self, new_values):
@@ -148,11 +157,17 @@ class TCSPCGui(GuiBase):
         self._mw.system_parameters_action.triggered.connect(self.parameters_editor.show)
 
         # Connect all signals to and from the logic. Make sure the connections are QueuedConnection.
-        #self.sigAddToCounter.connect(
-        #    self._template_logic().add_to_counter, QtCore.Qt.QueuedConnection
-        #)
+        self.parameters_editor.change_params_signal.connect(
+            self._tcspc_logic().set_parameters, QtCore.Qt.QueuedConnection
+        )
+        self.parameters_editor.get_params_signal.connect(
+            self._tcspc_logic().get_parameters, QtCore.Qt.QueuedConnection
+        )
         self._mw.stop_button.clicked.connect(
             self._tcspc_logic().stop_measurement, QtCore.Qt.QueuedConnection
+        )
+        self._mw.start_button.clicked.connect(
+            self._tcspc_logic().start_measurement, QtCore.Qt.QueuedConnection
         )
         self._mw.save_button.clicked.connect(
             self._tcspc_logic().save_data, QtCore.Qt.QueuedConnection
@@ -160,9 +175,20 @@ class TCSPCGui(GuiBase):
         self._mw.load_button.clicked.connect(
             self._tcspc_logic().load_data, QtCore.Qt.QueuedConnection
         )
+
         self._tcspc_logic().sig_data.connect(
             self._mw.update_data, QtCore.Qt.QueuedConnection
         )
+        self._tcspc_logic().sig_parameters.connect(
+            self.parameters_editor.update_values, QtCore.Qt.QueuedConnection
+        )
+        self._tcspc_logic().sig_rate_values.connect(
+            self._mw.update_rates, QtCore.Qt.QueuedConnection
+        )
+
+        # Gets the parameters from the logic module
+        self._tcspc_logic().get_parameters(self.parameters_editor.get_parameters())
+
         # Show the main window and raise it above all others
         self.show()
 
