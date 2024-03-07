@@ -182,9 +182,9 @@ class TCSPCGui(GuiBase):
         self._tcspc_logic().sig_parameters.connect(
             self.parameters_editor.update_values, QtCore.Qt.QueuedConnection
         )
-        self._tcspc_logic().sig_rate_values.connect(
-            self._mw.update_rates, QtCore.Qt.QueuedConnection
-        )
+        #self._tcspc_logic().sig_rate_values.connect(
+        #    self._mw.update_rates, QtCore.Qt.QueuedConnection
+        #)
 
         # Gets the parameters from the logic module
         self._tcspc_logic().get_parameters(self.parameters_editor.get_parameters())
