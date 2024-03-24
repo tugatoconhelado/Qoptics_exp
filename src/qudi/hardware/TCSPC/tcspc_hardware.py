@@ -9,11 +9,7 @@ from qudi.core.configoption import ConfigOption
 from qudi.util.mutex import Mutex
 from qudi.hardware.tcspc.tcspc import SPCDllWrapper
 from qudi.core.module import Base
-from qudi.hardware.tcspc.spc_def import (
-    SPCdata, SPCModInfo, SPC_EEP_Data, SPC_Adjust_Para,
-    SPCMemConfig, PhotStreamInfo, PhotInfo, PhotInfo64,
-    rate_values
-)
+from qudi.hardware.tcspc.spc_def import *
 import os
 import copy
 import ctypes
@@ -254,3 +250,60 @@ class TCSPCHardware(Base):
         self.log.info(f'Read data block status: {status} with mod_no: {mod_no}, block: {block}, page: {page}, reduction_factor: {reduction_factor}, var_from: {var_from}, var_to: {var_to} and data: {data}')
         readed_data = list(copy.copy(data))
         return readed_data
+    
+    def init_fifo_measurement(self, module_no):
+
+        self.fifo_stopt_possible = True
+        self.first_write = 1
+        self.current_mode = 0
+
+        # Disables the sequencer
+        status, mod_no, enable = self._tcspc_wrapper.SPC_enable_sequencer(module_no, 0)
+        print(f'Enable sequencer status: {status} with mod_no: {mod_no} and enable: {enable}')
+
+        status, mod_no, par_id, value = self._tcspc_wrapper.SPC_get_parameter(module_no, 27, self.current_mode)
+        print(f'Get parameter status: {status} with mod_no: {mod_no}, par_id: {par_id} and value: {value}')
+
+        print(self.current_mode)
+
+        # Sets MODE to 2 (FIFO mode)
+        status, mod_no, par_id, value = self._tcspc_wrapper.SPC_set_parameter(module_no, 27, 2)
+        print(f'Set parameter status: {status} with mod_no: {mod_no}, par_id: {par_id} and value: {value}')
+
+        status, mod_no, par_id, self.current_mode = self._tcspc_wrapper.SPC_get_parameter(module_no, 27, self.current_mode)
+        print(f'Get parameter status: {status} with mod_no: {mod_no}, par_id: {par_id} and value: {self.current_mode}')
+
+        print(f'Current mode: {self.current_mode}')
+
+        scan_polarity = 0
+        rout_mode = 0
+
+        # Get SCAN_POLARITY (not used in this case, only for scanning)
+        status, mod_no, par_id, scan_polarity = self._tcspc_wrapper.SPC_get_parameter(module_no, 32, scan_polarity)
+        print(f'Get parameter status: {status} with mod_no: {mod_no}, par_id: {par_id} and value: {scan_polarity}')
+
+        print(f'Scan polarity: {scan_polarity}')
+
+        # Get ROUT_MODE (not used)
+        status, mod_no, par_id, rout_mode = self._tcspc_wrapper.SPC_get_parameter(module_no, 25, rout_mode)
+        print(f'Get parameter status: {status} with mod_no: {mod_no}, par_id: {par_id} and value: {rout_mode}')
+
+        print(f'Routing mode: {rout_mode}')
+
+        # Sets STOP_ON_TIME to 0
+        status, mod_no, par_id, value = self._tcspc_wrapper.SPC_set_parameter(module_no, STOP_ON_TIME, 0)
+        print(f'Set parameter status: {status} with mod_no: {mod_no}, par_id: {par_id} and value: {value}')
+
+        # Sets STOP_ON_OVFL to 0
+        status, mod_no, par_id, value = self._tcspc_wrapper.SPC_set_parameter(module_no, STOP_ON_OVFL, 0)
+        print(f'Set parameter status: {status} with mod_no: {mod_no}, par_id: {par_id} and value: {value}')
+
+        if self.fifo_stopt_possible:
+            # If FIFO stop after coltime is possible 
+            # Set STOP_ON_TIME to 1
+            status, mod_no, par_id, value = self._tcspc_wrapper.SPC_set_parameter(module_no, STOP_ON_TIME, 1)
+            print(f'Set parameter status: {status} with mod_no: {mod_no}, par_id: {par_id} and value: {value}')
+
+        self.max_words_in_buffer = 2 * 200000
+
+        return self.max_words_in_buffer
