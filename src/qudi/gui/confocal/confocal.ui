@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>confocal_mainwindow</class>
+ <widget class="QMainWindow" name="confocal_mainwindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1164</width>
+    <height>985</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Confocal</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,4">
+      <item>
+       <layout class="QVBoxLayout" name="position_control_layout"/>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="confocal_layout"/>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="tracking_layout"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1164</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="file_menu">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="save_action"/>
+    <addaction name="save_as_action"/>
+    <addaction name="load_action"/>
+    <addaction name="separator"/>
+    <addaction name="exit_action"/>
+   </widget>
+   <widget class="QMenu" name="parameters_menu">
+    <property name="title">
+     <string>&amp;Parameters</string>
+    </property>
+    <addaction name="scan_parameters_action"/>
+    <addaction name="tracking_parameters_action"/>
+   </widget>
+   <widget class="QMenu" name="menuConfocal">
+    <property name="title">
+     <string>&amp;Confocal</string>
+    </property>
+    <addaction name="actionStart_scan"/>
+    <addaction name="actionStop_scan"/>
+   </widget>
+   <widget class="QMenu" name="menuTracking">
+    <property name="title">
+     <string>&amp;Tracking</string>
+    </property>
+    <addaction name="actionMax_XYZ"/>
+    <addaction name="actionMax_XY"/>
+    <addaction name="actionMax_Z"/>
+    <addaction name="actionTrack"/>
+    <addaction name="actionStop_tracking"/>
+   </widget>
+   <widget class="QMenu" name="menuStop">
+    <property name="title">
+     <string>Stop</string>
+    </property>
+   </widget>
+   <addaction name="file_menu"/>
+   <addaction name="parameters_menu"/>
+   <addaction name="menuConfocal"/>
+   <addaction name="menuTracking"/>
+   <addaction name="menuStop"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="scan_parameters_action">
+   <property name="text">
+    <string>Scan parameters</string>
+   </property>
+  </action>
+  <action name="tracking_parameters_action">
+   <property name="text">
+    <string>Tracking parameters</string>
+   </property>
+  </action>
+  <action name="save_action">
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="save_as_action">
+   <property name="text">
+    <string>Save &amp;as</string>
+   </property>
+  </action>
+  <action name="load_action">
+   <property name="text">
+    <string>&amp;Load</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="exit_action">
+   <property name="text">
+    <string>&amp;Exit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionStart_scan">
+   <property name="text">
+    <string>Start sc&amp;an</string>
+   </property>
+  </action>
+  <action name="actionStop_scan">
+   <property name="text">
+    <string>&amp;Stop scan</string>
+   </property>
+  </action>
+  <action name="actionMax_XYZ">
+   <property name="text">
+    <string>&amp;Max XYZ</string>
+   </property>
+  </action>
+  <action name="actionMax_XY">
+   <property name="text">
+    <string>Max &amp;XY</string>
+   </property>
+  </action>
+  <action name="actionMax_Z">
+   <property name="text">
+    <string>Max &amp;Z</string>
+   </property>
+  </action>
+  <action name="actionTrack">
+   <property name="text">
+    <string>&amp;Track</string>
+   </property>
+  </action>
+  <action name="actionStop_tracking">
+   <property name="text">
+    <string>&amp;Stop tracking</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

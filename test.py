@@ -1,24 +1,26 @@
+from PySide2.QtWidgets import QDialog, QWidget, QMainWindow, QApplication
+from PySide2.QtCore import Qt, Slot, Signal, QDir
+from PySide2.QtGui import QFont
+from qudi.util.uic import loadUi
 import numpy as np
+import pyqtgraph as pg
 
-import matplotlib.pyplot as plt
+class TestMainWindow(QMainWindow):
+    """
+    Main Window of the TimeTrace Experiment
+    """
 
-x_values = ['A', 'B', 'C', 'D', 'E']  # Replace the numbers with your desired strings
-y_values = [1e4, 1e8, 1e2, 1e7, 1e6]
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        loadUi(
+            r'test.ui',
+            self
+        )
 
-# Create a bar graph
-plt.bar(x_values, y_values, width=0.6)
 
-# Set the y-axis scale to log
-plt.yscale('log')
 
-# Set the y-axis limits (adjust as needed)
-plt.ylim(1, 1e8)
-
-# Display grid lines
-#plt.grid(True)
-
-# Set the y-axis ticks to display as 10, 10**2, 10**3, ..., 10**8
-#plt.yticks([10**i for i in range(9)], [str(10**i) for i in range(9)])
-
-# Show the plot
-plt.show()
+if __name__ == '__main__':
+    app = QApplication([])
+    w = TestMainWindow()
+    w.show()
+    app.exec_()

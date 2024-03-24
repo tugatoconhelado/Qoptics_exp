@@ -6,6 +6,9 @@ import pyqtgraph as pg
 from qudi.core.module import GuiBase
 from qudi.core.connector import Connector
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 
 
 class TCSPCMainWindow(QMainWindow):
@@ -28,24 +31,73 @@ class TCSPCMainWindow(QMainWindow):
 
         self.counts_histogram_dataline = self.counts_histogram_plot.plot(pen='r')
 
-        self.counts_plot.setLabel('left', 'Counts')
-        self.counts_plot.showGrid(x=True, y=True)
+        self.counts_plot_figure = plt.figure()
+        self.counts_plot_canvas = FigureCanvasQTAgg(self.counts_plot_figure)
+        self.counts_layout.addWidget(self.counts_plot_canvas)
 
-        self.bargraph = pg.BarGraphItem(x=[1, 2, 3, 4], height=[1, 1, 1, 1], width=0.6)
-        self.counts_plot.addItem(self.bargraph)
+        self.counts_plot_ax = self.counts_plot_figure.add_subplot(111)
 
-        counts_plot_x_axis = self.counts_plot.getAxis('bottom')
-        counts_plot_x_axis.setTicks([[(1, 'SYNC'), (2, 'CFD'), (3, 'TAC'), (4, 'ADC')]])
+        self.counts_plot_ax.set_facecolor('#302e2f')
+        self.counts_plot_ax.xaxis.label.set_color('#b3aca9')
+        self.counts_plot_ax.yaxis.label.set_color('#b3aca9')
+        self.counts_plot_ax.tick_params(axis='x', colors='#b3aca9')
+        self.counts_plot_ax.tick_params(axis='y', colors='#b3aca9')
+        self.counts_plot_ax.spines['bottom'].set_color('#b3aca9')
+        self.counts_plot_ax.spines['top'].set_color('#b3aca9')
+        self.counts_plot_ax.spines['right'].set_color('#b3aca9')
+        self.counts_plot_ax.spines['left'].set_color('#b3aca9')
+        self.counts_plot_figure.set_facecolor('#302e2f')
 
-        self.counts_plot.setLogMode(x=False, y=True)
-        self.counts_plot.setYRange(0, 100000000)
+        for item in self.counts_plot_ax.get_xticklabels():
+            item.set_fontsize(8)
+        for item in self.counts_plot_ax.get_yticklabels():
+            item.set_fontsize(8)
 
-        self.bargraph.setOpts(height=[10, 15, 12, 1])
+        self.counts_plot_ax.grid(False)
+        self.rates_labels = ['SYNC', 'CFD', 'TAC', 'ADC']
+        y_values = [1e4, 1e8, 1e2, 1e7]
+
+        self.counts_plot_ax.set_yticks([10**i for i in range(9)])
+        self.counts_plot_ax.minorticks_off()
+        self.counts_plot_ax.spines['top'].set_visible(False)
+        self.counts_plot_ax.spines['right'].set_visible(False)
+        self.counts_plot_ax.spines['left'].set_linewidth(0.5)
+        self.counts_plot_ax.spines['bottom'].set_linewidth(0.5)
+
+        self.counts_plot_rects = self.counts_plot_ax.bar(self.rates_labels, y_values, width=0.6, color='green')
+        self.counts_plot_ax.set_yscale('log')
+
+        value_str = ""
+        for i in range(len(self.rates_labels)):
+            value_str += self.rates_labels[i] + ": " + str(y_values[i]) + "\n"
+    
+        self.value_text = self.counts_plot_ax.text(
+            0.8,
+            0.7,
+            value_str,
+            horizontalalignment='center',
+            verticalalignment='center',
+            transform=self.counts_plot_figure.transFigure,
+            color='#b3aca9',
+            fontsize=9
+        )
+
+        y_values = y_values[::-1]
+        for rect, new_height in zip(self.counts_plot_rects, y_values):
+            rect.set_height(new_height)
+        self.counts_plot_canvas.draw()
+
 
     @Slot(tuple)
     def update_rates(self, rates):
 
-        self.bargraph.setOpts(height=rates)
+        value_str = ""
+        for i in range(len(rates)):
+            value_str += self.rates_labels[i] + ": " + str("{:.2e}".format(int(rates[i]))) + "\n"
+        self.value_text.set_text(value_str)
+        for rect, new_height in zip(self.counts_plot_rects, rates):
+            rect.set_height(new_height)
+        self.counts_plot_canvas.draw()
 
     @Slot(np.ndarray)
     def update_data(self, data):
@@ -154,7 +206,10 @@ class TCSPCGui(GuiBase):
 
         # connect all GUI internal signals
         
-        self._mw.system_parameters_action.triggered.connect(self.parameters_editor.show)
+        self._mw.system_parameters_action.triggered.connect(self.parameters_editor.show, QtCore.Qt.QueuedConnection)
+        self._mw.pause_button.clicked.connect(self.pause_measurement, QtCore.Qt.QueuedConnection)
+        self._mw.start_button.clicked.connect(self.start_measurement, QtCore.Qt.QueuedConnection)
+        self._mw.restart_button.clicked.connect(self.restart_measurement, QtCore.Qt.QueuedConnection)
 
         # Connect all signals to and from the logic. Make sure the connections are QueuedConnection.
         self.parameters_editor.change_params_signal.connect(
@@ -163,8 +218,16 @@ class TCSPCGui(GuiBase):
         self.parameters_editor.get_params_signal.connect(
             self._tcspc_logic().get_parameters, QtCore.Qt.QueuedConnection
         )
+
+        # Measurement control functions
         self._mw.stop_button.clicked.connect(
             self._tcspc_logic().stop_measurement, QtCore.Qt.QueuedConnection
+        )
+        self._mw.restart_button.clicked.connect(
+            self._tcspc_logic().restart_measurement, QtCore.Qt.QueuedConnection
+        )
+        self._mw.pause_button.clicked.connect(
+            self._tcspc_logic().pause_measurement, QtCore.Qt.QueuedConnection
         )
         self._mw.start_button.clicked.connect(
             self._tcspc_logic().start_measurement, QtCore.Qt.QueuedConnection
@@ -182,9 +245,9 @@ class TCSPCGui(GuiBase):
         self._tcspc_logic().sig_parameters.connect(
             self.parameters_editor.update_values, QtCore.Qt.QueuedConnection
         )
-        #self._tcspc_logic().sig_rate_values.connect(
-        #    self._mw.update_rates, QtCore.Qt.QueuedConnection
-        #)
+        self._tcspc_logic().sig_rate_values.connect(
+            self._mw.update_rates, QtCore.Qt.QueuedConnection
+        )
 
         # Gets the parameters from the logic module
         self._tcspc_logic().get_parameters(self.parameters_editor.get_parameters())
@@ -209,7 +272,14 @@ class TCSPCGui(GuiBase):
         self._mw.show()
         self._mw.raise_()
 
+    def pause_measurement(self):
+        self._mw.restart_button.setEnabled(True)
 
+    def start_measurement(self):
+        self._mw.restart_button.setEnabled(False)
+
+    def restart_measurement(self):
+        self._mw.restart_button.setEnabled(False)
 
 if __name__ == '__main__':
     from PySide2.QtWidgets import QApplication

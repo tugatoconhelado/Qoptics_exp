@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>timetrace_mainwindow</class>
+ <widget class="QMainWindow" name="timetrace_mainwindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>604</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Timetrace</string>
+  </property>
+  <widget class="QWidget" name="central_widget">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <layout class="QVBoxLayout" name="main_layout" stretch="0,3">
+      <item>
+       <widget class="QGroupBox" name="timetrace_groupbox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
+        <property name="title">
+         <string>Time Trace</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1,2">
+         <item>
+          <layout class="QHBoxLayout" name="control_cps_layout" stretch="1,1,1">
+           <item>
+            <widget class="QPushButton" name="run_cps_button">
+             <property name="text">
+              <string>Run CPS</string>
+             </property>
+             <property name="shortcut">
+              <string>Alt+T</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="stop_button">
+             <property name="styleSheet">
+              <string notr="true">  color: rgb(255, 0, 4);
+  background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, 
+  stop:0 rgba(255, 0, 0, 255),
+  stop:0.166 rgba(255, 255, 0, 255),
+  stop:0.333 rgba(0, 255, 0, 255),
+  stop:0.5 rgba(0, 255, 255, 255),
+  stop:0.666 rgba(0, 0, 255, 255),
+  stop:0.833 rgba(255, 0, 255, 255),
+  stop:1 rgba(255, 0, 0, 255));</string>
+             </property>
+             <property name="text">
+              <string>Stop</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="filename_label">
+             <property name="text">
+              <string>FILENAME</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="acquisition_cps_layout" stretch="1,1,1,1,1,1">
+           <item>
+            <widget class="QLabel" name="refresh_time_label">
+             <property name="text">
+              <string>Refresh time</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="refresh_time_spinbox">
+             <property name="maximumSize">
+              <size>
+               <width>120</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="suffix">
+              <string> sec</string>
+             </property>
+             <property name="decimals">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <double>1000000000000000019884624838656.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.100000000000000</double>
+             </property>
+             <property name="value">
+              <double>0.100000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="samp_freq_label">
+             <property name="text">
+              <string>Samp Freq</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="samp_freq_spinbox">
+             <property name="maximumSize">
+              <size>
+               <width>120</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="suffix">
+              <string> Hz</string>
+             </property>
+             <property name="maximum">
+              <number>999999999</number>
+             </property>
+             <property name="singleStep">
+              <number>100</number>
+             </property>
+             <property name="value">
+              <number>1000</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="samp_avg_label">
+             <property name="text">
+              <string>Window Time</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="window_time_spinbox">
+             <property name="maximumSize">
+              <size>
+               <width>120</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="suffix">
+              <string> sec</string>
+             </property>
+             <property name="decimals">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <double>1000000000000000000000.000000000000000</double>
+             </property>
+             <property name="value">
+              <double>10.000000000000000</double>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="stats_layout">
+           <item>
+            <layout class="QVBoxLayout" name="stats_checkbox_layout">
+             <item>
+              <widget class="QLabel" name="cps_text_label">
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Plain</enum>
+               </property>
+               <property name="text">
+                <string>CPS</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="mean_std_label">
+               <property name="text">
+                <string>Mean, std</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="stats_value_layout">
+             <item>
+              <layout class="QHBoxLayout" name="cps_value_layout">
+               <item>
+                <widget class="QLabel" name="cps_label">
+                 <property name="text">
+                  <string>TextLabel</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="cps_units_label">
+                 <property name="text">
+                  <string>cts/sec</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="meanstd_value_layout">
+               <item>
+                <widget class="QLabel" name="mean_label">
+                 <property name="text">
+                  <string>100</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="std_label">
+                 <property name="text">
+                  <string>0.001</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="save_load_layout">
+             <item>
+              <layout class="QHBoxLayout" name="save_layout">
+               <item>
+                <widget class="QPushButton" name="save_button">
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="../../../../artwork/qudi_icons.qrc">
+                   <normaloff>:/icons/icons/save.png</normaloff>:/icons/icons/save.png</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="delete_button">
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="../../../../artwork/qudi_icons.qrc">
+                   <normaloff>:/icons/icons/delete.png</normaloff>:/icons/icons/delete.png</iconset>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="load_layout">
+               <item>
+                <widget class="QPushButton" name="load_button">
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="../../../../artwork/qudi_icons.qrc">
+                   <normaloff>:/icons/icons/load.png</normaloff>:/icons/icons/load.png</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="previous_button">
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="../../../../artwork/qudi_icons.qrc">
+                   <normaloff>:/icons/icons/previous.png</normaloff>:/icons/icons/previous.png</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="next_button">
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="../../../../artwork/qudi_icons.qrc">
+                   <normaloff>:/icons/icons/next.png</normaloff>:/icons/icons/next.png</iconset>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="plot_layout" stretch="0">
+        <item>
+         <widget class="PlotWidget" name="cps_plot" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="save_action"/>
+    <addaction name="save_as_action"/>
+    <addaction name="load_action"/>
+    <addaction name="separator"/>
+    <addaction name="exit_action"/>
+   </widget>
+   <widget class="QMenu" name="menuTimetrace">
+    <property name="title">
+     <string>&amp;Timetrace</string>
+    </property>
+    <addaction name="actionStart_timetrace"/>
+    <addaction name="actionStop_reader"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuTimetrace"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="save_action">
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+  </action>
+  <action name="load_action">
+   <property name="text">
+    <string>&amp;Load</string>
+   </property>
+  </action>
+  <action name="exit_action">
+   <property name="text">
+    <string>&amp;Exit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="save_as_action">
+   <property name="text">
+    <string>Save &amp;as</string>
+   </property>
+  </action>
+  <action name="actionStart_timetrace">
+   <property name="text">
+    <string>Start &amp;timetrace</string>
+   </property>
+  </action>
+  <action name="actionStop_reader">
+   <property name="text">
+    <string>&amp;Stop reader</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PlotWidget</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../../../../artwork/qudi_icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>

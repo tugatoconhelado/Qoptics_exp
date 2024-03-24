@@ -27,11 +27,7 @@
       <item>
        <layout class="QHBoxLayout" name="bottom_layout" stretch="1,2">
         <item>
-         <layout class="QHBoxLayout" name="counts_layout">
-          <item>
-           <widget class="PlotWidget" name="counts_plot" native="true"/>
-          </item>
-         </layout>
+         <layout class="QHBoxLayout" name="counts_layout"/>
         </item>
         <item>
          <widget class="QGroupBox" name="status_groupbox">
@@ -118,6 +114,20 @@
               <widget class="QPushButton" name="start_button">
                <property name="text">
                 <string>start</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pause_button">
+               <property name="text">
+                <string>pause</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="restart_button">
+               <property name="text">
+                <string>restart</string>
                </property>
               </widget>
              </item>
@@ -261,6 +271,9 @@
   <action name="exit_action">
    <property name="text">
     <string>Exit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
    </property>
   </action>
   <action name="actionAbout">

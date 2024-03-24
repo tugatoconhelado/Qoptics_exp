@@ -1,0 +1,327 @@
+QWidget {
+  background-color: #fff;
+}
+QGroupBox {
+    border: 0px solid gray;
+    border-radius: 0px;
+    margin-top: 10px;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 3px 0 3px;
+    color: #0f1925;
+}
+
+QLabel {
+  color: #464d55;
+  font-weight: 600;
+}
+QLabel#heading {
+  color: #0f1925;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+QLabel#subheading {
+  color: #0f1925;
+  font-size: 12px;
+  font-weight: normal;
+  margin-bottom: 10px;
+}
+QLineEdit {
+  border-radius: 8px;
+  border: 1px solid #e0e4e7;
+  padding: 5px 5px;
+}
+
+QLineEdit:focus {
+  border: 1px solid #063273;
+}
+QLineEdit:hover {
+  border: 1px solid #0b5ed7;
+}
+
+QLineEdit::placeholder {
+  color: #767e89;
+}
+
+QPushButton {
+  background-color: #0d6efd;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid #0d6efd;
+  padding: 5px 5px;
+  margin-top: 5px;
+  margin-right: 5px;
+  outline: 0px;
+}
+
+QPushButton:hover,
+QPushButton:focus {
+  background-color: #0b5ed7;
+  border: 3px solid #9ac3fe;
+}
+
+QPushButton:pressed {
+    background-color: #063273;
+}
+
+QPushButton#save_button{
+    image: url(C:/EXP/python/Qoptics_exp/icons/save.png);
+}
+QPushButton#load_button{
+    image: url(C:/EXP/python/Qoptics_exp/icons/load.png);
+}
+QPushButton#next_button{
+    image: url(C:/EXP/python/Qoptics_exp/icons/next.png);
+}
+QPushButton#previous_button{
+    image: url(C:/EXP/python/Qoptics_exp/icons/previous.png);
+    
+}
+QPushButton#delete_button{
+    image: url(C:/EXP/python/Qoptics_exp/icons/delete.png);
+}
+QPushButton#up_button{
+  image: url(C:/EXP/python/Qoptics_exp/icons/up.png)
+}
+QPushButton#down_button{
+  image: url(C:/EXP/python/Qoptics_exp/icons/down.png)
+}
+QPushButton#left_button{
+  image: url(C:/EXP/python/Qoptics_exp/icons/left.png)
+}
+QPushButton#right_button{
+  image: url(C:/EXP/python/Qoptics_exp/icons/right.png)
+}
+
+QPushButton#stop_button{
+  color: rgb(255, 0, 4);
+  background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, 
+  stop:0 rgba(255, 0, 0, 255),
+  stop:0.166 rgba(255, 255, 0, 255),
+  stop:0.333 rgba(0, 255, 0, 255),
+  stop:0.5 rgba(0, 255, 255, 255),
+  stop:0.666 rgba(0, 0, 255, 255),
+  stop:0.833 rgba(255, 0, 255, 255),
+  stop:1 rgba(255, 0, 0, 255));
+}
+
+QMenu {
+    border: 1px solid #e0e4e7;
+    border-radius: 8px;
+    background-color: #fff;
+}
+
+QMenu::item {
+    background-color: transparent;
+}
+
+QMenu::item:selected {
+    background-color: #0d6efd;
+}
+
+
+QSpinBox, QDoubleSpinBox
+{
+  border-radius: 8px;
+  border: 2px solid #e0e4e7;
+  padding: 5px 5px;
+  padding-right: 28px;
+}
+
+QSpinBox::hover, QDoubleSpinBox::hover, QSpinBox::focus, QDoubleSpinBox::focus
+{
+  border: 1px solid #0b5ed7;
+}
+
+QSpinBox::up-button, QDoubleSpinBox::up-button,
+QSpinBox::down-button, QDoubleSpinBox::down-button {
+    subcontrol-origin: border;
+    width: 18px;
+    height: 4px;
+    border-radius: 4px;
+    background: #0d6efd;
+    border: 1px solid #0d6efd;
+    padding: 5px 5px;
+    outline: 5px;
+}
+
+QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover,
+QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {
+    background: #0b5ed7;
+    background-color: #0b5ed7;
+    border: 1px solid #9ac3fe;
+}
+
+QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed,
+QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed {
+    background-color: #063273;
+}
+
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow{
+  image: url(C:/EXP/python/Qoptics_exp/icons/up_arrow_solid.png);
+  width: 7px;
+  height: 7px;
+}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow{
+  image: url(C:/EXP/python/Qoptics_exp/icons/down_arrow_solid.png);
+  width: 7px;
+  height: 7px;
+}
+
+
+QComboBox {
+    border-radius: 8px;
+    border: 1px solid #e0e4e7;
+    padding: 5px 5px;
+    selection-background-color: #0d6efd;
+    selection-color: #fff;
+}
+
+QComboBox:hover {
+    border: 1px solid #0b5ed7;
+}
+
+QComboBox:on { /* shift the text when the popup opens */
+    padding-top: 3px;
+    padding-left: 4px;
+}
+
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 18px;
+    border-radius: 4px;
+    background: #0d6efd;
+    border: 1px solid #0d6efd;
+    padding: 5px 5px;
+    outline: 5px;
+}
+
+QComboBox::down-arrow {
+    image: url(C:/EXP/python/Qoptics_exp/icons/down_arrow_solid.png);
+    width: 7px;
+    height: 7px;
+}
+
+QComboBox::down-arrow:on { /* shift the arrow when popup is open */
+    top: 1px;
+    left: 1px;
+}
+
+
+QScrollBar:vertical {
+    border: 2px solid #e0e4e7;
+    border-radius: 8px;
+    background: #fff;
+    width: 15px;
+    margin: 22px 0 22px 0;
+}
+QScrollBar::handle:vertical {
+    background: #0d6efd;
+    min-height: 20px;
+    border-radius: 5px;
+}
+
+QScrollBar::add-line:vertical {
+    border: 2px solid #e0e4e7;
+    border-radius : 8px;
+    background: #0d6efd;
+    height: 20px;
+    subcontrol-position: bottom;
+    subcontrol-origin: margin;
+    border-image: url(C:/EXP/python/Qoptics_exp/icons/down_arrow.png);
+}
+
+QScrollBar::sub-line:vertical {
+    border: 2px solid #e0e4e7;
+    border-radius : 8px;
+    background: #0d6efd;
+    height: 20px;
+    subcontrol-position: top;
+    subcontrol-origin: margin;
+    border-image: url(C:/EXP/python/Qoptics_exp/icons/up_arrow.png);
+}
+
+QScrollBar:vertical:hover {
+  border: 2px solid #0b5ed7
+}
+
+QScrollBar::sub-line:vertical:hover, QScrollBar::add-line:vertical:hover {
+  background-color: #0b5ed7;
+  border: 2px solid #9ac3fe;
+}
+
+QScrollBar::sub-line:vertical:pressed, QScrollBar::add-line:vertical:pressed {
+    background-color: #063273;
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+QScrollBar::add-page:vertical:hover, QScrollBar::sub-page:vertical:hover {
+    background: #e0e4e7;
+}
+QScrollBar::add-page:vertical:pressed, QScrollBar::sub-page:vertical:pressed {
+    background: lightgrey;
+}
+
+QTabWidget::pane { /* The tab widget frame */
+    border-top: 2px solid red;
+}
+
+QTabWidget::tab-bar {
+    left: 1px; /* move to the right by 5px */
+}
+
+QTabBar::tab {
+	color: white;
+  background: #0d6efd;
+  border: 2px solid #0d6efd;
+  border-bottom-color: #0d6efd;
+  border-radius: 8px;
+  min-width: 30px;
+  min-height: 4px;
+  padding: 10px;
+  margin-top: 0px;
+}
+
+QTabBar::tab:hover {
+    background: #0b5ed7;
+}
+
+QTabBar::tab:selected {
+    background: #063273;
+    border-color: #9ac3fe;
+    border-bottom-color: #9ac3fe; /* same as pane color */
+}
+
+QTabBar::tab:!selected {
+    margin-left: 5px; /* make non-selected tabs look smaller */
+}
+
+/* make use of negative margins for overlapping tabs */
+QTabBar::tab:selected {
+    /* expand/overlap to the left and right by 4px */
+    margin-top: -4px;
+    margin-bottom: -4px;
+}
+
+QTabBar::tab:first:selected {
+    margin-top: 0; /* the first selected tab has nothing to overlap with on the left */
+    margin-bottom: 0;
+}
+
+QTabBar::tab:last:selected {
+    margin-bottom: 0; /* the last selected tab has nothing to overlap with on the right */
+}
+
+QTabBar::tab:only-one {
+    margin: 0; /* if there is only one tab, we don't want overlapping margins */
+}

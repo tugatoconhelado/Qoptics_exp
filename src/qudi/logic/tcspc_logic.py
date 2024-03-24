@@ -66,9 +66,9 @@ class TCSPCLogic(LogicBase):
 
         # Initialise hardware module
         self._tcspc_hardware().initialise_tcspc()
-        self._tcspc_hardware().clear_rates(0)
+        #self._tcspc_hardware().clear_rates(0)
 
-        self.__rates_timer.start()
+        #self.__rates_timer.start()
 
     def on_deactivate(self) -> None:
         # Stop timer and delete
@@ -82,18 +82,15 @@ class TCSPCLogic(LogicBase):
 
     def get_rates(self):
 
-        self.log.info('Getting rates')
         rates = self._tcspc_hardware().read_rate_counter(0)
-        print(rates)
         rate_values = (
             rates.sync_rate,
             rates.cfd_rate,
             rates.tac_rate,
             rates.adc_rate
         )
-        print(rate_values)
         self.sig_rate_values.emit(rate_values)
-        self.log.info(f'Rates: {rate_values}')
+        self.log.debug(f'Rates: {rate_values}')
 
     def start_measurement(self):
         self.__timer.start()
@@ -106,8 +103,20 @@ class TCSPCLogic(LogicBase):
         self.__timer.start()
            
     def stop_measurement(self):
+        self.continue_acquisition = False
         self.__timer.stop()
         self.log.info('Measurement stopped')
+        self._tcspc_hardware().stop_measurement(0)
+
+    def pause_measurement(self):
+        self.__timer.stop()
+        self.log.info('Measurement paused')
+        self._tcspc_hardware().pause_measurement(0)
+
+    def restart_measurement(self):
+        self.__timer.start()
+        self.log.info('Measurement restarted')
+        self._tcspc_hardware().restart_measurement(0)
 
     @QtCore.Slot(dict)
     def set_parameters(self, params: dict):
@@ -179,17 +188,19 @@ class TCSPCLogic(LogicBase):
         self.log.info('Data loaded')
 
     def send_data(self):
-        #data = np.random.rand(1000)
-        #self.data = data
-        readed_data = np.array([])
-        if self.continue_acquisition:
-            readed_data = self._tcspc_hardware().read_data_from_tcspc(0)
-            readed_data = np.array(readed_data)
-            status_code = self._tcspc_hardware().test_state(0)
-            #self.log.info(f'Status code: {status_code}')
+        with self._mutex:
+            readed_data = np.ones(1000)
             self.data = readed_data
             self.sig_data.emit(self.data)
-            #if 'SPC_TIME_OVER' in status_code:
-            #    self.log.info('SPC acquisition time over')
-            #    self.continue_acquisition = False
-            #    self.__timer.stop()
+            if self.continue_acquisition:
+                status_code = self._tcspc_hardware().test_state(0)
+                #self.log.info(f'Status code: {status_code}')
+
+                if 'SPC_TIME_OVER' in status_code:
+                    readed_data = self._tcspc_hardware().read_data_from_tcspc(0)
+                    readed_data = np.array(readed_data)
+                    status_code = self._tcspc_hardware().test_state(0)
+                    self.log.info(f'Status code: {status_code}')
+                    self.data = readed_data
+                    self.sig_data.emit(self.data)
+                    self.stop_measurement()

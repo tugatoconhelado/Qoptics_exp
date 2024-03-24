@@ -265,6 +265,9 @@ class SPCDllWrapper:
         self.__SPC_close.restype = c_short
         self.__SPC_close.argtypes = [c_void_p]
 
+
+   # Initialisation functions
+
     def SPC_init(self, ini_file: str):
 
         arg1 = ini_file.encode('utf-8')
@@ -284,24 +287,31 @@ class SPCDllWrapper:
         ret = self.__SPC_set_mode(arg1, arg2, byref(arg3))
         return ret, arg1, arg2, arg3
 
+    def SPC_get_mode(self):
+        arg1 = c_int()
+        ret = self.__SPC_get_mode(byref(arg1))
+        return ret, arg1
+
+   # Setup functions
+
     def SPC_get_parameters(self, mod_no: int, SPC_data: SPCdata = SPCdata()):
         arg1 = c_short(mod_no)
         arg2 = SPC_data
         ret = self.__SPC_get_parameters(arg1, arg2)
         return ret, arg1, arg2
-    
-    def SPC_get_parameter(self, mod_no: int, param_id: int):
-        arg1 = c_short(mod_no)
-        arg2 = c_short(param_id)
-        arg3 = c_float()
-        ret = self.__SPC_get_parameter(arg1, arg2, byref(arg3))
-        return ret, arg1, arg2, arg3
-    
+
     def SPC_set_parameters(self, mod_no: int, SPC_data: SPCdata):
         arg1 = c_short(mod_no)
         arg2 = SPC_data
         ret = self.__SPC_set_parameters(arg1, arg2)
         return ret, arg1, arg2
+
+    def SPC_get_parameter(self, mod_no: int, param_id: int, value: float):
+        arg1 = c_short(mod_no)
+        arg2 = c_short(param_id)
+        arg3 = c_float(value)
+        ret = self.__SPC_get_parameter(arg1, arg2, byref(arg3))
+        return ret, arg1, arg2, arg3
     
     def SPC_set_parameter(self, mod_no: int, param_id: int, value):
         arg1 = c_short(mod_no)
@@ -309,7 +319,36 @@ class SPCDllWrapper:
         arg3 = c_float(value)
         ret = self.__SPC_set_parameter(arg1, arg2, arg3)
         return ret, arg1, arg2, arg3
-    
+
+    def SPC_get_eeprom_data(self, mod_no, eep_data):
+
+        arg1 = c_short(mod_no)
+        arg2 = eep_data
+        ret = self.__SPC_get_eeprom_data(arg1, arg2)
+        return ret, arg1, arg2
+
+    def SPC_write_eeprom_data(self, mod_no, write_enable, eep_data):
+            
+        arg1 = c_short(mod_no)
+        arg2 = c_ushort(write_enable)
+        arg3 = eep_data
+        ret = self.__SPC_write_eeprom_data(arg1, arg2, arg3)
+        return ret, arg1, arg2, arg3
+
+    def SPC_get_adjust_parameters(self, mod_no, adjpara):
+            
+        arg1 = c_short(mod_no)
+        arg2 = adjpara
+        ret = self.__SPC_get_adjust_parameters(arg1, arg2)
+        return ret, arg1, arg2
+
+    def SPC_set_adjust_parameters(self, mod_no, adjpara):
+                    
+        arg1 = c_short(mod_no)
+        arg2 = adjpara
+        ret = self.__SPC_set_adjust_parameters(arg1, arg2)
+        return ret, arg1, arg2
+
     def SPC_read_parameters_from_inifile(self, data: SPCdata, ini_file: str):
         arg1 = data
         arg2 = ini_file.encode('utf-8')
@@ -324,36 +363,7 @@ class SPCDllWrapper:
         ret = self.__SPC_save_parameters_to_inifile(arg1, arg2, arg3, arg4)
         return ret, arg1, arg2, arg3, arg4
 
-    def SPC_configure_memory(self, mod_no, adc_resolution, no_of_routing_bits, mem_info):
-
-        arg1 = c_short(mod_no)
-        arg2 = c_short(adc_resolution)
-        arg3 = c_short(no_of_routing_bits)
-        arg4 = mem_info
-        ret = self.__SPC_configure_memory(arg1, arg2, arg3, arg4)
-        return ret, arg1, arg2, arg3, arg4
-    
-    def SPC_set_page(self, mod_no, page):
-
-        arg1 = c_short(mod_no)
-        arg2 = c_long(page)
-        ret = self.__SPC_set_page(arg1, arg2)
-        return ret, arg1, arg2
-
-    def SPC_fill_memory(self, mod_no, block, page, fill_value):
-
-        arg1 = c_short(mod_no)
-        arg2 = c_long(block)
-        arg3 = c_long(page)
-        arg4 = c_ushort(fill_value)
-        ret = self.__SPC_fill_memory(arg1, arg2, arg3, arg4)
-        return ret, arg1, arg2, arg3, arg4
-
-    def SPC_start_measurement(self, mod_no):
-
-        arg1 = c_short(mod_no)
-        ret = self.__SPC_start_measurement(arg1)
-        return ret, arg1
+   # Status functions
 
     def SPC_test_state(self, mod_no, state):
 
@@ -362,38 +372,32 @@ class SPCDllWrapper:
         ret = self.__SPC_test_state(arg1, byref(arg2))
         return ret, arg1, arg2
 
-    def SPC_read_data_block(self, mod_no, block, page, reduction_factor, var_from, var_to, data):
+    def SPC_get_sync_state(self, mod_no, sync_state):
             
         arg1 = c_short(mod_no)
-        arg2 = c_long(block)
-        arg3 = c_long(page)
-        arg4 = c_short(reduction_factor)
-        arg5 = c_short(var_from)
-        arg6 = c_short(var_to)
-        ret = self.__SPC_read_data_block(arg1, arg2, arg3, arg4, arg5, arg6, data)
-        return ret, arg1, arg2, arg3, arg4, arg5, arg6, data
-    
-    def SPC_read_data_page(self, mod_no, first_page, last_page, data):
+        arg2 = c_short(sync_state)
+        ret = self.__SPC_get_sync_state(arg1, byref(arg2))
+        return ret, arg1, arg2
+
+    def SPC_get_time_from_start(self, mod_no, time):
             
         arg1 = c_short(mod_no)
-        arg2 = c_long(first_page)
-        arg3 = c_long(last_page)
-        ret = self.__SPC_read_data_page(arg1, arg2, arg3, data)
-        return ret, arg1, arg2, arg3, data
-    
-    def SPC_read_data_frame(self, mod_no, frame, page, data):
+        arg2 = c_float(time)
+        ret = self.__SPC_get_time_from_start(arg1, byref(arg2))
+        return ret, arg1, arg2
+
+    def SPC_get_break_time(self, mod_no, time):
                 
         arg1 = c_short(mod_no)
-        arg2 = c_long(frame)
-        arg3 = c_long(page)
-        ret = self.__SPC_read_data_frame(arg1, arg2, arg3, data)
-        return ret, arg1, arg2, arg3, data
-    
-    def SPC_enable_sequencer(self, mod_no, enable):
+        arg2 = c_float(time)
+        ret = self.__SPC_get_break_time(arg1, byref(arg2))
+        return ret, arg1, arg2
 
+    def SPC_get_actual_coltime(self, mod_no, time):
+                        
         arg1 = c_short(mod_no)
-        arg2 = c_short(enable)
-        ret = self.__SPC_enable_sequencer(arg1, arg2)
+        arg2 = c_float(time)
+        ret = self.__SPC_get_actual_coltime(arg1, byref(arg2))
         return ret, arg1, arg2
 
     def SPC_read_rates(self, mod_no, rate_values):
@@ -408,6 +412,300 @@ class SPCDllWrapper:
         arg1 = c_short(mod_no)
         ret = self.__SPC_clear_rates(arg1)
         return ret, arg1
+
+    def SPC_get_sequencer_state(self, mod_no, state):
+                    
+        arg1 = c_short(mod_no)
+        arg2 = c_short(state)
+        ret = self.__SPC_get_sequencer_state(arg1, byref(arg2))
+        return ret, arg1, arg2
+    
+    def SPC_read_gap_time(self, mod_no, time):
+    
+        arg1 = c_short(mod_no)
+        arg2 = c_float(time)
+        ret = self.__SPC_read_gap_time(arg1, byref(arg2))
+        return ret, arg1, arg2
+    
+    def SPC_get_scan_clk_state(self, mod_no, scan_state):
+            
+        arg1 = c_short(mod_no)
+        arg2 = c_short(scan_state)
+        ret = self.__SPC_get_scan_clk_state(arg1, byref(arg2))
+        return ret, arg1, arg2
+    
+    def SPC_get_fifo_usage(self, mod_no, usage_degree):
+                    
+        arg1 = c_short(mod_no)
+        arg2 = c_float(usage_degree)
+        ret = self.__SPC_get_fifo_usage(arg1, byref(arg2))
+        return ret, arg1, arg2
+
+   # Measurement control functions
+
+    def SPC_start_measurement(self, mod_no):
+
+        arg1 = c_short(mod_no)
+        ret = self.__SPC_start_measurement(arg1)
+        return ret, arg1
+    
+    def SPC_pause_measurement(self, mod_no):
+            
+        arg1 = c_short(mod_no)
+        ret = self.__SPC_pause_measurement(arg1)
+        return ret, arg1
+    
+    def SPC_restart_measurement(self, mod_no):
+                
+        arg1 = c_short(mod_no)
+        ret = self.__SPC_restart_measurement(arg1)
+        return ret, arg1
+    
+    def SPC_stop_measurement(self, mod_no):
+
+        arg1 = c_short(mod_no)
+        ret = self.__SPC_stop_measurement(arg1)
+        return ret, arg1
+
+    def SPC_set_page(self, mod_no, page):
+
+        arg1 = c_short(mod_no)
+        arg2 = c_long(page)
+        ret = self.__SPC_set_page(arg1, arg2)
+        return ret, arg1, arg2
+
+    def SPC_enable_sequencer(self, mod_no, enable):
+
+        arg1 = c_short(mod_no)
+        arg2 = c_short(enable)
+        ret = self.__SPC_enable_sequencer(arg1, arg2)
+        return ret, arg1, arg2
+
+   # SPC Memory transfer functions
+
+    def SPC_configure_memory(self, mod_no, adc_resolution, no_of_routing_bits, mem_info):
+
+        arg1 = c_short(mod_no)
+        arg2 = c_short(adc_resolution)
+        arg3 = c_short(no_of_routing_bits)
+        arg4 = mem_info
+        ret = self.__SPC_configure_memory(arg1, arg2, arg3, arg4)
+        return ret, arg1, arg2, arg3, arg4
+    
+    def SPC_fill_memory(self, mod_no, block, page, fill_value):
+
+        arg1 = c_short(mod_no)
+        arg2 = c_long(block)
+        arg3 = c_long(page)
+        arg4 = c_ushort(fill_value)
+        ret = self.__SPC_fill_memory(arg1, arg2, arg3, arg4)
+        return ret, arg1, arg2, arg3, arg4
+
+    def SPC_read_data_block(self, mod_no, block, page, reduction_factor, var_from, var_to, data):
+            
+        arg1 = c_short(mod_no)
+        arg2 = c_long(block)
+        arg3 = c_long(page)
+        arg4 = c_short(reduction_factor)
+        arg5 = c_short(var_from)
+        arg6 = c_short(var_to)
+        ret = self.__SPC_read_data_block(arg1, arg2, arg3, arg4, arg5, arg6, data)
+        return ret, arg1, arg2, arg3, arg4, arg5, arg6, data
+
+    def SPC_write_data_block(self, mod_no, block, page, var_from, var_to, data):
+
+        arg1 = c_short(mod_no)
+        arg2 = c_long(block)
+        arg3 = c_long(page)
+        arg4 = c_short(var_from)
+        arg5 = c_short(var_to)
+        ret = self.__SPC_write_data_block(arg1, arg2, arg3, arg4, arg5, data)
+        return ret, arg1, arg2, arg3, arg4, arg5, data
+
+    def SPC_read_fifo(self, mod_no, count, data):
+
+        arg1 = c_short(mod_no)
+        arg2 = c_ulong(count)
+        arg3 = data
+        ret = self.__SPC_read_fifo(arg1, arg2, arg3)
+        return ret, arg1, arg2, arg3
+
+    def SPC_read_data_frame(self, mod_no, frame, page, data):
+                
+        arg1 = c_short(mod_no)
+        arg2 = c_long(frame)
+        arg3 = c_long(page)
+        ret = self.__SPC_read_data_frame(arg1, arg2, arg3, data)
+        return ret, arg1, arg2, arg3, data
+
+    def SPC_read_data_page(self, mod_no, first_page, last_page, data):
+            
+        arg1 = c_short(mod_no)
+        arg2 = c_long(first_page)
+        arg3 = c_long(last_page)
+        ret = self.__SPC_read_data_page(arg1, arg2, arg3, data)
+        return ret, arg1, arg2, arg3, data
+    
+    def SPC_read_block(self, mod_no, block, frame, page, var_from, var_to, data):
+
+        arg1 = c_short(mod_no)
+        arg2 = c_long(block)
+        arg3 = c_long(frame)
+        arg4 = c_long(page)
+        arg5 = c_short(var_from)
+        arg6 = c_short(var_to)
+        ret = self.__SPC_read_block(arg1, arg2, arg3, arg4, arg5, arg6, data)
+        return ret, arg1, arg2, arg3, arg4, arg5, arg6, data
+  
+    def SPC_save_data_to_sdtfile(self, mod_no, data_buf, bytes_no, sdt_file):
+
+        arg1 = c_short(mod_no)
+        arg2 = data_buf
+        arg3 = c_ulong(bytes_no)
+        arg4 = sdt_file.encode('utf-8')
+        ret = self.__SPC_save_data_to_sdtfile(arg1, arg2, arg3, arg4)
+        return ret, arg1, arg2, arg3, arg4
+
+   # Functions to manage photon streams
+    
+    def SPC_init_phot_stream(self, fifo_type, spc_file, files_to_use, stream_type, what_to_read):
+
+        arg1 = c_short(fifo_type)
+        arg2 = spc_file.encode('utf-8')
+        arg3 = c_short(files_to_use)
+        arg4 = c_short(stream_type)
+        arg5 = c_short(what_to_read)
+        ret = self.__SPC_init_phot_stream(arg1, arg2, arg3, arg4, arg5)
+        return ret, arg1, arg2, arg3, arg4, arg5
+    
+    def SPC_get_phot_stream_info(self, stream_hndl, stream_info):
+
+        arg1 = c_short(stream_hndl)
+        arg2 = stream_info
+        ret = self.__SPC_get_phot_stream_info(arg1, arg2)
+        return ret, arg1, arg2
+
+    def SPC_get_photon(self, stream_hndl, phot_info):
+
+        arg1 = c_short(stream_hndl)
+        arg2 = phot_info
+        ret = self.__SPC_get_photon(arg1, arg2)
+        return ret, arg1, arg2
+
+    def SPC_close_phot_stream(self, stream_hndl):
+
+        arg1 = c_short(stream_hndl)
+        ret = self.__SPC_close_phot_stream(arg1)
+        return ret, arg1
+    
+    def SPC_get_fifo_init_vars(self, mod_no, fifo_type, stream_type, mt_clock, spc_header):
+
+        arg1 = c_short(mod_no)
+        arg2 = c_short(fifo_type)
+        arg3 = c_short(stream_type)
+        arg4 = c_int(mt_clock)
+        arg5 = c_uint(spc_header)
+        ret = self.__SPC_get_fifo_init_vars(arg1, arg2, arg3, arg4, arg5)
+        return ret, arg1, arg2, arg3, arg4, arg5
+    
+    def SPC_init_buf_stream(self, fifo_type, stream_type, what_to_read, mt_clock, start01_offfs):
+
+        arg1 = c_short(fifo_type)
+        arg2 = c_short(stream_type)
+        arg3 = c_short(what_to_read)
+        arg4 = c_int(mt_clock)
+        arg5 = c_uint(start01_offfs)
+        ret = self.__SPC_init_buf_stream(arg1, arg2, arg3, arg4, arg5)
+        return ret, arg1, arg2, arg3, arg4, arg5
+
+    def SPC_add_data_to_stream(self, stream_hndl, buffer, bytes_no):
+
+        arg1 = c_short(stream_hndl)
+        arg2 = buffer
+        arg3 = c_uint(bytes_no)
+        ret = self.__SPC_add_data_to_stream(arg1, arg2, arg3)
+        return ret, arg1, arg2, arg3
+    
+    def SPC_read_fifo_to_stream(self, stream_hndl, mod_no, count):
+
+        arg1 = c_short(stream_hndl)
+        arg2 = c_short(mod_no)
+        arg3 = c_long(count)
+        ret = self.__SPC_read_fifo_to_stream(arg1, arg2, arg3)
+        return ret, arg1, arg2, arg3
+    
+    def SPC_get_photons_from_stream(self, stream_hndl, phot_info, phot_no):
+
+        arg1 = c_short(stream_hndl)
+        arg2 = phot_info
+        arg3 = c_int(phot_no)
+        ret = self.__SPC_get_photons_from_stream(arg1, arg2, arg3)
+        return ret, arg1, arg2, arg3
+    
+    def SPC_stream_start_condition(self, stream_hndl, start_time, start_OR_mask, start_AND_mask):
+
+        arg1 = c_short(stream_hndl)
+        arg2 = c_double(start_time)
+        arg3 = c_uint(start_OR_mask)
+        arg4 = c_uint(start_AND_mask)
+        ret = self.__SPC_stream_start_condition(arg1, arg2, arg3, arg4)
+        return ret, arg1, arg2, arg3, arg4
+    
+    def SPC_stream_stop_condition(self, stream_hndl, stop_time, stop_OR_mask, stop_AND_mask):
+
+        arg1 = c_short(stream_hndl)
+        arg2 = c_double(stop_time)
+        arg3 = c_uint(stop_OR_mask)
+        arg4 = c_uint(stop_AND_mask)
+        ret = self.__SPC_stream_stop_condition(arg1, arg2, arg3, arg4)
+        return ret, arg1, arg2, arg3, arg4
+    
+    def SPC_stream_reset(self, stream_hndl):
+
+        arg1 = c_short(stream_hndl)
+        ret = self.__SPC_stream_reset(arg1)
+        return ret, arg1
+    
+    def SPC_get_stream_buffer_size(self, stream_hndl, buf_no, buf_size):
+
+        arg1 = c_short(stream_hndl)
+        arg2 = c_ushort(buf_no)
+        arg3 = c_uint(buf_size)
+        ret = self.__SPC_get_stream_buffer_size(arg1, arg2, arg3)
+        return ret, arg1, arg2, arg3
+    
+    def SPC_get_buffer_from_stream(self, stream_hndl, buf_no, buf_size, data_buf, free_buf):
+
+        arg1 = c_short(stream_hndl)
+        arg2 = c_ushort(buf_no)
+        arg3 = c_uint(buf_size)
+        arg4 = data_buf
+        arg5 = c_short(free_buf)
+        ret = self.__SPC_get_buffer_from_stream(arg1, arg2, arg3, arg4, arg5)
+        return ret, arg1, arg2, arg3, arg4, arg5
+    
+    # Other functions
+
+    def SPC_get_error_string(self, error_id, dest_string, max_length):
+
+        arg1 = c_short(error_id)
+        arg2 = dest_string
+        arg3 = c_short(max_length)
+        ret = self.__SPC_get_error_string(arg1, arg2, arg3)
+        return ret, arg1, arg2, arg3
+    
+    def SPC_get_detector_info(self, previous_type, det_type, fname):
+
+        arg1 = c_short(previous_type)
+        arg2 = c_short(det_type)
+        arg3 = fname
+        ret = self.__SPC_get_detector_info(arg1, arg2, arg3)
+        return ret, arg1, arg2, arg3
+    
+    def SPC_close(self, void):
+
+        ret = self.__SPC_close(void)
+        return ret
 
     def translate_status(self, status):
         
@@ -452,13 +750,14 @@ if __name__ == '__main__':
     print('hola mundo')
     tcspc = SPCDllWrapper()
 
-    #ini_file_path = os.path.abspath('C:\Program Files (x86)\BH\SPCM\spcm.ini')
-    ini_file_path = os.path.abspath(r'C:\EXP\python\Qoptics_exp\new_settings.ini')
+    ini_file_path = os.path.abspath('C:\Program Files (x86)\BH\SPCM\spcm.ini')
+    #ini_file_path = os.path.abspath(r'C:\EXP\python\Qoptics_exp\new_settings.ini')
+
     init_status, args = tcspc.SPC_init(ini_file_path)
     print(f'Init status: {init_status} with args: {args}')
 
-    #status, mode, force_use, in_use = tcspc.SPC_set_mode(130, 1, 1)
-    #print(f'Get mode status: {status} with mode: {mode} and force_use: {force_use} and in_use: {in_use}')
+    status, mode, force_use, in_use = tcspc.SPC_set_mode(130, 1, 1)
+    print(f'Get mode status: {status} with mode: {mode} and force_use: {force_use} and in_use: {in_use}')
 
     module_no = 0
     init_status, args = tcspc.SPC_get_init_status(module_no)
@@ -467,58 +766,20 @@ if __name__ == '__main__':
     status, mod_no, data = tcspc.SPC_get_parameters(module_no)
     print(f'Get parameters status: {status} with mod_no: {mod_no} and data collect time: {data.collect_time}')
 
-    # Parameter Read write test
-    #data.cfd_zc_level = -5.29
-    #print(f'Setting cfd_zc_level to {data.cfd_zc_level}')
+    data.collect_time = 3
+    status, mod_no, data = tcspc.SPC_set_parameters(0, data)
+    print(f'Set parameters status: {status} with mod_no: {mod_no} and data collect time: {data.collect_time}')
 
-    #status, mod_no, data = tcspc.SPC_set_parameters(module_no, data)
-    #print(f'Set parameters status: {status} with mod_no: {mod_no} and data: {data.cfd_zc_level}')
-
-    #status, mod_no, data = tcspc.SPC_get_parameters(module_no)
-    #print(f'Get parameters status: {status} with mod_no: {mod_no} and data: {data.cfd_zc_level}')
-
-    #status, mod_no, param_id, value = tcspc.SPC_get_parameter(module_no, 2)
-    #print(f'Get parameter status: {status} with mod_no: {mod_no}, param_id: {param_id} and value: {value}')
-
-    #status, mod_no, param_id, value = tcspc.SPC_set_parameter(module_no, 2, 0.0)
-    #print(f'Set parameter status: {status} with mod_no: {mod_no}, param_id: {param_id} and value: {value}')
-
-    #status, mod_no, data = tcspc.SPC_get_parameters(module_no)
-    #print(f'Get parameters status: {status} with mod_no: {mod_no} and data: {data.cfd_zc_level}')
-
-    #status, mod_no, param_id, value = tcspc.SPC_get_parameter(module_no, 2)
-    #print(f'Get parameter status: {status} with mod_no: {mod_no}, param_id: {param_id} and value: {value}')
-
-    #status, mod_no, param_id, value = tcspc.SPC_set_parameter(module_no, 2, -5.3)
-    #print(f'Set parameter status: {status} with mod_no: {mod_no}, param_id: {param_id} and value: {value}')
-
-    #status, mod_no, param_id, value = tcspc.SPC_get_parameter(module_no, 2)
-    #print(f'Get parameter status: {status} with mod_no: {mod_no}, param_id: {param_id} and value: {value}')
-
-    #status, mod_no, data = tcspc.SPC_get_parameters(module_no)
-    #print(f'Get parameters status: {status} with mod_no: {mod_no} and data: {data.cfd_zc_level}')
-
-    # Read from file
-    #status, data, ini_file = tcspc.SPC_read_parameters_from_inifile(data, ini_file_path)
-    #print(f'Read parameters from ini file status: {status} with data: {data} and ini_file: {ini_file}')
-    #print(f'cfd_zc_level: {data.cfd_zc_level}')
-
-    test_ini_file = os.path.abspath('C:\EXP\python\Qoptics_exp\spcm_test.ini')
-
-    # Save to file
-    #status, data, dest_ini_file, source_ini_file, with_comments = tcspc.SPC_save_parameters_to_inifile(data, test_ini_file, ini_file_path, 1)
-    #print(f'Save parameters to ini file status: {status} with data: {data}, dest_ini_file: {dest_ini_file}, source_ini_file: {source_ini_file} and with_comments: {with_comments}')
-
-    status, mod_no, adc_resolution, no_of_routing_bits, mem_info = tcspc.SPC_configure_memory(module_no, 10, 3, SPCMemConfig())
+    status, mod_no, adc_resolution, no_of_routing_bits, mem_info = tcspc.SPC_configure_memory(-1, 10, 0, SPCMemConfig())
     print(f'Configure memory status: {status} with adc_resolution: {adc_resolution}, no_of_routing_bits: {no_of_routing_bits} and mem_info: {mem_info}')
     no_of_blocks = mem_info.max_block_no
 
     page_no = 0
 
-    status, mod_no, page = tcspc.SPC_set_page(module_no, page_no)
+    status, mod_no, page = tcspc.SPC_set_page(-1, page_no)
     print(f'Set page status: {status} with mod_no: {mod_no} and page: {page}')
 
-    status, block, mod_no, page, fill_value = tcspc.SPC_fill_memory(module_no, 0, page_no, 1)
+    status, block, mod_no, page, fill_value = tcspc.SPC_fill_memory(-1, -1, page_no, 1)
     print(f'Fill memory status: {status} with block: {block}, page: {page} and fill_value: {fill_value}')
 
     status, mod_no = tcspc.SPC_start_measurement(module_no)
@@ -527,9 +788,9 @@ if __name__ == '__main__':
     state_var = c_short()
     status, mod_no, state = tcspc.SPC_test_state(module_no, state_var)
     print(f'Test state status: {status} with mod_no: {mod_no} and state: {bytes(state)}')
-    tcspc.translate_status(state)
+    print(tcspc.translate_status(state))
 
-    red_factor = 4
+    red_factor = 1
     no_of_points = int(mem_info.block_length / red_factor)
     print(f'Max block no: {mem_info.max_block_no}')
     print(f'Blocks per frame: {mem_info.blocks_per_frame}')
@@ -540,15 +801,14 @@ if __name__ == '__main__':
     data_buffer = (c_ushort * no_of_points)()
 
     print('Sleeping for a sec')
-    time.sleep(1)
+    time.sleep(3)
 
     state_var = c_short()
     status, mod_no, state = tcspc.SPC_test_state(module_no, state_var)
     print(f'Test state status: {status} with mod_no: {mod_no} and state: {bytes(state)}')
-    tcspc.translate_status(state)
+    print(tcspc.translate_status(state))
 
     
-
     status, mod_no, block, page, reduction_factor, var_from, var_to, data = tcspc.SPC_read_data_block(module_no, 0, page_no, red_factor, 0, no_of_points - 1, data_buffer)
     print(f'Read data block status: {status} with mod_no: {mod_no}, block: {block}, page: {page}, reduction_factor: {reduction_factor}, var_from: {var_from}, var_to: {var_to} and data: {data}')
     print(f'Data list: {list(data_buffer)}')

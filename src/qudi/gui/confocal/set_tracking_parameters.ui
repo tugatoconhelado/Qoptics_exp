@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>set_tracking_dialog</class>
+ <widget class="QDialog" name="set_tracking_dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>419</width>
+    <height>299</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Set tracking parameters</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <layout class="QVBoxLayout" name="main_layout" stretch="1,5,1">
+     <item>
+      <layout class="QHBoxLayout" name="track_interval_layout">
+       <item>
+        <widget class="QLabel" name="heading">
+         <property name="text">
+          <string>Tracking Parameters</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="scan_config_layout" stretch="3">
+       <item>
+        <layout class="QGridLayout" name="scan_parameters_layout" rowstretch="1,1,1,1,1,1" columnstretch="1,1,1,1">
+         <item row="1" column="1">
+          <widget class="QDoubleSpinBox" name="fast_axis_scan_size_spinbox">
+           <property name="maximumSize">
+            <size>
+             <width>100</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="suffix">
+            <string> μm</string>
+           </property>
+           <property name="maximum">
+            <double>99999999.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.010000000000000</double>
+           </property>
+           <property name="value">
+            <double>2.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="3">
+          <widget class="QDoubleSpinBox" name="z_scan_size_spinbox">
+           <property name="maximumSize">
+            <size>
+             <width>100</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="suffix">
+            <string> μm</string>
+           </property>
+           <property name="maximum">
+            <double>9999999.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.010000000000000</double>
+           </property>
+           <property name="value">
+            <double>2.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QSpinBox" name="fast_axis_pixels_spinbox">
+           <property name="maximumSize">
+            <size>
+             <width>100</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="maximum">
+            <number>9999999</number>
+           </property>
+           <property name="value">
+            <number>20</number>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="offset_label">
+           <property name="text">
+            <string>Offset</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="pixels_label">
+           <property name="text">
+            <string>Pixels</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="3">
+          <widget class="QSpinBox" name="z_pixels_spinbox">
+           <property name="maximumSize">
+            <size>
+             <width>100</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="maximum">
+            <number>99999999</number>
+           </property>
+           <property name="value">
+            <number>20</number>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="3">
+          <widget class="QCheckBox" name="z_fitgauss_checkbox">
+           <property name="text">
+            <string>Fit Gauss</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+           <property name="tristate">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLabel" name="fast_axis_label">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Fast Axis</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="3">
+          <widget class="QLabel" name="z_axis_label">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Z Axis</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="scan_range_label">
+           <property name="text">
+            <string>Scan Range</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QCheckBox" name="xy_fitgauss_checkbox">
+           <property name="text">
+            <string>Fit Gauss</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="3">
+          <widget class="QDoubleSpinBox" name="z_offset_spinbox">
+           <property name="maximumSize">
+            <size>
+             <width>100</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="suffix">
+            <string> μm</string>
+           </property>
+           <property name="minimum">
+            <double>-9999999999.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>99999.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.010000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QDoubleSpinBox" name="fast_axis_offset_spinbox">
+           <property name="maximumSize">
+            <size>
+             <width>100</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="suffix">
+            <string> μm</string>
+           </property>
+           <property name="minimum">
+            <double>-999999999999999.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>9999999.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.001000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="2">
+          <widget class="QSpinBox" name="slow_axis_pixels_spinbox">
+           <property name="maximumSize">
+            <size>
+             <width>100</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="maximum">
+            <number>99999999</number>
+           </property>
+           <property name="value">
+            <number>20</number>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QLabel" name="slow_axis_label">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Slow Axis</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="2">
+          <widget class="QDoubleSpinBox" name="slow_axis_offset_spinbox">
+           <property name="maximumSize">
+            <size>
+             <width>100</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="suffix">
+            <string> μm</string>
+           </property>
+           <property name="minimum">
+            <double>-999999999.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>999999999999.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.010000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QDoubleSpinBox" name="slow_axis_scan_size_spinbox">
+           <property name="maximumSize">
+            <size>
+             <width>100</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="suffix">
+            <string> μm</string>
+           </property>
+           <property name="maximum">
+            <double>99999999999.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.010000000000000</double>
+           </property>
+           <property name="value">
+            <double>2.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="2">
+          <widget class="QCheckBox" name="checkBox">
+           <property name="text">
+            <string>Fit Gauss</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="2">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Pixel Time</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="3">
+          <widget class="QSpinBox" name="spinBox">
+           <property name="suffix">
+            <string> ms</string>
+           </property>
+           <property name="maximum">
+            <number>999999999</number>
+           </property>
+           <property name="value">
+            <number>3</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="tracking_config_layout" stretch="3,1">
+       <item>
+        <layout class="QVBoxLayout" name="tracking_options_layout">
+         <item>
+          <widget class="QRadioButton" name="track_intensity_radiobutton">
+           <property name="text">
+            <string>Track when intensity decreases by</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="track_interval_radiobutton">
+           <property name="text">
+            <string>Track Interval</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <widget class="QSpinBox" name="track_intensity_spinbox">
+           <property name="suffix">
+            <string> %</string>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="value">
+            <number>4</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="track_interval_spinbox">
+           <property name="suffix">
+            <string> min</string>
+           </property>
+           <property name="maximum">
+            <number>99999999</number>
+           </property>
+           <property name="value">
+            <number>1</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="set_tracking_buttonbox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>set_tracking_buttonbox</sender>
+   <signal>accepted()</signal>
+   <receiver>set_tracking_dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>set_tracking_buttonbox</sender>
+   <signal>rejected()</signal>
+   <receiver>set_tracking_dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

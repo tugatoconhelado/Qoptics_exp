@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>spectrometer_main_window</class>
+ <widget class="QMainWindow" name="spectrometer_main_window">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1482</width>
+    <height>773</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Spectrometer</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <layout class="QHBoxLayout" name="main_layout" stretch="1,6">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetMinimumSize</enum>
+      </property>
+      <property name="leftMargin">
+       <number>2</number>
+      </property>
+      <property name="topMargin">
+       <number>2</number>
+      </property>
+      <property name="rightMargin">
+       <number>2</number>
+      </property>
+      <property name="bottomMargin">
+       <number>2</number>
+      </property>
+      <item>
+       <widget class="QGroupBox" name="control_groupBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>350</width>
+          <height>20000</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
+        <property name="title">
+         <string>Spectrometer</string>
+        </property>
+        <layout class="QVBoxLayout" name="control_layout" stretch="1,1,2,1,1,1,0,3,1,1,1,1">
+         <property name="spacing">
+          <number>2</number>
+         </property>
+         <property name="sizeConstraint">
+          <enum>QLayout::SetMaximumSize</enum>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="initialise_layout">
+           <item>
+            <widget class="QPushButton" name="initialise_button">
+             <property name="text">
+              <string>Initialise</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="connection_status_label">
+             <property name="text">
+              <string>Status: not connected</string>
+             </property>
+             <property name="textFormat">
+              <enum>Qt::AutoText</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="measure_layout">
+           <item>
+            <widget class="QPushButton" name="single_spectrum_button">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>Get Single Spectrum</string>
+             </property>
+             <property name="checkable">
+              <bool>false</bool>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+             <property name="autoRepeat">
+              <bool>false</bool>
+             </property>
+             <property name="autoRepeatDelay">
+              <number>300</number>
+             </property>
+             <property name="autoDefault">
+              <bool>false</bool>
+             </property>
+             <property name="default">
+              <bool>false</bool>
+             </property>
+             <property name="flat">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="play_stop_layout">
+             <item>
+              <widget class="QPushButton" name="play_button">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="text">
+                <string>Play</string>
+               </property>
+               <property name="shortcut">
+                <string>Alt+S</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="stop_button">
+               <property name="styleSheet">
+                <string notr="true"/>
+               </property>
+               <property name="text">
+                <string>Stop</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="set_parameters_button">
+           <property name="text">
+            <string>Set parameters</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="store_background_button">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="text">
+            <string>Store spectrum as background</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="measurement_view_box">
+           <property name="title">
+            <string>View</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout" stretch="2,1,1">
+            <item>
+             <layout class="QVBoxLayout" name="measurement_view_layout" stretch="1,1">
+              <item>
+               <layout class="QHBoxLayout" name="laser_wavelength_layout">
+                <item>
+                 <widget class="QLabel" name="laser_wavelength_label">
+                  <property name="text">
+                   <string>Laser wavelength:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QDoubleSpinBox" name="laser_wavelength_spin_box">
+                  <property name="suffix">
+                   <string> nm</string>
+                  </property>
+                  <property name="decimals">
+                   <number>1</number>
+                  </property>
+                  <property name="maximum">
+                   <double>10000.000000000000000</double>
+                  </property>
+                  <property name="value">
+                   <double>522.000000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="display_unit_layout">
+                <item>
+                 <widget class="QRadioButton" name="wavelength_radio_button">
+                  <property name="text">
+                   <string>Wavelength</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="wavenumber_radio_button">
+                  <property name="text">
+                   <string>Wavenumber</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="energy_radio_button">
+                  <property name="text">
+                   <string>Energy</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QLabel" name="current_target_point_label">
+              <property name="text">
+               <string>Current spectrum indicator:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="average_target_point_label">
+              <property name="text">
+               <string>Average spectrum indicator:</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="filename_label">
+           <property name="text">
+            <string>SPR name</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="save_layout">
+           <item>
+            <widget class="QPushButton" name="save_button">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../../../artwork/qudi_icons.qrc">
+               <normaloff>:/icons/icons/save.png</normaloff>:/icons/icons/save.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="delete_button">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../../../artwork/qudi_icons.qrc">
+               <normaloff>:/icons/icons/delete.png</normaloff>:/icons/icons/delete.png</iconset>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="load_layout" stretch="1,1,1">
+           <item>
+            <widget class="QPushButton" name="load_button">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../../../artwork/qudi_icons.qrc">
+               <normaloff>:/icons/icons/load.png</normaloff>:/icons/icons/load.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="previous_button">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../../../artwork/qudi_icons.qrc">
+               <normaloff>:/icons/icons/previous.png</normaloff>:/icons/icons/previous.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="next_button">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../../../artwork/qudi_icons.qrc">
+               <normaloff>:/icons/icons/next.png</normaloff>:/icons/icons/next.png</iconset>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <layout class="QGridLayout" name="plots_layout" rowstretch="1,1" columnstretch="3,2">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetDefaultConstraint</enum>
+        </property>
+        <item row="0" column="0">
+         <widget class="PlotWidget" name="current_spectrum_plot" native="true"/>
+        </item>
+        <item row="1" column="0">
+         <widget class="PlotWidget" name="average_spectrum_plot" native="true"/>
+        </item>
+        <item row="0" column="1">
+         <widget class="PlotWidget" name="spectrometer_counts_plot" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>100000</width>
+            <height>100000</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="PlotWidget" name="background_spectrum_plot" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>100</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>100000</width>
+            <height>100000</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1482</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="save_action"/>
+    <addaction name="save_as_action"/>
+    <addaction name="load_action"/>
+    <addaction name="separator"/>
+    <addaction name="exit_action"/>
+   </widget>
+   <widget class="QMenu" name="menuMeasure">
+    <property name="title">
+     <string>&amp;Measurement</string>
+    </property>
+    <addaction name="actionGet_single_spectrum"/>
+    <addaction name="actionRead_continuosly"/>
+    <addaction name="actionStop_measurement"/>
+    <addaction name="separator"/>
+    <addaction name="actionSet_acquisition_parameters"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuMeasure"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="save_action">
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="load_action">
+   <property name="text">
+    <string>&amp;Load</string>
+   </property>
+  </action>
+  <action name="exit_action">
+   <property name="text">
+    <string>&amp;Exit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="save_as_action">
+   <property name="text">
+    <string>Save &amp;as</string>
+   </property>
+  </action>
+  <action name="actionGet_single_spectrum">
+   <property name="text">
+    <string>Get single spectrum</string>
+   </property>
+  </action>
+  <action name="actionRead_continuosly">
+   <property name="text">
+    <string>Read continuosly</string>
+   </property>
+  </action>
+  <action name="actionStop_measurement">
+   <property name="text">
+    <string>Stop measurement</string>
+   </property>
+  </action>
+  <action name="actionSet_acquisition_parameters">
+   <property name="text">
+    <string>Set acquisition parameters</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PlotWidget</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../../../../artwork/qudi_icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>
