@@ -178,3 +178,120 @@ class PhotInfo64(Structure):
         ('rout_chan', c_ushort),
         ('flags', c_ushort),
     ]
+
+# masks for SPC module state - function SPC_test_state
+SPC_OVERFL = 0x1  # stopped on overflow
+SPC_OVERFLOW = 0x2  # overflow occurred
+SPC_TIME_OVER = 0x4  # stopped on expiration of collection timer
+SPC_COLTIM_OVER = 0x8  # collection timer expired
+SPC_CMD_STOP = 0x10  # stopped on user command
+SPC_ARMED = 0x80  # measurement in progress (current bank)
+SPC_REPTIM_OVER = 0x20  # repeat timer expired
+SPC_COLTIM_2OVER = 0x100  # second overflow of collection timer
+SPC_REPTIM_2OVER = 0x200  # second overflow of repeat timer
+
+# masks valid only for modules SPC130, SPC6x0
+SPC_SEQ_GAP = 0x40  # Sequencer is waiting for other bank to be armed
+
+# masks valid only for modules SPC13x, SPC6x0, SPC830, SPC140, SPC930, SPC15x, SPC16x,18x
+# in normal modes when sequencer is enabled
+SPC_FOVFL = 0x400  # Fifo overflow,data lost, fifo modes only
+SPC_FEMPTY = 0x800  # Fifo empty, fifo modes only
+
+# masks valid only for SPC7x0, SPC830, SPC140, SPC930, SPC15x, SPC131-7, SPC16x,18x modules
+SPC_FBRDY = 0x800  # Flow back of scan finished, scan modes only
+SPC_SCRDY = 0x400  # Scan ready (data can be read ), scan modes only
+SPC_MEASURE = 0x40  # Measurement active = no margin, no wait for trigger, armed
+SPC_WAIT_TRG = 0x1000  # wait for trigger
+SPC_HFILL_NRDY = 0x8000  # hardware fill not finished
+
+# masks valid only for SPC140, SPC930, SPC15x, SPC131-7, SPC16x,18x modules
+SPC_SEQ_STOP = 0x4000  # disarmed (measurement stopped) by sequencer
+SPC_SEQ_GAP150 = 0x2000  # SPC15x, SPC16x,18x, SPC131-7 - Sequencer is waiting for other bank to be armed
+
+# normal and Scan In modes when sequencer is enabled
+# mask for SPC140, SPC830, SPC15x, SPC16x,18x, DPC230 modules ( in FIFO IMAGE mode )
+SPC_WAIT_FR = 0x2000  # FIFO IMAGE measurement waits for the frame signal to stop
+
+# masks valid only for DPC230 modules
+SPC_FOVFL2 = 0x800  # TDC 2 Fifo overflow,data lost
+SPC_FOVFL1 = 0x400  # TDC 1 Fifo overflow,data lost
+SPC_FEMPTY2 = 0x200  # TDC 2 Fifo empty
+SPC_FEMPTY1 = 0x100  # TDC 1 Fifo empty
+SPC_ARMED1 = 0x80  # TDC 1 armed
+SPC_ARMED2 = 0x4000  # TDC 2 armed
+SPC_CTIM_OVER2 = 0x20  # collection timer of TDC 2 expired
+SPC_CTIM_OVER1 = 0x8  # collection timer of TDC 1 expired
+
+# other flags valid for DPC230 and defined above :
+# SPC_MEASURE, SPC_TIME_OVER, SPC_WAIT_TRG , SPC_WAIT_FR,
+# sequencer state bits - returned from function SPC_get_sequencer_state
+SPC_SEQ_ENABLE = 0x1  # sequencer is enabled
+SPC_SEQ_RUNNING = 0x2  # sequencer is running
+SPC_SEQ_GAP_BANK = 0x4  # sequencer is waiting for other bank to be armed
+
+# SPC_PARAMETERS_KEYWORDS
+CFD_LIMIT_LOW = 0
+CFD_LIMIT_HIGH = 1
+CFD_ZC_LEVEL = 2
+CFD_HOLDOFF = 3
+SYNC_ZC_LEVEL = 4
+SYNC_FREQ_DIV = 5
+SYNC_HOLDOFF = 6
+SYNC_THRESHOLD = 7
+TAC_RANGE = 8
+TAC_GAIN = 9
+TAC_OFFSET = 10
+TAC_LIMIT_LOW = 11
+TAC_LIMIT_HIGH = 12
+ADC_RESOLUTION = 13
+EXT_LATCH_DELAY = 14
+COLLECT_TIME = 15
+DISPLAY_TIME = 16
+REPEAT_TIME = 17
+STOP_ON_TIME = 18
+STOP_ON_OVFL = 19
+DITHER_RANGE = 20
+COUNT_INCR = 21
+MEM_BANK = 22
+DEAD_TIME_COMP = 23
+SCAN_CONTROL = 24
+ROUTING_MODE = 25
+TAC_ENABLE_HOLD = 26
+MODE = 27
+SCAN_SIZE_X = 28
+SCAN_SIZE_Y = 29
+SCAN_ROUT_X = 30
+SCAN_ROUT_Y = 31
+SCAN_POLARITY = 32
+SCAN_FLYBACK = 33
+SCAN_BORDERS = 34
+PIXEL_TIME = 35
+PIXEL_CLOCK = 36
+LINE_COMPRESSION = 37
+TRIGGER = 38
+EXT_PIXCLK_DIV = 39
+RATE_COUNT_TIME = 40
+MACRO_TIME_CLK = 41
+ADD_SELECT = 42
+ADC_ZOOM = 43
+XY_GAIN = 44
+IMG_SIZE_X = 45
+IMG_SIZE_Y = 46
+IMG_ROUT_X = 47
+IMG_ROUT_Y = 48
+MASTER_CLOCK = 49
+ADC_SAMPLE_DELAY = 50
+DETECTOR_TYPE = 51
+TDC_CONTROL = 52
+CHAN_ENABLE = 53
+CHAN_SLOPE = 54
+CHAN_SPEC_NO = 55
+TDC_OFFSET1 = 56
+TDC_OFFSET2 = 57
+TDC_OFFSET3 = 58
+TDC_OFFSET4 = 59
+
+# enum spc_parameters_enum
+SPC_PARAMETERS_KEYWORDS = list(range(60))
+
