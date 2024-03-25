@@ -65,10 +65,10 @@ class TCSPCLogic(LogicBase):
         self.__rates_timer.timeout.connect(self.get_rates, QtCore.Qt.QueuedConnection)
 
         # Initialise hardware module
-        self._tcspc_hardware().initialise_tcspc()
-        #self._tcspc_hardware().clear_rates(0)
+        self._tcspc_hardware().initialise_tcspc(mode=0)
+        self._tcspc_hardware().clear_rates(0)
 
-        #self.__rates_timer.start()
+        self.__rates_timer.start()
 
     def on_deactivate(self) -> None:
         # Stop timer and delete
@@ -93,9 +93,11 @@ class TCSPCLogic(LogicBase):
         self.log.debug(f'Rates: {rate_values}')
 
     def start_measurement(self):
-        self.__timer.start()
+
         self.log.info('Measurement started')
 
+        print(f'Display time: {self._tcspc_hardware()._tcspc_params.display_time}')
+        self.__timer.setInterval(1000 * self._tcspc_hardware()._tcspc_params.display_time)
         self._tcspc_hardware().configure_memory(0)
         self._tcspc_hardware().start_single_mode_measurement(0, 0)
 
@@ -189,18 +191,24 @@ class TCSPCLogic(LogicBase):
 
     def send_data(self):
         with self._mutex:
-            readed_data = np.ones(1000)
-            self.data = readed_data
-            self.sig_data.emit(self.data)
             if self.continue_acquisition:
                 status_code = self._tcspc_hardware().test_state(0)
-                #self.log.info(f'Status code: {status_code}')
 
                 if 'SPC_TIME_OVER' in status_code:
                     readed_data = self._tcspc_hardware().read_data_from_tcspc(0)
                     readed_data = np.array(readed_data)
                     status_code = self._tcspc_hardware().test_state(0)
-                    self.log.info(f'Status code: {status_code}')
                     self.data = readed_data
                     self.sig_data.emit(self.data)
                     self.stop_measurement()
+
+                pause_status = self._tcspc_hardware().pause_measurement(0)
+                status_code = self._tcspc_hardware().test_state(0)
+
+                if pause_status > 0:
+                    readed_data = self._tcspc_hardware().read_data_from_tcspc(0)
+                    readed_data = np.array(readed_data)
+                    self.data = readed_data
+                    self.sig_data.emit(self.data)
+
+                    self._tcspc_hardware().restart_measurement(0)

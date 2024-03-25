@@ -115,7 +115,7 @@ class TCSPCHardware(Base):
             The wrapper for the TCSPC hardware
         """
         with self._mutex:
-            ini_file_path = os.path.abspath(r'C:\EXP\python\Qoptics_exp\spcm_test.ini')
+            ini_file_path = os.path.abspath(r'C:\EXP\python\Qoptics_exp\new_settings.ini')
             init_status, args = self._tcspc_wrapper.SPC_init(ini_file_path)
             print(f'Init status: {init_status} with args: {args}')
             
@@ -128,6 +128,7 @@ class TCSPCHardware(Base):
 
             status, mod_no, data = self._tcspc_wrapper.SPC_get_parameters(self.module_no)
             print(f'Get parameters status: {status} with mod_no: {mod_no} and data collect time: {data.collect_time}')
+            #self._tcspc_params = data
 
             return self._tcspc_wrapper
     
@@ -228,12 +229,12 @@ class TCSPCHardware(Base):
     def pause_measurement(self, module_no):
 
         status, mod_no = self._tcspc_wrapper.SPC_pause_measurement(module_no)
-        #print(f'Pause measurement status: {status} with mod_no: {mod_no}')
+        return status
 
     def restart_measurement(self, module_no):
 
         status, mod_no = self._tcspc_wrapper.SPC_restart_measurement(module_no)
-        #print(f'Continue measurement status: {status} with mod_no: {mod_no}')  
+        return status
 
     def stop_measurement(self, module_no):
 
@@ -251,6 +252,5 @@ class TCSPCHardware(Base):
         data_buffer = data_buffer = (ctypes.c_ushort * no_of_points)()
         status, mod_no, block, page, reduction_factor, var_from, var_to, data = self._tcspc_wrapper.SPC_read_data_block(
             module_no, 0, 0, red_factor, 0, no_of_points - 1, data_buffer)
-        self.log.info(f'Read data block status: {status} with mod_no: {mod_no}, block: {block}, page: {page}, reduction_factor: {reduction_factor}, var_from: {var_from}, var_to: {var_to} and data: {data}')
         readed_data = list(copy.copy(data))
         return readed_data
