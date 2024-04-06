@@ -503,41 +503,6 @@
               <string>Fifo</string>
              </property>
             </item>
-            <item>
-             <property name="text">
-              <string>Single</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Oscilloscope</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>F(t,x,y)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>F(t,T)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Fi(T)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Fi(EXT)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Continuous Flow</string>
-             </property>
-            </item>
            </widget>
           </item>
          </layout>
