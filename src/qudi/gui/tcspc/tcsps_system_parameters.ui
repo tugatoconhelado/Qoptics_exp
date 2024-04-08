@@ -43,7 +43,7 @@
              <double>10000000000000000139372116959414099130712064.000000000000000</double>
             </property>
             <property name="value">
-             <double>5.003000000000000</double>
+             <double>0.000000000000000</double>
             </property>
            </widget>
           </item>
@@ -86,7 +86,7 @@
              <double>100.000000000000000</double>
             </property>
             <property name="value">
-             <double>3.920000000000000</double>
+             <double>0.000000000000000</double>
             </property>
            </widget>
           </item>
@@ -201,47 +201,32 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QSpinBox" name="time_collection_spinbox">
-            <property name="suffix">
-             <string> sec</string>
+           <widget class="QDoubleSpinBox" name="collection_time_spinbox">
+            <property name="decimals">
+             <number>4</number>
             </property>
             <property name="maximum">
-             <number>999999999</number>
-            </property>
-            <property name="value">
-             <number>1800</number>
-            </property>
-            <property name="displayIntegerBase">
-             <number>10</number>
+             <double>10000000000000000.000000000000000</double>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QSpinBox" name="time_repeat_spinbox">
-            <property name="suffix">
-             <string> sec</string>
+           <widget class="QDoubleSpinBox" name="repeat_time_spinbox">
+            <property name="decimals">
+             <number>4</number>
             </property>
             <property name="maximum">
-             <number>999999999</number>
-            </property>
-            <property name="value">
-             <number>1800</number>
+             <double>10000000000000000000.000000000000000</double>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QDoubleSpinBox" name="time_display_spinbox">
-            <property name="prefix">
-             <string/>
-            </property>
-            <property name="suffix">
-             <string> sec</string>
-            </property>
+           <widget class="QDoubleSpinBox" name="display_time_spinbox">
             <property name="decimals">
-             <number>3</number>
+             <number>4</number>
             </property>
-            <property name="value">
-             <double>4.000000000000000</double>
+            <property name="maximum">
+             <double>100000000000000000.000000000000000</double>
             </property>
            </widget>
           </item>
@@ -314,7 +299,7 @@
              <double>10000000000000000000.000000000000000</double>
             </property>
             <property name="value">
-             <double>-41.180000000000000</double>
+             <double>0.000000000000000</double>
             </property>
            </widget>
           </item>
@@ -395,7 +380,7 @@
              <double>1000000000000000000.000000000000000</double>
             </property>
             <property name="value">
-             <double>-49.020000000000003</double>
+             <double>0.000000000000000</double>
             </property>
            </widget>
           </item>
@@ -421,7 +406,7 @@
              <double>1000000000000000000000.000000000000000</double>
             </property>
             <property name="value">
-             <double>-9.830000000000000</double>
+             <double>0.000000000000000</double>
             </property>
            </widget>
           </item>

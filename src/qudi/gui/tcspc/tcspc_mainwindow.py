@@ -1,5 +1,5 @@
 from qudi.util.uic import loadUi
-from PySide2.QtWidgets import QDialog, QMainWindow
+from PySide2.QtWidgets import QDialog, QMainWindow, QVBoxLayout
 from PySide2.QtCore import Slot, Signal, Qt
 import pyqtgraph as pg
 import numpy as np
@@ -9,6 +9,8 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 
 
 class TCSPCMainWindow(QMainWindow):
+
+    set_parameter_signal = Signal(str, float or int or str or bool)
 
 
     def __init__(self, parent=None):
@@ -21,7 +23,27 @@ class TCSPCMainWindow(QMainWindow):
         self.parameters_editor = TCSPC_parameters_editor(self)
         self.system_parameters_action.triggered.connect(self.parameters_editor.show, Qt.QueuedConnection)
 
+        self.time_combobox.currentIndexChanged.connect(self.time_stackedwidget.setCurrentIndex, Qt.QueuedConnection)
+        self.tac_combobox.currentIndexChanged.connect(self.tac_stackedwidget.setCurrentIndex, Qt.QueuedConnection)
+        self.sync_combobox.currentIndexChanged.connect(self.sync_stackedwidget.setCurrentIndex, Qt.QueuedConnection)
+        self.cfd_combobox.currentIndexChanged.connect(self.cfd_stackedwidget.setCurrentIndex, Qt.QueuedConnection)
 
+        self.collection_time_spinbox.valueChanged.connect(self.set_parameter, Qt.QueuedConnection)
+        self.display_time_spinbox.valueChanged.connect(self.set_parameter, Qt.QueuedConnection)
+        self.repeat_time_spinbox.valueChanged.connect(self.set_parameter, Qt.QueuedConnection)
+
+        self.tac_range_spinbox.valueChanged.connect(self.set_parameter, Qt.QueuedConnection)
+        self.tac_gain_spinbox.valueChanged.connect(self.set_parameter, Qt.QueuedConnection)
+        self.tac_offset_spinbox.valueChanged.connect(self.set_parameter, Qt.QueuedConnection)
+        self.tac_limit_high_spinbox.valueChanged.connect(self.set_parameter, Qt.QueuedConnection)
+        self.tac_limit_low_spinbox.valueChanged.connect(self.set_parameter, Qt.QueuedConnection)
+
+        self.sync_zc_level_spinbox.valueChanged.connect(self.set_parameter, Qt.QueuedConnection)
+        self.sync_freq_div_spinbox.valueChanged.connect(self.set_parameter, Qt.QueuedConnection)
+        self.sync_threshold_spinbox.valueChanged.connect(self.set_parameter, Qt.QueuedConnection)
+
+        self.cfd_limit_low_spinbox.valueChanged.connect(self.set_parameter, Qt.QueuedConnection)
+        self.cfd_zc_level_spinbox.valueChanged.connect(self.set_parameter, Qt.QueuedConnection)
 
         self.configure_plots()
 
@@ -89,6 +111,23 @@ class TCSPCMainWindow(QMainWindow):
             rect.set_height(new_height)
         self.counts_plot_canvas.draw()
 
+    @Slot()
+    def update_parameter(self, param: str, value):
+
+        spinbox_name = param + '_spinbox'
+        spinbox = getattr(self, spinbox_name, None)
+        if spinbox is not None:
+            spinbox.setValue(value)
+        self.parameters_editor.update_parameter(param, value)
+
+    @Slot()
+    def set_parameter(self):
+
+        sender = self.sender()
+        parameter = sender.objectName().split('_spinbox')[0]
+        value = sender.value()
+        if sender is not None and parameter is not None:
+            self.set_parameter_signal.emit(parameter, value)
 
     @Slot(tuple)
     def update_rates(self, rates):
@@ -127,9 +166,9 @@ class TCSPC_parameters_editor(QDialog):
             'tac_limit_high': self.tac_limit_high_spinbox.value(),
             'tac_limit_low': self.tac_limit_low_spinbox.value(),
     
-            'collect_time': self.time_collection_spinbox.value(),
-            'repeat_time': self.time_repeat_spinbox.value(),
-            'display_time': self.time_display_spinbox.value(),
+            'collect_time': self.collection_time_spinbox.value(),
+            'repeat_time': self.repeat_time_spinbox.value(),
+            'display_time': self.display_time_spinbox.value(),
         
             'sync_zc_level': self.sync_zc_level_spinbox.value(),
             'sync_freq_div': self.sync_freq_divider_spinbox.value(),
@@ -149,10 +188,10 @@ class TCSPC_parameters_editor(QDialog):
 
     def reject(self):
 
-        self.update_values(self._current_values)
         self.get_params_signal.emit(self._current_values)
         super().reject()
 
+    @Slot(dict)
     def update_values(self, new_values):
 
         print(new_values)
@@ -162,9 +201,9 @@ class TCSPC_parameters_editor(QDialog):
         self.tac_limit_high_spinbox.setValue(new_values['tac_limit_high'])
         self.tac_limit_low_spinbox.setValue(new_values['tac_limit_low'])
 
-        self.time_collection_spinbox.setValue(new_values['collect_time'])
-        self.time_repeat_spinbox.setValue(new_values['repeat_time'])
-        self.time_display_spinbox.setValue(new_values['display_time'])
+        self.collection_time_spinbox.setValue(new_values['collect_time'])
+        self.repeat_time_spinbox.setValue(new_values['repeat_time'])
+        self.display_time_spinbox.setValue(new_values['display_time'])
 
         self.sync_zc_level_spinbox.setValue(new_values['sync_zc_level'])
         self.sync_freq_divider_spinbox.setValue(new_values['sync_freq_div'])
@@ -175,9 +214,18 @@ class TCSPC_parameters_editor(QDialog):
         
         return new_values
     
+    @Slot()
+    def update_parameter(self, param: str, value):
+
+        spinbox_name = param + '_spinbox'
+        spinbox = getattr(self, spinbox_name, None)
+        if spinbox is not None:
+            spinbox.setValue(value)
+    
 if __name__ == '__main__':
     from PySide2.QtWidgets import QApplication
     import sys
+    sys.path.append('artwork')
 
     app = QApplication(sys.argv)
     form = TCSPCMainWindow()

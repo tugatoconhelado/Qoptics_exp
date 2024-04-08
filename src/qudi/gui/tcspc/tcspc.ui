@@ -6,191 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>925</width>
-    <height>768</height>
+    <width>1068</width>
+    <height>889</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>TCSPC Control</string>
+   <string>TCSPC</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <layout class="QVBoxLayout" name="main_layout" stretch="2,1">
+     <layout class="QVBoxLayout" name="main_layout" stretch="0">
       <item>
-       <layout class="QHBoxLayout" name="top_layout">
-        <item>
-         <widget class="PlotWidget" name="counts_histogram_plot" native="true"/>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="bottom_layout" stretch="1,2">
-        <item>
-         <layout class="QHBoxLayout" name="counts_layout"/>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="status_groupbox">
-          <property name="title">
-           <string>Device State</string>
-          </property>
-          <property name="flat">
-           <bool>false</bool>
-          </property>
-          <property name="checkable">
-           <bool>false</bool>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_2" stretch="2,1,1,2">
-           <item>
-            <layout class="QGridLayout" name="device_state_layout">
-             <item row="0" column="1">
-              <widget class="QCheckBox" name="checkBox">
-               <property name="text">
-                <string>CheckBox</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="2">
-              <widget class="QLabel" name="label_5">
-               <property name="text">
-                <string>FIFO Usage</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QCheckBox" name="checkBox_2">
-               <property name="text">
-                <string>CheckBox</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="2">
-              <widget class="QLabel" name="label_4">
-               <property name="text">
-                <string>FIFO Overflow</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="label_3">
-               <property name="text">
-                <string>Sync</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_2">
-               <property name="text">
-                <string>Measurement</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="3">
-              <widget class="QCheckBox" name="checkBox_3">
-               <property name="text">
-                <string>CheckBox</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="3">
-              <widget class="QCheckBox" name="checkBox_4">
-               <property name="text">
-                <string>CheckBox</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="QLabel" name="status_log_label">
-             <property name="text">
-              <string>Status Log</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="start_layout">
-             <item>
-              <widget class="QPushButton" name="start_button">
-               <property name="text">
-                <string>start</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="pause_button">
-               <property name="text">
-                <string>pause</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="restart_button">
-               <property name="text">
-                <string>restart</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="stop_button">
-               <property name="text">
-                <string>Stop</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QVBoxLayout" name="file_layout">
-             <item>
-              <layout class="QHBoxLayout" name="save_button_layout">
-               <item>
-                <widget class="QPushButton" name="save_button">
-                 <property name="text">
-                  <string>Save</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="save_as_button">
-                 <property name="text">
-                  <string>Save as</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="load_file_layout">
-               <item>
-                <widget class="QPushButton" name="load_button">
-                 <property name="text">
-                  <string>load</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="previous_button">
-                 <property name="text">
-                  <string>previous</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="next_button">
-                 <property name="text">
-                  <string>next</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </widget>
-        </item>
-       </layout>
+       <widget class="PlotWidget" name="counts_histogram_plot" native="true"/>
       </item>
      </layout>
     </item>
@@ -201,7 +29,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>925</width>
+     <width>1068</width>
      <height>21</height>
     </rect>
    </property>
@@ -253,6 +81,611 @@
    <addaction name="menuInfo"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QDockWidget" name="device_state_dockwidget">
+   <property name="allowedAreas">
+    <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
+   </property>
+   <property name="windowTitle">
+    <string>Device Status</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="device_state_widget">
+    <layout class="QVBoxLayout" name="verticalLayout_2" stretch="2,1,2">
+     <item>
+      <layout class="QGridLayout" name="device_state_layout" rowstretch="1,1" columnstretch="1,2,1,2">
+       <item row="0" column="1">
+        <widget class="QCheckBox" name="measurement_checkbox">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QLabel" name="fifo_usage_label">
+         <property name="text">
+          <string>FIFO Usage</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="sync_checkbox">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="fifo_overflow_label">
+         <property name="text">
+          <string>FIFO Overflow</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="sync_label">
+         <property name="text">
+          <string>Sync</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="measurement_label">
+         <property name="text">
+          <string>Measurement</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QCheckBox" name="fifo_overflow_checkbox">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QCheckBox" name="fifo_usage_checkbox">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="status_log_label">
+       <property name="text">
+        <string>Status Log</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="parameter_layout" stretch="1,2,1,2,1,2,1,2">
+       <item>
+        <widget class="QLabel" name="time_label">
+         <property name="text">
+          <string>Time</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="time_layout" stretch="1,1">
+         <item>
+          <widget class="QComboBox" name="time_combobox">
+           <item>
+            <property name="text">
+             <string>Collection</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Display</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Repeat</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QStackedWidget" name="time_stackedwidget">
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+           </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="collection_page">
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <item>
+              <widget class="QDoubleSpinBox" name="collection_time_spinbox">
+               <property name="decimals">
+                <number>4</number>
+               </property>
+               <property name="maximum">
+                <double>1000000000000000000.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="display_page">
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <item>
+              <widget class="QDoubleSpinBox" name="display_time_spinbox">
+               <property name="decimals">
+                <number>4</number>
+               </property>
+               <property name="maximum">
+                <double>999999999999.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="repeat_page">
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <widget class="QDoubleSpinBox" name="repeat_time_spinbox">
+               <property name="decimals">
+                <number>4</number>
+               </property>
+               <property name="maximum">
+                <double>9999999999999.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="tac_label">
+         <property name="text">
+          <string>TAC</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="tac_layout">
+         <item>
+          <widget class="QComboBox" name="tac_combobox">
+           <item>
+            <property name="text">
+             <string>Range</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Gain</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Offset</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Limit High</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Limit Low</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QStackedWidget" name="tac_stackedwidget">
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="tac_range_page">
+            <layout class="QHBoxLayout" name="horizontalLayout_10">
+             <item>
+              <widget class="QDoubleSpinBox" name="tac_range_spinbox">
+               <property name="decimals">
+                <number>4</number>
+               </property>
+               <property name="maximum">
+                <double>10000000000000000000000.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tac_gain_page">
+            <layout class="QHBoxLayout" name="horizontalLayout_9">
+             <item>
+              <widget class="QSpinBox" name="tac_gain_spinbox">
+               <property name="maximum">
+                <number>999999999</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tac_offset_page">
+            <layout class="QHBoxLayout" name="horizontalLayout_8">
+             <item>
+              <widget class="QDoubleSpinBox" name="tac_offset_spinbox">
+               <property name="suffix">
+                <string> %</string>
+               </property>
+               <property name="decimals">
+                <number>4</number>
+               </property>
+               <property name="maximum">
+                <double>100.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tac_limit_high_page">
+            <layout class="QHBoxLayout" name="horizontalLayout_7">
+             <item>
+              <widget class="QDoubleSpinBox" name="tac_limit_high_spinbox">
+               <property name="suffix">
+                <string> %</string>
+               </property>
+               <property name="decimals">
+                <number>4</number>
+               </property>
+               <property name="maximum">
+                <double>100.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tac_limit_low_page">
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <item>
+              <widget class="QDoubleSpinBox" name="tac_limit_low_spinbox">
+               <property name="suffix">
+                <string> %</string>
+               </property>
+               <property name="decimals">
+                <number>4</number>
+               </property>
+               <property name="maximum">
+                <double>100.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="cfd_label">
+         <property name="text">
+          <string>CFD</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="cfd_layout">
+         <item>
+          <widget class="QComboBox" name="cfd_combobox">
+           <item>
+            <property name="text">
+             <string>Limit Low</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>ZC Level</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QStackedWidget" name="cfd_stackedwidget">
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="cfd_limit_low_page">
+            <layout class="QHBoxLayout" name="horizontalLayout_11">
+             <item>
+              <widget class="QDoubleSpinBox" name="cfd_limit_low_spinbox">
+               <property name="suffix">
+                <string> mV</string>
+               </property>
+               <property name="decimals">
+                <number>4</number>
+               </property>
+               <property name="minimum">
+                <double>-10000000000000000000.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>10000000000000000000000.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="cfd_zc_level_page">
+            <layout class="QHBoxLayout" name="horizontalLayout_12">
+             <item>
+              <widget class="QDoubleSpinBox" name="cfd_zc_level_spinbox">
+               <property name="suffix">
+                <string> mV</string>
+               </property>
+               <property name="decimals">
+                <number>4</number>
+               </property>
+               <property name="minimum">
+                <double>-999999999999999.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>10000000000000000000.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="sync_label_2">
+         <property name="text">
+          <string>SYNC</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="sync_layout">
+         <item>
+          <widget class="QComboBox" name="sync_combobox">
+           <item>
+            <property name="text">
+             <string>Freq Div</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>ZC Level</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Threshold</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Delay</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QStackedWidget" name="sync_stackedwidget">
+           <property name="currentIndex">
+            <number>3</number>
+           </property>
+           <widget class="QWidget" name="sync_freq_div_page">
+            <layout class="QHBoxLayout" name="horizontalLayout_13">
+             <item>
+              <widget class="QSpinBox" name="sync_freq_div_spinbox">
+               <property name="maximum">
+                <number>999999999</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="sync_zc_level_page">
+            <layout class="QHBoxLayout" name="horizontalLayout_14">
+             <item>
+              <widget class="QDoubleSpinBox" name="sync_zc_level_spinbox">
+               <property name="suffix">
+                <string> mV</string>
+               </property>
+               <property name="decimals">
+                <number>4</number>
+               </property>
+               <property name="minimum">
+                <double>-99999999999999.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>9999999999999.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="sync_threshold_page">
+            <layout class="QHBoxLayout" name="horizontalLayout_15">
+             <item>
+              <widget class="QDoubleSpinBox" name="sync_threshold_spinbox">
+               <property name="suffix">
+                <string> mV</string>
+               </property>
+               <property name="decimals">
+                <number>4</number>
+               </property>
+               <property name="minimum">
+                <double>-9999999999999.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100000000000000000.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="sync_delay_page">
+            <layout class="QHBoxLayout" name="horizontalLayout_16">
+             <item>
+              <widget class="QDoubleSpinBox" name="sync_delay_spinbox">
+               <property name="suffix">
+                <string> ns</string>
+               </property>
+               <property name="decimals">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <double>100.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="rates_dockwidget">
+   <property name="allowedAreas">
+    <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
+   </property>
+   <property name="windowTitle">
+    <string>Rate Counters</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="rates_widget">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <layout class="QVBoxLayout" name="counts_layout"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="control_dockwidget">
+   <property name="allowedAreas">
+    <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
+   </property>
+   <property name="windowTitle">
+    <string>TCSPC Control</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>4</number>
+   </attribute>
+   <widget class="QWidget" name="control_widget">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <layout class="QHBoxLayout" name="start_layout">
+       <item>
+        <widget class="QPushButton" name="start_button">
+         <property name="text">
+          <string>Start</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pause_button">
+         <property name="text">
+          <string>Pause</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="restart_button">
+         <property name="text">
+          <string>Restart</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="stop_button">
+         <property name="text">
+          <string>Stop</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="file_layout">
+       <item>
+        <layout class="QHBoxLayout" name="save_button_layout">
+         <item>
+          <widget class="QPushButton" name="save_button">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../../../../artwork/qudi_icons.qrc">
+             <normaloff>:/icons/icons/save.png</normaloff>:/icons/icons/save.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="delete_button">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../../../../artwork/qudi_icons.qrc">
+             <normaloff>:/icons/icons/delete.png</normaloff>:/icons/icons/delete.png</iconset>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="load_file_layout">
+         <item>
+          <widget class="QPushButton" name="load_button">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../../../../artwork/qudi_icons.qrc">
+             <normaloff>:/icons/icons/load.png</normaloff>:/icons/icons/load.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="previous_button">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../../../../artwork/qudi_icons.qrc">
+             <normaloff>:/icons/icons/previous.png</normaloff>:/icons/icons/previous.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="next_button">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../../../../artwork/qudi_icons.qrc">
+             <normaloff>:/icons/icons/next.png</normaloff>:/icons/icons/next.png</iconset>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="save_action">
    <property name="text">
     <string>Save</string>
@@ -335,6 +768,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../../../../artwork/qudi_icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

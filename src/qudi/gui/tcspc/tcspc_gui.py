@@ -81,6 +81,13 @@ class TCSPCGui(GuiBase):
         self._tcspc_logic().sig_rate_values.connect(
             self._mw.update_rates, Qt.QueuedConnection
         )
+        self._tcspc_logic().sig_parameter.connect(
+            self._mw.update_parameter, Qt.QueuedConnection
+        )
+
+        self._mw.set_parameter_signal.connect(
+            self._tcspc_logic().set_parameter, Qt.QueuedConnection
+        )
 
         self.init_spc_signal.connect(self._tcspc_logic().init_spc, Qt.QueuedConnection)
         self.init_spc_signal.emit()

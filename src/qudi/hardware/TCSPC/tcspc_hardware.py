@@ -35,7 +35,7 @@ class TCSPCHardware(Base):
         self.stop_measurement(self.module_no)
         spcm.close()
 
-    def initialise_tcspc(self):
+    def initialise_tcspc(self, simulation=False):
         """
         Initialise the TCSPC hardware
         
@@ -43,22 +43,28 @@ class TCSPCHardware(Base):
         SPCDllWrapper
             The wrapper for the TCSPC hardware
         """
+        if simulation:
+            with bh_spc.ini_file(
+                bh_spc.minimal_spcm_ini(spcm.DLLOperationMode.SIMULATE_SPC_130EM)
+            ) as ini:
+                spcm.init(ini)
+                self.log.info('Initialising TCSPC in SPC130EM simulation mode')
+        elif not simulation:
+            ini_file_path = os.path.abspath(r'C:\EXP\python\Qoptics_exp\new_settings.ini')
+            self.log.info('Initialising TCSPC hardware with file {}'.format(ini_file_path))
+            spcm.init(ini_file_path)
+            spcm.set_mode(spcm.DLLOperationMode.HARDWARE, True, [True])
+
         self.module_no = 0
-        ini_file_path = os.path.abspath(r'C:\EXP\python\Qoptics_exp\new_settings.ini')
-        spcm.init(ini_file_path)
-        spcm.set_mode(spcm.DLLOperationMode.HARDWARE, True, [True])
-        print(getattr(spcm.ParID, 'COLLECT_TIME'))
-
         status = spcm.get_init_status(self.module_no)
-
         self._tcspc_params = spcm.get_parameters(self.module_no)
 
         return status
 
     def set_SPC_param(self, param : str, value):
 
-        setted_param = self._set_SPC_param_to_module(self.module_no)
-        return getattr(self._tcspc_params, param)
+        setted_param = self._set_SPC_param_to_module(param, value)
+        return getattr(self._tcspc_params, param.lower())
 
     def get_SPC_param(self, param: str):
 
@@ -66,16 +72,16 @@ class TCSPCHardware(Base):
 
     def _get_SPC_param_from_module(self, param: str):
 
-        param_id = getattr(spcm.ParID, param)
+        param_id = getattr(spcm.ParID, param.upper())
         value = spcm.get_parameter(self.module_no, param_id)
         return value
 
     def _set_SPC_param_to_module(self, param: str, value):
 
-        param_id = getattr(spcm.ParID, param)
+        param_id = getattr(spcm.ParID, param.upper())
         spcm.set_parameter(self.module_no, param_id, value)
         setted_parameter = self._get_SPC_param_from_module(param)
-        setattr(self._tcspc_params, param, setted_parameter)
+        setattr(self._tcspc_params, param.lower(), setted_parameter)
         return setted_parameter
 
     def get_SPC_params_from_module(self, module_no: int = 0):
@@ -110,15 +116,17 @@ class TCSPCHardware(Base):
             The SPCdata object
         """
         spcm.set_parameters(module_no, self._tcspc_params)
-        params = self._get_SPC_params_from_module(module_no)
+        params = self.get_SPC_params_from_module(module_no)
         return params
     
     def init_fifo_measurement(self, module_no):
 
         self.log.info('Initialising FIFO measurement')
-        spcm.set_parameter(module_no, spcm.ParID.MODE, 1) # Sets FIFO Mode
-        self._tcspc_params.stop_on_time = 1
+        self.set_SPC_param('mode', 1) # Sets FIFO Mode
+        self._tcspc_params.stop_on_time = 0
         self.set_SPC_params_to_module(module_no)
+        print(self._tcspc_params.stop_on_time)
+        print(self._tcspc_params.mode)
 
     def start_measurement(self, module_no):
 
@@ -152,14 +160,14 @@ class TCSPCHardware(Base):
 
     def read_data_from_tcspc(self, module_no, buf_size):
 
-        buf = spcm.read_fifo_to_array(module_no, buf_size)
-        #records = np.concatenate(buf).view(np.uint32)
+        with self._mutex:
+            buf = spcm.read_fifo_to_array(module_no, buf_size)
         return buf
 
 
-    def test_state(self, module_no, print_status=False):
+    def test_state(self, module_no):
 
-        status = spcm.test_state(module_no)
-
+        with self._mutex:
+            status = spcm.test_state(module_no)
         return status
 
