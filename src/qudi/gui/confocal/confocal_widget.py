@@ -58,7 +58,6 @@ class ConfocalWidget(QWidget):
         self.start_confocal_image_signal.emit(
             scan_size, offset, pixels, pixel_time
         )
-        self.configure_image_axis(scan_size, offset, pixels)
         self.filename_label.setText('')
         self.image_fw_widget.heatmap.setTitle('Forward scan', **{'size': '7pt'})
 

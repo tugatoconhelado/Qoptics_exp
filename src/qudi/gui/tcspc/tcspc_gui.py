@@ -9,6 +9,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+import functools
+import os
 
 
 class TCSPCGui(GuiBase):
@@ -56,23 +58,32 @@ class TCSPCGui(GuiBase):
         self._mw.stop_button.clicked.connect(
             self._tcspc_logic().stop_measurement, Qt.QueuedConnection
         )
-        #self._mw.restart_button.clicked.connect(
-        #    self._tcspc_logic().restart_measurement, Qt.QueuedConnection
-        #)
-        #self._mw.pause_button.clicked.connect(
-        #    self._tcspc_logic().pause_measurement, Qt.QueuedConnection
-        #)
+        self._mw.restart_button.clicked.connect(
+            self._tcspc_logic().restart_measurement, Qt.QueuedConnection
+        )
+        self._mw.pause_button.clicked.connect(
+            self._tcspc_logic().pause_measurement, Qt.QueuedConnection
+        )
         self._mw.start_button.clicked.connect(
             self._tcspc_logic().start_fifo_measurement, Qt.QueuedConnection
         )
-        #self._mw.save_button.clicked.connect(
-        #    self._tcspc_logic().save_data, Qt.QueuedConnection
-        #)
-        #self._mw.load_button.clicked.connect(
-        #    self._tcspc_logic().load_data, Qt.QueuedConnection
-        #)
 
-        self._tcspc_logic().sig_data.connect(
+        self._mw.save_button.clicked.connect(
+            self._tcspc_logic().save_data, Qt.QueuedConnection
+        )
+        self._mw.load_button.clicked.connect(
+            functools.partial(
+                self._tcspc_logic().load_data
+            ), Qt.QueuedConnection
+        )
+        self._mw.previous_button.clicked.connect(
+            self._tcspc_logic().load_previous_data, Qt.QueuedConnection
+        )
+        self._mw.next_button.clicked.connect(
+            self._tcspc_logic().load_next_data, Qt.QueuedConnection
+        )
+
+        self._tcspc_logic().data_signal.connect(
             self._mw.update_data, Qt.QueuedConnection
         )
         self._tcspc_logic().sig_parameters.connect(
@@ -89,10 +100,17 @@ class TCSPCGui(GuiBase):
             self._tcspc_logic().set_parameter, Qt.QueuedConnection
         )
 
+        self._tcspc_logic().status_sig.connect(
+            self._mw.update_status, Qt.QueuedConnection
+        )
+
+        self._tcspc_logic().file_changed_signal.connect(
+            self.update_file_label, Qt.QueuedConnection
+        )
+
+        self._mw.previous_button.clicked.emit()
         self.init_spc_signal.connect(self._tcspc_logic().init_spc, Qt.QueuedConnection)
         self.init_spc_signal.emit()
-        # Gets the parameters from the logic module
-        #self._tcspc_logic().get_parameters(self._mw.parameters_editor.get_parameters())
 
         # Show the main window and raise it above all others
         self.show()
@@ -113,12 +131,13 @@ class TCSPCGui(GuiBase):
         #self._mw.save_button.clicked.disconnect()
         #self._mw.load_button.clicked.disconnect()
 
-        self._tcspc_logic().sig_data.disconnect()
+        self._tcspc_logic().data_signal.disconnect()
         self._tcspc_logic().sig_parameters.disconnect()
         self._tcspc_logic().sig_rate_values.disconnect()
 
         # Close main window
         #self._mw.system_parameters_action.triggered.disconnect()
+
         self._mw.close()
 
     def show(self) -> None:
@@ -131,9 +150,17 @@ class TCSPCGui(GuiBase):
 
     def start_measurement(self):
         self._mw.restart_button.setEnabled(False)
+        self._mw.counts_histogram_plot.setTitle('Measurement', **{'size': '7pt'})
 
     def restart_measurement(self):
         self._mw.restart_button.setEnabled(False)
+
+    @Slot(str)
+    def update_file_label(self, new_file: str):
+
+        head, filename = os.path.split(new_file)
+        self._mw.filename_label.setText(filename)
+        self._mw.counts_histogram_plot.setTitle(filename, **{'size': '7pt'})
 
 if __name__ == '__main__':
     from PySide2.QtWidgets import QApplication

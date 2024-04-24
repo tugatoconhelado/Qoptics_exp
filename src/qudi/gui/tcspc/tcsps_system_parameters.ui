@@ -34,7 +34,7 @@
           <item row="0" column="1">
            <widget class="QDoubleSpinBox" name="tac_range_spinbox">
             <property name="suffix">
-             <string> sec</string>
+             <string> ns</string>
             </property>
             <property name="decimals">
              <number>6</number>
@@ -106,7 +106,7 @@
              <number>4</number>
             </property>
             <property name="maximum">
-             <double>100000000000000004764729344.000000000000000</double>
+             <double>100.000000000000000</double>
             </property>
            </widget>
           </item>
@@ -126,7 +126,7 @@
              <number>4</number>
             </property>
             <property name="maximum">
-             <double>100000000000000004764729344.000000000000000</double>
+             <double>100.000000000000000</double>
             </property>
            </widget>
           </item>
@@ -201,7 +201,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QDoubleSpinBox" name="collection_time_spinbox">
+           <widget class="QDoubleSpinBox" name="collect_time_spinbox">
             <property name="decimals">
              <number>4</number>
             </property>
@@ -265,7 +265,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QSpinBox" name="sync_freq_divider_spinbox">
+           <widget class="QSpinBox" name="sync_freq_div_spinbox">
             <property name="minimum">
              <number>1</number>
             </property>
@@ -280,7 +280,13 @@
              <string> mV</string>
             </property>
             <property name="decimals">
-             <number>4</number>
+             <number>3</number>
+            </property>
+            <property name="minimum">
+             <double>-9999999999999.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>99999999999999.000000000000000</double>
             </property>
            </widget>
           </item>
@@ -290,16 +296,16 @@
              <string> mV</string>
             </property>
             <property name="decimals">
-             <number>4</number>
+             <number>3</number>
             </property>
             <property name="minimum">
-             <double>-999999999999999.000000000000000</double>
+             <double>-99999999999999.000000000000000</double>
             </property>
             <property name="maximum">
-             <double>10000000000000000000.000000000000000</double>
+             <double>100000000000000000.000000000000000</double>
             </property>
             <property name="value">
-             <double>0.000000000000000</double>
+             <double>-20.000000000000000</double>
             </property>
            </widget>
           </item>
@@ -503,7 +509,10 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+     <property name="centerButtons">
+      <bool>false</bool>
      </property>
     </widget>
    </item>

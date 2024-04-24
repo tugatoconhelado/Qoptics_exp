@@ -96,7 +96,11 @@ class ConfocalLogic(LogicBase):
 
         # Reports to gui statusbar
         self.status_msg_signal.emit(f'Confocal: Starting acquisition with parameters: {self.data.parameters}')
-        #self.img_size_signal.emit(scan_size, offset, pixels)
+        self.img_size_signal.emit(
+            self.data.parameters.scan_size,
+            self.data.parameters.offset,
+            self.data.parameters.pixels
+        )
 
         parameters_log_str = (
             f'Starting scan with parameters:\n' +

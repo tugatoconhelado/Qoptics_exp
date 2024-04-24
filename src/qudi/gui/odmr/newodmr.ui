@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>906</width>
-    <height>777</height>
+    <width>1131</width>
+    <height>858</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,7 +32,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>906</width>
+     <width>1131</width>
      <height>21</height>
     </rect>
    </property>
@@ -60,27 +60,191 @@
     <number>4</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,2">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="4,2">
      <item>
       <widget class="QGroupBox" name="odmr_parameter_box">
        <property name="styleSheet">
         <string notr="true"/>
        </property>
        <property name="title">
-        <string>Sweep parameters</string>
+        <string>Signal Generator - SRS SG384</string>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout">
+       <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1">
         <item>
-         <layout class="QGridLayout" name="gridLayout" rowstretch="1,1" columnstretch="1,1,1,1">
-          <item row="0" column="0">
-           <widget class="QLabel" name="center_label">
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <item>
+           <layout class="QHBoxLayout" name="modulation_layout">
+            <item>
+             <widget class="QLabel" name="modulation_label">
+              <property name="text">
+               <string>Modulation</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="modulation_on_radiobutton">
+              <property name="text">
+               <string>On</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="modulation_off_radiobutton">
+              <property name="text">
+               <string>Off</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="modulation_type_layout">
+            <item>
+             <widget class="QLabel" name="modulation_type_label">
+              <property name="text">
+               <string>Modulation Type</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="modulation_type_combobox">
+              <property name="currentIndex">
+               <number>3</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>AM</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>FM</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>PhaseM</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Sweep</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Pulse</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>I/O</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="modulation_function_layout">
+            <item>
+             <widget class="QLabel" name="modulation_function_label">
+              <property name="text">
+               <string>Modulation Function</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="modulation_function_combobox">
+              <property name="currentIndex">
+               <number>1</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>Sine</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Ramp</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Triangle</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Square</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Noise</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>External</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QGridLayout" name="gridLayout" rowstretch="1,1,1" columnstretch="1,1,1,1">
+          <item row="1" column="2">
+           <widget class="QLabel" name="step_label">
             <property name="text">
-             <string>Center</string>
+             <string>Points</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="freq_spinbox">
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="suffix">
+             <string> GHz</string>
+            </property>
+            <property name="maximum">
+             <double>10000000000.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+            <property name="value">
+             <double>2.870000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QLabel" name="ampl_label">
+            <property name="text">
+             <string>Ampl</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="freq_label">
+            <property name="text">
+             <string>Freq</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QDoubleSpinBox" name="range_box">
+           <widget class="QDoubleSpinBox" name="mod_span_spinbox">
             <property name="maximumSize">
              <size>
               <width>100</width>
@@ -102,7 +266,7 @@
            </widget>
           </item>
           <item row="0" column="3">
-           <widget class="QDoubleSpinBox" name="power_box">
+           <widget class="QDoubleSpinBox" name="ampl_spinbox">
             <property name="maximumSize">
              <size>
               <width>100</width>
@@ -126,51 +290,8 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
-           <widget class="QDoubleSpinBox" name="center_box">
-            <property name="maximumSize">
-             <size>
-              <width>100</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="suffix">
-             <string> GHz</string>
-            </property>
-            <property name="maximum">
-             <double>10000000000.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.010000000000000</double>
-            </property>
-            <property name="value">
-             <double>2.870000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <widget class="QLabel" name="step_label">
-            <property name="text">
-             <string>Points</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QLabel" name="power_label">
-            <property name="text">
-             <string>Power</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="range_label">
-            <property name="text">
-             <string>Range</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="3">
-           <widget class="QSpinBox" name="number_points_box">
+           <widget class="QSpinBox" name="number_points_spinbox">
             <property name="maximumSize">
              <size>
               <width>100</width>
@@ -185,6 +306,50 @@
             </property>
             <property name="value">
              <number>500</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="mod_span_label">
+            <property name="text">
+             <string>Mod Span</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="mod_rate_label">
+            <property name="text">
+             <string>Mod Rate</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLabel" name="phase_label">
+            <property name="text">
+             <string>Phase</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="mod_rate_spinbox">
+            <property name="suffix">
+             <string> Hz</string>
+            </property>
+            <property name="maximum">
+             <double>1000000000000000000.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="3">
+           <widget class="QSpinBox" name="phase_spinbox">
+            <property name="suffix">
+             <string> deg</string>
+            </property>
+            <property name="maximum">
+             <number>999999999</number>
             </property>
            </widget>
           </item>

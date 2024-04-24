@@ -11,7 +11,7 @@ from qudi.core.configoption import ConfigOption
 from qudi.util.mutex import Mutex
 import numpy as np
 import copy
-from seabreeze.spectrometers import Spectrometer as sbSpectrometer
+import seabreeze.spectrometers as sbSpectrometer
 import dataclasses
 import os
 from qudi.logic.filemanager import FileManager
@@ -193,6 +193,7 @@ class SpectrometerLogic(LogicBase):
 
         self.stop_acquisition()
         self.status_msg_signal.emit(f'Spectrometer: Starting Acquisition with parameters {self.data.parameters}')
+        self.changed_integration_time = True
         self.__timer.setInterval(self.data.parameters.integration_time)
         self.__timer.start()
 
@@ -206,6 +207,9 @@ class SpectrometerLogic(LogicBase):
         spectrum_data_signal containing all the info stracted:
         """
         with self._mutex:
+            if self.changed_integration_time is True:
+                self.changed_integration_time = False
+                return
             self.data.spectrum = self.spectrometer.intensities(
                     self.data.parameters.electrical_dark
                     )
@@ -332,13 +336,21 @@ class SpectrometerLogic(LogicBase):
         """
 
         self.log.info('Loading Spectrometer')
+        if self.spectrometer is not None:
+            self.spectrometer.close()
         try:
-            self.spectrometer = sbSpectrometer.from_first_available()
-            limits = self.spectrometer.integration_time_micros_limits
-            self.log.info('Loading Spectrometer succesful')
-            self.__length = len(self.spectrometer.wavelengths())
-            self.data.background = np.zeros(self.__length)
-            self.spectrometer_connection_status.emit(True)
+            spectrometers = sbSpectrometer.list_devices()
+            if len(spectrometers) == 0:
+                self.log.info('No spectrometer found')
+                self.spectrometer_connection_status.emit(False)
+                return
+            else:
+                self.spectrometer = sbSpectrometer.Spectrometer(spectrometers[0])
+                limits = self.spectrometer.integration_time_micros_limits
+                self.log.info(f'Loading Spectrometer {self.spectrometer}')
+                self.__length = len(self.spectrometer.wavelengths())
+                self.data.background = np.zeros(self.__length)
+                self.spectrometer_connection_status.emit(True)
         except:
             self.log.info('Loading Spectrometer failed')
             self.spectrometer_connection_status.emit(False)

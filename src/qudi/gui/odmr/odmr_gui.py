@@ -10,10 +10,9 @@ import functools
 
 
 class ODMRGui(GuiBase):
-    """ This is a simple template GUI measurement module for qudi """
-    
-    #_confocal_logic = Connector(name='confocal_logic', interface='ConfocalLogic')
-    #_tracking_logic = Connector(name='tracking_logic', interface='TrackingLogic')
+
+    _odmr_logic = Connector(name='odmr_logic', interface='ODMRLogic')
+    _signal_generator_hardware = Connector(name='SG384_hardware', interface='SG384Hardware')
 
     # Declare static parameters that can/must be declared in the qudi configuration
     # _my_config_option = ConfigOption(name='my_config_option', default=1, missing='warn')
@@ -25,6 +24,78 @@ class ODMRGui(GuiBase):
     def on_activate(self) -> None:
 
         self._mw = ODMRMainWindow()
+
+        # Connect signals to logic
+
+        self._mw.freq_signal.connect(
+            functools.partial(
+                setattr,
+                self._signal_generator_hardware(),
+                'frequency'
+            ),
+            Qt.QueuedConnection
+        )
+        self._mw.mod_span_signal.connect(
+            functools.partial(
+                setattr,
+                self._signal_generator_hardware(),
+                'sweep_deviation'
+            ),
+            Qt.QueuedConnection
+        )       
+        self._mw.mod_rate_signal.connect(
+            functools.partial(
+                setattr,
+                self._signal_generator_hardware(),
+                'modulation_sweep_rate'
+            ),
+            Qt.QueuedConnection
+        )
+        self._mw.phase_signal.connect(
+            functools.partial(
+                setattr,
+                self._signal_generator_hardware(),
+                'phase'
+            ),
+            Qt.QueuedConnection
+        )
+        self._mw.ampl_signal.connect(
+            functools.partial(
+                setattr,
+                self._signal_generator_hardware(),
+                'amplitude'
+            ),
+            Qt.QueuedConnection
+        )
+        self._mw.modulation_signal.connect(
+            functools.partial(
+                setattr,
+                self._signal_generator_hardware(),
+                'modulation_enable'
+            ),
+            Qt.QueuedConnection
+        )
+        self._mw.modulation_type_signal.connect(
+            functools.partial(
+                setattr,
+                self._signal_generator_hardware(),
+                'modulation_type'
+            ),
+            Qt.QueuedConnection
+        )
+        self._mw.modulation_function_signal.connect(
+            functools.partial(
+                setattr,
+                self._signal_generator_hardware(),
+                'sweep_modulation_function'
+            ),
+            Qt.QueuedConnection
+        )
+
+
+
+
+
         self.show()
 
     def on_deactivate(self) -> None:

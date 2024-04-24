@@ -81,6 +81,7 @@ class TCSPCHardware(Base):
         param_id = getattr(spcm.ParID, param.upper())
         spcm.set_parameter(self.module_no, param_id, value)
         setted_parameter = self._get_SPC_param_from_module(param)
+        self.log.info(f'Parameter {param} set to value {setted_parameter}')
         setattr(self._tcspc_params, param.lower(), setted_parameter)
         return setted_parameter
 
@@ -123,10 +124,8 @@ class TCSPCHardware(Base):
 
         self.log.info('Initialising FIFO measurement')
         self.set_SPC_param('mode', 1) # Sets FIFO Mode
-        self._tcspc_params.stop_on_time = 0
+        self._tcspc_params.stop_on_time = 1
         self.set_SPC_params_to_module(module_no)
-        print(self._tcspc_params.stop_on_time)
-        print(self._tcspc_params.mode)
 
     def start_measurement(self, module_no):
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1068</width>
-    <height>889</height>
+    <height>907</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -82,6 +82,18 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="device_state_dockwidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>524287</width>
+     <height>360</height>
+    </size>
+   </property>
    <property name="allowedAreas">
     <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
    </property>
@@ -92,7 +104,7 @@
     <number>8</number>
    </attribute>
    <widget class="QWidget" name="device_state_widget">
-    <layout class="QVBoxLayout" name="verticalLayout_2" stretch="2,1,2">
+    <layout class="QVBoxLayout" name="verticalLayout_2" stretch="2,1,3">
      <item>
       <layout class="QGridLayout" name="device_state_layout" rowstretch="1,1" columnstretch="1,2,1,2">
        <item row="0" column="1">
@@ -161,391 +173,110 @@
       </widget>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="parameter_layout" stretch="1,2,1,2,1,2,1,2">
+      <layout class="QHBoxLayout" name="horizontalLayout" stretch="4,3">
        <item>
-        <widget class="QLabel" name="time_label">
-         <property name="text">
-          <string>Time</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="time_layout" stretch="1,1">
+        <layout class="QHBoxLayout" name="start_layout" stretch="1,1,1,1">
          <item>
-          <widget class="QComboBox" name="time_combobox">
-           <item>
-            <property name="text">
-             <string>Collection</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Display</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Repeat</string>
-            </property>
-           </item>
+          <widget class="QPushButton" name="start_button">
+           <property name="text">
+            <string>Start</string>
+           </property>
           </widget>
          </item>
          <item>
-          <widget class="QStackedWidget" name="time_stackedwidget">
-           <property name="frameShape">
-            <enum>QFrame::NoFrame</enum>
+          <widget class="QPushButton" name="pause_button">
+           <property name="text">
+            <string>Pause</string>
            </property>
-           <property name="currentIndex">
-            <number>0</number>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="restart_button">
+           <property name="text">
+            <string>Restart</string>
            </property>
-           <widget class="QWidget" name="collection_page">
-            <layout class="QHBoxLayout" name="horizontalLayout">
-             <item>
-              <widget class="QDoubleSpinBox" name="collection_time_spinbox">
-               <property name="decimals">
-                <number>4</number>
-               </property>
-               <property name="maximum">
-                <double>1000000000000000000.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="display_page">
-            <layout class="QHBoxLayout" name="horizontalLayout_5">
-             <item>
-              <widget class="QDoubleSpinBox" name="display_time_spinbox">
-               <property name="decimals">
-                <number>4</number>
-               </property>
-               <property name="maximum">
-                <double>999999999999.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="repeat_page">
-            <layout class="QHBoxLayout" name="horizontalLayout_4">
-             <item>
-              <widget class="QDoubleSpinBox" name="repeat_time_spinbox">
-               <property name="decimals">
-                <number>4</number>
-               </property>
-               <property name="maximum">
-                <double>9999999999999.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="stop_button">
+           <property name="text">
+            <string>Stop</string>
+           </property>
           </widget>
          </item>
         </layout>
        </item>
        <item>
-        <widget class="QLabel" name="tac_label">
-         <property name="text">
-          <string>TAC</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="tac_layout">
+        <layout class="QVBoxLayout" name="file_layout" stretch="1,1,1">
          <item>
-          <widget class="QComboBox" name="tac_combobox">
-           <item>
-            <property name="text">
-             <string>Range</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Gain</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Offset</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Limit High</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Limit Low</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item>
-          <widget class="QStackedWidget" name="tac_stackedwidget">
-           <property name="currentIndex">
-            <number>0</number>
+          <widget class="QLabel" name="filename_label">
+           <property name="text">
+            <string>FILENAME</string>
            </property>
-           <widget class="QWidget" name="tac_range_page">
-            <layout class="QHBoxLayout" name="horizontalLayout_10">
-             <item>
-              <widget class="QDoubleSpinBox" name="tac_range_spinbox">
-               <property name="decimals">
-                <number>4</number>
-               </property>
-               <property name="maximum">
-                <double>10000000000000000000000.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="tac_gain_page">
-            <layout class="QHBoxLayout" name="horizontalLayout_9">
-             <item>
-              <widget class="QSpinBox" name="tac_gain_spinbox">
-               <property name="maximum">
-                <number>999999999</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="tac_offset_page">
-            <layout class="QHBoxLayout" name="horizontalLayout_8">
-             <item>
-              <widget class="QDoubleSpinBox" name="tac_offset_spinbox">
-               <property name="suffix">
-                <string> %</string>
-               </property>
-               <property name="decimals">
-                <number>4</number>
-               </property>
-               <property name="maximum">
-                <double>100.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="tac_limit_high_page">
-            <layout class="QHBoxLayout" name="horizontalLayout_7">
-             <item>
-              <widget class="QDoubleSpinBox" name="tac_limit_high_spinbox">
-               <property name="suffix">
-                <string> %</string>
-               </property>
-               <property name="decimals">
-                <number>4</number>
-               </property>
-               <property name="maximum">
-                <double>100.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="tac_limit_low_page">
-            <layout class="QHBoxLayout" name="horizontalLayout_6">
-             <item>
-              <widget class="QDoubleSpinBox" name="tac_limit_low_spinbox">
-               <property name="suffix">
-                <string> %</string>
-               </property>
-               <property name="decimals">
-                <number>4</number>
-               </property>
-               <property name="maximum">
-                <double>100.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QLabel" name="cfd_label">
-         <property name="text">
-          <string>CFD</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="cfd_layout">
-         <item>
-          <widget class="QComboBox" name="cfd_combobox">
-           <item>
-            <property name="text">
-             <string>Limit Low</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>ZC Level</string>
-            </property>
-           </item>
           </widget>
          </item>
          <item>
-          <widget class="QStackedWidget" name="cfd_stackedwidget">
-           <property name="currentIndex">
-            <number>0</number>
-           </property>
-           <widget class="QWidget" name="cfd_limit_low_page">
-            <layout class="QHBoxLayout" name="horizontalLayout_11">
-             <item>
-              <widget class="QDoubleSpinBox" name="cfd_limit_low_spinbox">
-               <property name="suffix">
-                <string> mV</string>
-               </property>
-               <property name="decimals">
-                <number>4</number>
-               </property>
-               <property name="minimum">
-                <double>-10000000000000000000.000000000000000</double>
-               </property>
-               <property name="maximum">
-                <double>10000000000000000000000.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="cfd_zc_level_page">
-            <layout class="QHBoxLayout" name="horizontalLayout_12">
-             <item>
-              <widget class="QDoubleSpinBox" name="cfd_zc_level_spinbox">
-               <property name="suffix">
-                <string> mV</string>
-               </property>
-               <property name="decimals">
-                <number>4</number>
-               </property>
-               <property name="minimum">
-                <double>-999999999999999.000000000000000</double>
-               </property>
-               <property name="maximum">
-                <double>10000000000000000000.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QLabel" name="sync_label_2">
-         <property name="text">
-          <string>SYNC</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="sync_layout">
-         <item>
-          <widget class="QComboBox" name="sync_combobox">
+          <layout class="QHBoxLayout" name="save_button_layout" stretch="1,1">
            <item>
-            <property name="text">
-             <string>Freq Div</string>
-            </property>
+            <widget class="QPushButton" name="save_button">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../../../artwork/qudi_icons.qrc">
+               <normaloff>:/icons/icons/save.png</normaloff>:/icons/icons/save.png</iconset>
+             </property>
+            </widget>
            </item>
            <item>
-            <property name="text">
-             <string>ZC Level</string>
-            </property>
+            <widget class="QPushButton" name="delete_button">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../../../artwork/qudi_icons.qrc">
+               <normaloff>:/icons/icons/delete.png</normaloff>:/icons/icons/delete.png</iconset>
+             </property>
+            </widget>
            </item>
-           <item>
-            <property name="text">
-             <string>Threshold</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Delay</string>
-            </property>
-           </item>
-          </widget>
+          </layout>
          </item>
          <item>
-          <widget class="QStackedWidget" name="sync_stackedwidget">
-           <property name="currentIndex">
-            <number>3</number>
-           </property>
-           <widget class="QWidget" name="sync_freq_div_page">
-            <layout class="QHBoxLayout" name="horizontalLayout_13">
-             <item>
-              <widget class="QSpinBox" name="sync_freq_div_spinbox">
-               <property name="maximum">
-                <number>999999999</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="sync_zc_level_page">
-            <layout class="QHBoxLayout" name="horizontalLayout_14">
-             <item>
-              <widget class="QDoubleSpinBox" name="sync_zc_level_spinbox">
-               <property name="suffix">
-                <string> mV</string>
-               </property>
-               <property name="decimals">
-                <number>4</number>
-               </property>
-               <property name="minimum">
-                <double>-99999999999999.000000000000000</double>
-               </property>
-               <property name="maximum">
-                <double>9999999999999.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="sync_threshold_page">
-            <layout class="QHBoxLayout" name="horizontalLayout_15">
-             <item>
-              <widget class="QDoubleSpinBox" name="sync_threshold_spinbox">
-               <property name="suffix">
-                <string> mV</string>
-               </property>
-               <property name="decimals">
-                <number>4</number>
-               </property>
-               <property name="minimum">
-                <double>-9999999999999.000000000000000</double>
-               </property>
-               <property name="maximum">
-                <double>100000000000000000.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="sync_delay_page">
-            <layout class="QHBoxLayout" name="horizontalLayout_16">
-             <item>
-              <widget class="QDoubleSpinBox" name="sync_delay_spinbox">
-               <property name="suffix">
-                <string> ns</string>
-               </property>
-               <property name="decimals">
-                <number>1</number>
-               </property>
-               <property name="maximum">
-                <double>100.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </widget>
+          <layout class="QHBoxLayout" name="load_file_layout" stretch="1,1,1">
+           <item>
+            <widget class="QPushButton" name="load_button">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../../../artwork/qudi_icons.qrc">
+               <normaloff>:/icons/icons/load.png</normaloff>:/icons/icons/load.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="previous_button">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../../../artwork/qudi_icons.qrc">
+               <normaloff>:/icons/icons/previous.png</normaloff>:/icons/icons/previous.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="next_button">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../../../artwork/qudi_icons.qrc">
+               <normaloff>:/icons/icons/next.png</normaloff>:/icons/icons/next.png</iconset>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
@@ -555,6 +286,12 @@
    </widget>
   </widget>
   <widget class="QDockWidget" name="rates_dockwidget">
+   <property name="maximumSize">
+    <size>
+     <width>524287</width>
+     <height>500</height>
+    </size>
+   </property>
    <property name="allowedAreas">
     <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
    </property>
@@ -568,120 +305,6 @@
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <layout class="QVBoxLayout" name="counts_layout"/>
-     </item>
-    </layout>
-   </widget>
-  </widget>
-  <widget class="QDockWidget" name="control_dockwidget">
-   <property name="allowedAreas">
-    <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
-   </property>
-   <property name="windowTitle">
-    <string>TCSPC Control</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>4</number>
-   </attribute>
-   <widget class="QWidget" name="control_widget">
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <layout class="QHBoxLayout" name="start_layout">
-       <item>
-        <widget class="QPushButton" name="start_button">
-         <property name="text">
-          <string>Start</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pause_button">
-         <property name="text">
-          <string>Pause</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="restart_button">
-         <property name="text">
-          <string>Restart</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="stop_button">
-         <property name="text">
-          <string>Stop</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QVBoxLayout" name="file_layout">
-       <item>
-        <layout class="QHBoxLayout" name="save_button_layout">
-         <item>
-          <widget class="QPushButton" name="save_button">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="../../../../artwork/qudi_icons.qrc">
-             <normaloff>:/icons/icons/save.png</normaloff>:/icons/icons/save.png</iconset>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="delete_button">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="../../../../artwork/qudi_icons.qrc">
-             <normaloff>:/icons/icons/delete.png</normaloff>:/icons/icons/delete.png</iconset>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="load_file_layout">
-         <item>
-          <widget class="QPushButton" name="load_button">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="../../../../artwork/qudi_icons.qrc">
-             <normaloff>:/icons/icons/load.png</normaloff>:/icons/icons/load.png</iconset>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="previous_button">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="../../../../artwork/qudi_icons.qrc">
-             <normaloff>:/icons/icons/previous.png</normaloff>:/icons/icons/previous.png</iconset>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="next_button">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="../../../../artwork/qudi_icons.qrc">
-             <normaloff>:/icons/icons/next.png</normaloff>:/icons/icons/next.png</iconset>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
      </item>
     </layout>
    </widget>
