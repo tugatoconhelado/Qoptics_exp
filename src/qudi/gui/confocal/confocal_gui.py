@@ -157,7 +157,7 @@ class ConfocalGui(GuiBase):
             Qt.QueuedConnection
         )
         
-        self._mw.position_control_widget.z_changed.connect(
+        self._mw.position_control_widget.set_z_offset_signal.connect(
             self._mw.tracking_widget.tracking_parameters_dialog.set_z_offset,
             Qt.QueuedConnection
         )
@@ -167,6 +167,8 @@ class ConfocalGui(GuiBase):
         )
 
         # Connect tracking logic to gui
+        self._mw.tracking_widget.maxing_signal.connect(
+            self._tracking_logic().on_start_maxing, Qt.QueuedConnection)
         self._mw.tracking_widget.max_xy_signal.connect(
             self._tracking_logic().max_xy, Qt.QueuedConnection)
         self._mw.tracking_widget.max_z_signal.connect(
@@ -175,16 +177,23 @@ class ConfocalGui(GuiBase):
             self._tracking_logic().max_xyz, Qt.QueuedConnection)
 
         self._mw.tracking_widget.stop_button.clicked.connect(
+            self._tracking_logic().stop_maxing, Qt.QueuedConnection)
+        self._mw.tracking_widget.stop_button.clicked.connect(
             self._tracking_logic().stop_acquisition, Qt.QueuedConnection)
 
+        self._tracking_logic().z_profile_signal.connect(
+            self._mw.tracking_widget.plot_z_profile, Qt.QueuedConnection)
+        self._tracking_logic().z_profile_fit_signal.connect(
+            self._mw.tracking_widget.plot_z_fit, Qt.QueuedConnection)
+        self._tracking_logic().point_profile_signal.connect(
+            self._mw.tracking_widget.plot_point_profile, Qt.QueuedConnection
+        )
         self._tracking_logic().point_profile_fit_signal.connect(
             self._mw.tracking_widget.plot_point_fit, Qt.QueuedConnection)
         self._tracking_logic().img_size_signal.connect(
-            self._mw.tracking_widget.set_image_sige, Qt.QueuedConnection)
-        self._tracking_logic().data_signal.connect(
+            self._mw.tracking_widget.set_image_size, Qt.QueuedConnection)
+        self._tracking_logic().img_data_signal.connect(
             self._mw.tracking_widget.update_image, Qt.QueuedConnection)
-        self._tracking_logic().z_profile_fit_signal.connect(
-            self._mw.tracking_widget.plot_z_fit, Qt.QueuedConnection)
 
         self._mw.confocal_widget.previous_button.clicked.emit()
         self.show()

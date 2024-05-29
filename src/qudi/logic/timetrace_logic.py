@@ -274,7 +274,6 @@ class TimeTraceLogic(LogicBase):
             self.log.info(f'Loaded data from {filepath}')
             self.file_changed_signal.emit(filepath)
 
-
     def load_previous_data(self):
 
         data, metadata, general, filepath = self.filemanager.load_previous()

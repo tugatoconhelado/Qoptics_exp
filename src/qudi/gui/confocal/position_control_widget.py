@@ -11,6 +11,7 @@ class PositionControlWidget(QWidget):
 
     position_changed = Signal(tuple)
     z_changed = Signal(float)
+    set_z_offset_signal = Signal(tuple)
     set_offset_signal = Signal(tuple)
     status_msg = Signal(str)
 
@@ -61,6 +62,8 @@ class PositionControlWidget(QWidget):
             (round(self.x_position_spinbox.value(), 2),
              round(self.y_position_spinbox.value(), 2))
         )
+        self.set_z_offset_signal.emit(
+            (round(self.z_position_spinbox.value(), 2),))
         self.status_msg.emit("Offset set to (%.2f, %.2f)" % (
             round(self.x_position_spinbox.value(), 2),
             round(self.y_position_spinbox.value(), 2)
@@ -152,7 +155,7 @@ class PositionControlWidget(QWidget):
 
         self.z_pos = point
         self.z_position_spinbox.setValue(round(point[0], 2))
-        self.go_to_z_point(point[0])
+        self._on_z_value_changed()
 
     def go_to_xy_point(self, new_point):
         """

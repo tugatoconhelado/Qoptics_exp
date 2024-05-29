@@ -122,7 +122,7 @@
           </widget>
          </item>
          <item row="4" column="3">
-          <widget class="QCheckBox" name="z_fitgauss_checkbox">
+          <widget class="QCheckBox" name="z_fit_gauss_checkbox">
            <property name="text">
             <string>Fit Gauss</string>
            </property>
@@ -168,7 +168,7 @@
           </widget>
          </item>
          <item row="4" column="1">
-          <widget class="QCheckBox" name="xy_fitgauss_checkbox">
+          <widget class="QCheckBox" name="xy_fit_gauss_checkbox">
            <property name="text">
             <string>Fit Gauss</string>
            </property>
@@ -294,25 +294,15 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="2">
-          <widget class="QCheckBox" name="checkBox">
-           <property name="text">
-            <string>Fit Gauss</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="2">
-          <widget class="QLabel" name="label">
+         <item row="5" column="0">
+          <widget class="QLabel" name="pixel_time_label">
            <property name="text">
             <string>Pixel Time</string>
            </property>
           </widget>
          </item>
-         <item row="5" column="3">
-          <widget class="QSpinBox" name="spinBox">
+         <item row="5" column="1">
+          <widget class="QSpinBox" name="pixel_time_spinbox">
            <property name="suffix">
             <string> ms</string>
            </property>
@@ -320,7 +310,17 @@
             <number>999999999</number>
            </property>
            <property name="value">
-            <number>3</number>
+            <number>5</number>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="3">
+          <widget class="QSpinBox" name="z_pixel_time_spinbox">
+           <property name="suffix">
+            <string> ms</string>
+           </property>
+           <property name="value">
+            <number>10</number>
            </property>
           </widget>
          </item>
