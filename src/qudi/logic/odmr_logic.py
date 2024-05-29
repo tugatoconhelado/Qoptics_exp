@@ -6,7 +6,7 @@ from qudi.core.connector import Connector
 from qudi.util.mutex import Mutex
 from qudi.logic.filemanager import FileManager
 
-
+import os
 import nidaqmx
 
 import numpy as np
@@ -42,14 +42,19 @@ class ODMRLogic(LogicBase):
 
         self._mutex = Mutex()
 
+        self.filemanager = FileManager(
+            data_dir=os.path.join(os.sep, 'c:' + os.sep, 'EXP', 'testdata'),
+            experiment_name='odmr',
+            exp_str='ODMR'
+        )
+
+    def on_activate(self):
+
         parameters = ODMRParameterData()
         self.data = ODMRData(parameters=parameters)
 
         self.tasks = []
         self.measure = False
-
-    def on_activate(self):
-        pass
 
     def on_deactivate(self) -> None:
         pass
@@ -57,18 +62,21 @@ class ODMRLogic(LogicBase):
     @Slot(float, float, float, int)
     def start_acquisition(self, frequency_center: float, power: float, frequency_range: float, number_points: int):
 
-        self._signal_generator_hardware.configure_frequency_sweep(
+        self.log.info('Starting acquisition')
+        self._signal_generator_hardware().configure_frequency_sweep(
             frequency_centre=frequency_center,
             amplitude=power,
-            frequency_deviation=frequency_range,
-            modulation_function=1,
+            sweep_deviation=frequency_range,
+            sweep_modulation_function=1,
             modulation_rate=1
         )
+        self.log.info('Signal generator configured')
         self.data.parameters.frequency_center = frequency_center
         self.data.parameters.frequency_range = frequency_range
         self.data.parameters.microwave_power = power
         self.data.parameters.frequency_points = number_points
 
+        self.log.info(f'Starting acquisition with parameters: {self.data.parameters}')
         self.data.frequency = np.zeros(number_points)
         self.data.fluorescence = np.zeros(number_points)
 
@@ -176,6 +184,7 @@ class ODMRLogic(LogicBase):
             sample_mode=nidaqmx.constants.AcquisitionType.CONTINUOUS,
             samps_per_chan=number_samples
         )
+        self.tasks.append(task)
         return task
 
     def set_counter_fluorescence(self, number_samples):
@@ -217,4 +226,84 @@ class ODMRLogic(LogicBase):
             sample_mode=nidaqmx.constants.AcquisitionType.CONTINUOUS,
             samps_per_chan=number_samples
         )
+        self.tasks.append(task)
         return task
+
+    def save_data(self, filepath: str = '') -> None:
+        """
+        Saves the data to a file.
+
+        Parameters
+        ----------
+        filepath : str
+            Path to the file where the data will be saved
+        """
+        data_dict = dataclasses.asdict(self.data)
+        data_dict.pop('parameters')
+        filepath = self.filemanager.save(
+            data=data_dict,
+            metadata=dataclasses.asdict(self.data.parameters)
+        )
+        self.log.info(f'Saved data to {filepath}')
+        self.file_changed_signal.emit(filepath)
+        return filepath
+    
+    def save_data_as(self):
+        """
+        Opens a file dialog to save the data to a file.
+        """
+        data_dict = dataclasses.asdict(self.data)
+        data_dict.pop('parameters')
+        filepath = self.filemanager.save_as(
+            data=data_dict,
+            metadata=dataclasses.asdict(self.data.parameters)
+        )
+        self.log.info(f'Saved data to {filepath}')
+        self.file_changed_signal.emit(filepath)
+        return filepath
+
+    def load_data(self):
+
+        data, metadata, general, filepath = self.filemanager.load()
+        if filepath != '':
+            for key, value in metadata.items():
+                setattr(self.data.parameters, key, value)
+            for key, value in data.items():
+                setattr(self.data, key, value)
+            self.data_signal.emit(self.data.time_array, self.data.counts)
+
+            self.log.info(f'Loaded data from {filepath}')
+            self.file_changed_signal.emit(filepath)
+
+    def load_previous_data(self):
+
+        data, metadata, general, filepath = self.filemanager.load_previous()
+        if filepath != '':
+            for key, value in metadata.items():
+                setattr(self.data.parameters, key, value)
+            for key, value in data.items():
+                setattr(self.data, key, value)
+            self.data_signal.emit(self.data.time_array, self.data.counts)
+            self.log.info(f'Loaded data from {filepath}')
+            self.file_changed_signal.emit(filepath)
+            return filepath
+
+    def load_next_data(self):
+
+        data, metadata, general, filepath = self.filemanager.load_next()
+        if filepath != '':
+            for key, value in metadata.items():
+                setattr(self.data.parameters, key, value)
+            for key, value in data.items():
+                setattr(self.data, key, value)
+            self.data_signal.emit(self.data.time_array, self.data.counts)
+            self.log.info(f'Loaded data from {filepath}')
+            self.file_changed_signal.emit(filepath)
+            return filepath
+    
+    def delete_file(self):
+
+        file_to_delete = self.filemanager.current_file
+        self.load_previous_data()
+        self.filemanager.delete(file_to_delete)
+        self.log.info(f'Deleted file {file_to_delete}')

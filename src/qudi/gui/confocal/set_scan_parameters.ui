@@ -197,6 +197,9 @@
          <property name="singleStep">
           <double>5.000000000000000</double>
          </property>
+         <property name="value">
+          <double>5.000000000000000</double>
+         </property>
         </widget>
        </item>
        <item>
@@ -220,6 +223,9 @@
           <double>1000000.000000000000000</double>
          </property>
          <property name="singleStep">
+          <double>5.000000000000000</double>
+         </property>
+         <property name="value">
           <double>5.000000000000000</double>
          </property>
         </widget>
@@ -380,7 +386,7 @@
           <number>10</number>
          </property>
          <property name="value">
-          <number>64</number>
+          <number>128</number>
          </property>
         </widget>
        </item>
@@ -402,7 +408,7 @@
           <number>10</number>
          </property>
          <property name="value">
-          <number>64</number>
+          <number>128</number>
          </property>
         </widget>
        </item>
@@ -435,7 +441,7 @@
           <number>9999999</number>
          </property>
          <property name="value">
-          <number>5</number>
+          <number>1</number>
          </property>
         </widget>
        </item>

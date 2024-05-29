@@ -213,10 +213,12 @@ class ConfocalLogic(LogicBase):
 
     def go_to_xy_point(self, point: tuple):
     
-        self._galvo_hardware().go_to_xy_point(point)
+        with self._mutex:
+            self._galvo_hardware().go_to_xy_point(point)
 
     def go_to_z_point(self, point: tuple):
 
+        print('confocal go to z point')
         self._piezo_hardware().go_to_z_point(point)
 
     def send_data(self, data):
