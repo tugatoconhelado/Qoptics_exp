@@ -117,6 +117,12 @@ class TimeTraceGui(GuiBase):
         # Close main window
         self._mw.close()
 
+    @Slot(int, float)
+    def on_start_track_intensity(self, intensity_percent, reference_intensity):
+
+        self._timetrace_logic().start_track_intensity(intensity_percent, reference_intensity)
+        self._mw.req_start_timetrace()
+
     @Slot(str)
     def change_current_file_labels(self, filepath: str) -> None:
 

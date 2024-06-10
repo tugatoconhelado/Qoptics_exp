@@ -118,9 +118,44 @@ class APDHardware(Base):
         """
         Starts the clock and counter tasks
         """
-        #self.clock.start()
+        self.clock.start()
         self.counter.start()
         return True
+    
+    def set_finite_clock(self, number_samples, dt_pulse):
+        """
+        Creates the clock that will run the scan.
+
+        Parameters
+        ----------
+        number_samples: int
+            Number of samples the clock will generate.
+        dt_pulse: float
+            Width of the clock pulse.
+        
+        Returns
+        -------
+        clock: nidaqmx.Task
+            Clock task for the scan.
+        """
+        clock_source_channel = self.settings["Device"] + '/' + self.settings["Clock Source Channel"]
+        clock_task = nidaqmx.Task(new_task_name='APD finite clock')
+        clock_task.co_channels.add_co_pulse_chan_time(
+            counter=clock_source_channel,
+            units=nidaqmx.constants.TimeUnits.SECONDS,
+            idle_state=nidaqmx.constants.Level.HIGH,
+            initial_delay=dt_pulse,
+            low_time=dt_pulse,
+            high_time=dt_pulse
+        )
+        clock_task.timing.cfg_implicit_timing(
+            sample_mode=nidaqmx.constants.AcquisitionType.CONTINUOUS,
+            samps_per_chan=number_samples
+        )
+        self.tasks.append(clock_task)
+        self.log.debug(f'Created task: {clock_task.name}')
+
+        return clock_task
         
     def stop(self) -> bool:
         """

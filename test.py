@@ -1,40 +1,36 @@
-from PySide2.QtWidgets import QApplication, QDialog, QVBoxLayout, QSpinBox, QComboBox, QLabel, QMainWindow, QStackedWidget, QWidget, QHBoxLayout
-from PySide2.QtCore import Slot
+import dataclasses
+from typing import List, Tuple, Union
+from functools import wraps
 
-class MyDialog(QDialog):
-    def __init__(self, parent=None):
-        super(MyDialog, self).__init__(parent)
-        self.layout = QVBoxLayout(self)
-        self.spinBoxes = [QSpinBox(self) for _ in range(5)]
-        for spinBox in self.spinBoxes:
-            self.layout.addWidget(spinBox)
+@dataclasses.dataclass
+class Test:
+    a: tuple
+    b: tuple
+    c: tuple
 
-class MainWindow(QMainWindow):
-    def __init__(self, parent=None):
-        super(MainWindow, self).__init__(parent)
-        self.dialog = MyDialog(self)
-        self.comboBox = QComboBox(self)
-        self.comboBox.addItems([f'SpinBox {i+1}' for i in range(5)])
-        self.comboBox.currentIndexChanged.connect(self.update_widget)
-        self.stackedWidget = QStackedWidget(self)
-        for spinBox in self.dialog.spinBoxes:
-            widget = QWidget()
-            layout = QHBoxLayout(widget)
-            layout.addWidget(spinBox)
-            self.stackedWidget.addWidget(widget)
-        self.layout = QVBoxLayout(self)
-        self.layout.addWidget(self.comboBox)
-        self.layout.addWidget(self.stackedWidget)
-        self.centralWidget = QWidget(self)
-        self.centralWidget.setLayout(self.layout)
-        self.setCentralWidget(self.centralWidget)
 
-    @Slot(int)
-    def update_widget(self, index):
-        self.stackedWidget.setCurrentIndex(index)
+def receive_dataclass(function) -> None:
+    
+    @wraps(function)
+    def accept_dataclass(param_data, *args):
+        if not args and dataclasses.is_dataclass(param_data):
+            # If 1 argument is given, use the dataclass as a tuple
+            return function(*dataclasses.astuple(param_data))
+        return function(param_data, *args)
+    return accept_dataclass
 
-app = QApplication([])
-window = MainWindow()
-window.show()
-window.dialog.show()
-app.exec_()
+@receive_dataclass
+def my_function(a, b, c):
+
+    print('-' * 9)
+    print(a)
+    print(b)
+    print(c)
+    print('-' * 9)
+
+if __name__ == '__main__':
+    test = Test((1, 2, 3), (4, 5, 6), (7, 8, 9))
+    test2 = [(1, 2, 3), (4, 5, 6), (7, 8, 9)]
+    print(dataclasses.astuple(test))
+    my_function((1, 2, 3), (4, 5, 6), (7, 8, 9))
+    my_function(test)  # Example usage with 3 arguments
