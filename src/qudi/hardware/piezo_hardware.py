@@ -97,6 +97,7 @@ class PiezoHardware(Base):
             z_values: numpy.ndarray
                 Z values in um.
         """
+        self.stop()
         with self._mutex:
             z_values = np.linspace(
                 offset[0] - scan_size[0] / 2,
@@ -115,12 +116,12 @@ class PiezoHardware(Base):
                 samp_rate=1 / pixel_time
             )
 
-            z_scan.write(
+            written = z_scan.write(
                 z_volts,
                 auto_start=False,
                 timeout=pixels[0] * pixel_time
             )
-            return (clock, z_scan, z_values)
+        return (clock, z_scan, z_values)
 
     def set_analog_output(self, number_samples: int,
         samp_rate: int) -> nidaqmx.Task:
@@ -216,16 +217,15 @@ class PiezoHardware(Base):
         point: float
             Z position in um.
         """
+        self.stop()
         with self._mutex:
             z0 = self.current_z
             zf = point
-            print(f'Piezo: Moving from {z0} to {zf}')
             #self.status_msg.emit(f'Piezo: Moving from {z0} to {zf}')
             number_samples = self.settings["Number Samples"]
             pixel_time = self.settings["Pixel Time (ms) on movement"] / 1000
             samp_rate = float(1 / pixel_time)
 
-            print('Creating z movement tasks')
             z_volt = np.linspace(z0, zf, num=number_samples) / self.z_um_per_volts
             self.log.debug(f'z_volts = {z_volt}')
 
@@ -238,15 +238,13 @@ class PiezoHardware(Base):
 
             clock.start()
             self.log.debug('starting z movement tasks')
-            print('starting z movement tasks')
-            written = z_movement_task.write(data=z_volt, auto_start=False, timeout=pixel_time * number_samples)
-            z_movement_task.start()
+            written = z_movement_task.write(data=z_volt, auto_start=True, timeout=pixel_time * number_samples)
+            #z_movement_task.start()
             z_movement_task.wait_until_done(timeout=pixel_time * number_samples)
-            print('z movement tasks done')
 
             self.current_z = copy.copy(zf)
-            print(f'Piezo: Moved to {zf}')
-        self.stop()
+            self.log.info(f'Piezo: Moved to {zf}')
+            self.stop()
 
     def stop(self):
         """
@@ -254,16 +252,14 @@ class PiezoHardware(Base):
         
         Stops and closes all the `nidaqmx.Task` that were created
         """
-        with self._mutex:
-            self.measure = False
-            self.log.debug('Stopping Piezo')
-            print('Stopping Piezo')
-            for task in self.tasks:
-                self.log.debug(f'Closing task: {task.name}')
-                print(f'Closing task: {task.name}')
-                task.stop()
-                task.close()
-            self.tasks = []
+        self.measure = False
+        self.log.debug('Stopping Piezo')
+        for task in self.tasks:
+            self.log.debug(f'Closing task: {task.name}')
+            task.stop()
+            task.close()
+
+        self.tasks = []
 
 
 

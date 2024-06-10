@@ -27,6 +27,7 @@ class PositionControlWidget(QWidget):
         self.slider_dragging = False
         self.xy_pos = (0, 0)
         self.z_pos = 0
+        self.move = True
 
         self.init_gui()
 
@@ -141,6 +142,13 @@ class PositionControlWidget(QWidget):
         new_y = round(self.y_position_spinbox.value(), 2)
         self.set_xy_point((new_x, new_y))
 
+    @Slot(tuple)
+    def on_position_indicator_moved(self, new_pos):
+
+        self.set_xy_point(new_pos)
+        self.go_to_xy_point(new_pos)
+
+    @Slot(tuple)
     def set_xy_point(self, point):
         """
         Set the xy point and emit the position changed signal.
@@ -148,13 +156,16 @@ class PositionControlWidget(QWidget):
         self.xy_pos = point
         self.x_position_spinbox.setValue(round(point[0], 2))
         self.y_position_spinbox.setValue(round(point[1], 2))
-        self.go_to_xy_point(point)
+        #self.go_to_xy_point(point)
 
     @Slot(tuple)
     def set_z_point(self, point : tuple):
 
         self.z_pos = point
-        self.z_position_spinbox.setValue(round(point[0], 2))
+        new_z = round(point[0], 2)
+        self.z_position_spinbox.setValue(new_z)
+
+        self.move = False
         self._on_z_value_changed()
 
     def go_to_xy_point(self, new_point):
@@ -171,7 +182,10 @@ class PositionControlWidget(QWidget):
 
         This signal is intended to be connected to the backend of confocal.
         """
-        self.z_changed.emit(float(new_point))
+        if self.move is True:
+            self.z_changed.emit(float(new_point))
+        elif self.move is False:
+            self.move = True
 
 
 if __name__ == '__main__':

@@ -53,6 +53,7 @@ class TCSPCLogic(LogicBase):
     data_signal = Signal(np.ndarray, np.ndarray)  # data signal
     status_sig = Signal(spcm.MeasurementState)
     file_changed_signal = Signal(str)
+    track_point_signal = Signal()
 
     # Declare static parameters that can/must be declared in the qudi configuration
     #_increment_interval = ConfigOption(name='increment_interval', default=1, missing='warn')
@@ -79,6 +80,9 @@ class TCSPCLogic(LogicBase):
             experiment_name='lifetime',
             exp_str='LFT'
         )
+        self.track_intensity = False
+        self.measurement_paused = False
+        self.skip_next_rate = False
 
     def on_activate(self) -> None:
 
@@ -117,18 +121,42 @@ class TCSPCLogic(LogicBase):
             self.__rates_timer.start()
             self.get_all_parameters()
 
+    def start_track_intensity(self, intensity_percent, reference_intensity):
+
+        self.reference_intensity = reference_intensity
+        self.intensity_percent = 100 - intensity_percent
+        self.track_intensity = True
+        print(f'Starting intensity tracking with threshold {intensity_percent}% and reference intensity {reference_intensity}')
+        self.skip_next_rate = True
+        if self.measurement_paused:
+            self.restart_measurement()
+        if not self.__rates_timer.isActive():
+            self.__rates_timer.start()
+
     def get_rates(self):
 
         with self._mutex:
             rates = self._tcspc_hardware().read_rate_counter(0)
-            rate_values = (
+            self.rate_values = (
                 rates.sync_rate,
                 rates.cfd_rate,
                 rates.tac_rate,
                 rates.adc_rate
             )
-            self.sig_rate_values.emit(rate_values)
-            self.log.debug(f'Rates: {rate_values}')
+            self.sig_rate_values.emit(self.rate_values)
+            self.log.debug(f'Rates: {self.rate_values}')
+            if self.skip_next_rate:
+                self.skip_next_rate = False
+                return
+            if self.track_intensity:
+                print(self.rate_values[1], self.reference_intensity * self.intensity_percent / 100)
+                if self.rate_values[1] < self.reference_intensity * self.intensity_percent / 100:
+                    self.log.info('Intensity dropped below threshold')
+                    if self.continue_acquisition:
+                        self.log.info('Pausing measurement')
+                        self.pause_measurement()
+                        self.track_intensity = False
+                        self.track_point_signal.emit()
 
     def start_fifo_measurement(self):
 
@@ -152,6 +180,7 @@ class TCSPCLogic(LogicBase):
         self.buf_size = 32768
 
         self.continue_acquisition = True
+        self.measurement_paused = False
         self.counter = 0
         self.start_time = time.monotonic()
         self.__timer.start()
@@ -159,6 +188,8 @@ class TCSPCLogic(LogicBase):
     @Slot()
     def stop_measurement(self):
         self.continue_acquisition = False
+        self.track_intensity = False
+        self.measurement_paused = False
         self.__timer.stop()
         self.log.info('Stopping measurement')
         self._tcspc_hardware().stop_measurement(0)
@@ -166,6 +197,7 @@ class TCSPCLogic(LogicBase):
     @Slot()
     def pause_measurement(self):
         self.continue_acquisition = False
+        self.measurement_paused = True
         self.__timer.stop()
         self.log.info('Measurement paused')
         self._tcspc_hardware().stop_measurement(0)
@@ -180,9 +212,9 @@ class TCSPCLogic(LogicBase):
         self.start_time = time.monotonic()
         self.__timer.start()
         self.continue_acquisition = True
+        self.measurement_paused = False
         self.log.info('Measurement restarted')
         
-
     @Slot(dict)
     def set_parameters(self, params: dict):
         """
@@ -274,7 +306,6 @@ class TCSPCLogic(LogicBase):
         time_bins = self.time_bins * self.time_conversion
         self.data.time_bins = time_bins[:-1]
         self.data_signal.emit(time_bins[:-1], copy.copy(self.data.histogram))
-
 
     def save_data(self, filepath: str = '') -> None:
         """

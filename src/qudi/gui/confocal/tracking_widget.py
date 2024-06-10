@@ -13,7 +13,7 @@ class TrackingWidget(QWidget):
     max_xy_signal = Signal(tuple, tuple, tuple, float, bool)
     max_xyz_signal = Signal(tuple, tuple)
     maxing_signal = Signal()                                            
-    track_signal = Signal(tuple, bool, int, bool, int)
+    track_signal = Signal(tuple, tuple, tuple)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -54,8 +54,9 @@ class TrackingWidget(QWidget):
     def handle_track(self):
 
         parameters = self.tracking_parameters_dialog.get_parameters()
+        self.maxing_signal.emit()
         self.track_signal.emit(
-            *parameters[0], *parameters[1], *parameters[2])
+            parameters[0], parameters[1], parameters[2])
 
     def configure_plots(self):
 
@@ -107,8 +108,8 @@ class TrackingWidget(QWidget):
         
         self.tracking_points_dataline = self.tracking_points_plot.plot([], [],
             pen=None, symbol='o',
-            symbolPen=pg.mkPen(color='blue', width=0),                                      
-            symbolBrush=pg.mkBrush(0, 0, 255, 255),
+            symbolPen=pg.mkPen(color='cyan', width=0),                                      
+            symbolBrush=pg.mkBrush('cyan'),
             symbolSize=7
         )
 
@@ -154,6 +155,18 @@ class TrackingWidget(QWidget):
             fast_fit_prof[0], fast_fit_prof[1])
         self.slow_scan_profile_fit_dataline.setData(
             slow_fit_prof[0], slow_fit_prof[1])
+
+    @Slot(np.ndarray)
+    def plot_tracking_points(self, points: np.ndarray) -> None:
+        """
+        Plot the tracking points.
+        
+        Parameters
+        ----------
+        points : np.ndarray
+            Array containing the tracking points.
+        """
+        self.tracking_points_dataline.setData(points[:, 0], points[:, 1])
 
     @Slot(np.ndarray)
     def update_image(self, img_fw: np.ndarray) -> None:
