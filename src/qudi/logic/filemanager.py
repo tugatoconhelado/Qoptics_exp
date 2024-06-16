@@ -365,6 +365,9 @@ class FileManager(QObject):
         """
         if not os.path.isabs(self.data_dir):
             self.data_dir = os.path.abspath(self.data_dir)
+        
+        if not os.path.exists(self.data_dir):
+            os.mkdir(self.data_dir)
 
         directory = os.path.join(self.data_dir, experiment_name)
         if not os.path.exists(directory):
