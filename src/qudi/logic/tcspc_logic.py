@@ -54,6 +54,7 @@ class TCSPCLogic(LogicBase):
     status_sig = Signal(spcm.MeasurementState)
     file_changed_signal = Signal(str)
     track_point_signal = Signal()
+    progress_signal = Signal(int)
 
     # Declare static parameters that can/must be declared in the qudi configuration
     #_increment_interval = ConfigOption(name='increment_interval', default=1, missing='warn')
@@ -69,6 +70,7 @@ class TCSPCLogic(LogicBase):
     sig_parameters = Signal(dict)
     sig_rate_values = Signal(tuple)
     sig_parameter = Signal(str, float or int or str or bool)
+    measurement_finished_signal = Signal()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -165,13 +167,14 @@ class TCSPCLogic(LogicBase):
         self.time_bins = np.arange(4096)
         self.data.histogram = np.zeros(4096 - 1, dtype=np.uint32)
         tac_range = self._tcspc_hardware().get_SPC_param('tac_range')
+        tac_gain = self._tcspc_hardware().get_SPC_param('tac_gain')
         display_time = self._tcspc_hardware().get_SPC_param('display_time')
         collect_time = self._tcspc_hardware().get_SPC_param('collect_time')
-
+        
         self.data.parameters.display_time = display_time
         self.data.parameters.collect_time = collect_time
 
-        self.time_conversion = tac_range / 4096
+        self.time_conversion = tac_range / (4096 * tac_gain)
 
         self.__timer.setInterval(1000 * display_time)
         self._tcspc_hardware().init_fifo_measurement(0)
@@ -179,12 +182,23 @@ class TCSPCLogic(LogicBase):
 
         self.buf_size = 32768
 
+        self.progress = 0
+        self.time_left = collect_time
+        self.time_from_start = 0
+        self.progress_signal.emit(self.progress)
         self.continue_acquisition = True
         self.measurement_paused = False
         self.counter = 0
+        self.max_counter = int(collect_time / display_time)
         self.start_time = time.monotonic()
         self.__timer.start()
     
+    @Slot()
+    def track_interval_triggered(self):
+
+        self.pause_measurement()
+        self.track_point_signal.emit()
+
     @Slot()
     def stop_measurement(self):
         self.continue_acquisition = False
@@ -206,6 +220,7 @@ class TCSPCLogic(LogicBase):
     def restart_measurement(self):
 
         self.time_left = self._tcspc_hardware().get_SPC_param('collect_time') - self.elapsed_time
+        self.time_from_start += self.elapsed_time
         self._tcspc_hardware().set_SPC_param('collect_time', self.time_left)
         setted_time_left = self._tcspc_hardware().get_SPC_param('collect_time')
         self._tcspc_hardware().start_measurement(0)
@@ -265,13 +280,15 @@ class TCSPCLogic(LogicBase):
 
                 status_code = self._tcspc_hardware().test_state(0)
                 self.status_sig.emit(status_code)
-                self.counter += 1
+                
                 with self._mutex:
                     data = self._tcspc_hardware().read_data_from_tcspc(0, self.buf_size)
                     if len(data):
                         self.convert_data(data)
+                
                 if spcm.MeasurementState.STOPPED_ON_COLLECT_TIME in status_code:
                     self.log.info('Collection time over')
+                    self.measurement_finished_signal.emit()
                     self.stop_measurement()
                     with self._mutex:
                         data = self._tcspc_hardware().read_data_from_tcspc(0, self.buf_size)
@@ -285,8 +302,12 @@ class TCSPCLogic(LogicBase):
                 #        data = self._tcspc_hardware().read_data_from_tcspc(0, self.buf_size)
                 #        if len(data):
                 #            self.convert_data(data)
-
+                
                 self.elapsed_time = time.monotonic() - self.start_time
+                self.progress = (self.elapsed_time + self.time_from_start)  / self.data.parameters.collect_time * 100
+                print(f'Progress: {self.progress}')
+                self.progress_signal.emit(min(self.progress, 100))
+
 
     def convert_data(self, data):
 

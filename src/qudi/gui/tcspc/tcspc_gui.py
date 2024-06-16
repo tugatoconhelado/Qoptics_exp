@@ -108,6 +108,10 @@ class TCSPCGui(GuiBase):
             self.update_file_label, Qt.QueuedConnection
         )
 
+        self._tcspc_logic().progress_signal.connect(
+            self._mw.update_status_bar_progress, Qt.QueuedConnection
+        )
+
         self._mw.previous_button.clicked.emit()
         self.init_spc_signal.connect(self._tcspc_logic().init_spc, Qt.QueuedConnection)
         self.init_spc_signal.emit()

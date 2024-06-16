@@ -288,8 +288,8 @@
   <widget class="QDockWidget" name="rates_dockwidget">
    <property name="maximumSize">
     <size>
-     <width>524287</width>
-     <height>500</height>
+     <width>99999</width>
+     <height>999999</height>
     </size>
    </property>
    <property name="allowedAreas">
@@ -302,6 +302,18 @@
     <number>8</number>
    </attribute>
    <widget class="QWidget" name="rates_widget">
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>99999</width>
+      <height>99999</height>
+     </size>
+    </property>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <layout class="QVBoxLayout" name="counts_layout"/>
