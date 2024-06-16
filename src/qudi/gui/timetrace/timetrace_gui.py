@@ -12,6 +12,7 @@ from qudi.core.connector import Connector
 from qudi.gui.template.template_main_window import TemplateMainWindow
 from qudi.gui.timetrace.timetrace_mainwindow import TimeTraceMainWindow
 from qudi.logic import filemanager
+from qudi.logic import plot
 import functools
 
 
@@ -45,6 +46,10 @@ class TimeTraceGui(GuiBase):
         )
         self._mw.stop_button.clicked.connect(
             self._timetrace_logic().stop_acquisition,
+            Qt.QueuedConnection
+        )
+        self._mw.export_action.triggered.connect(
+            self.export_plot,
             Qt.QueuedConnection
         )
 
@@ -133,6 +138,15 @@ class TimeTraceGui(GuiBase):
     @Slot(str, int)
     def update_statusbar(self, message: str, timeout: int = 5000) -> None:
         self._mw.statusbar.showMessage(message)
+
+    @Slot()
+    def export_plot(self):
+        
+        fig = plot.timetrace_plot(
+            x_data=self._timetrace_logic().data.time_array,
+            counts=self._timetrace_logic().data.counts
+        )
+        fig.show()
 
     def show(self) -> None:
         """ Show the main window and raise it above all others """
