@@ -80,6 +80,7 @@ class TrackingLogic(LogicBase):
     call_set_offset_signal = Signal()
     tracking_finished_signal = Signal()
     start_track_intensity_signal = Signal(int, float)
+    interval_clock_signal = Signal()
 
     # Declare connectors to other logic modules or hardware modules to interact with
     _apd_hardware = Connector(
@@ -124,7 +125,7 @@ class TrackingLogic(LogicBase):
         self.__timer.setSingleShot(False)
 
         # Connect timeout signal to increment slot
-        self.__timer.timeout.connect(self.track_point)
+        self.__timer.timeout.connect(self.interval_clock_signal.emit)
 
     def on_deactivate(self) -> None:
         pass
@@ -303,15 +304,15 @@ class TrackingLogic(LogicBase):
         self.data.tracking_log = []
 
         self.continue_tracking = True
-        self.track_point()
-        print(self.data.parameters.track_by_intensity)
-        print(self.data.parameters.track_by_interval)
+        
         if self.data.parameters.track_by_interval:
+            self.interval_clock_signal.emit()
             self.__timer.setInterval(
                 self.data.parameters.track_interval * 1000 * 60)
             self.__timer.start()
 
         elif self.data.parameters.track_by_intensity:
+            self.track_point()
             reference_intensity = self.get_current_counts()
             self.start_track_intensity_signal.emit(
                 self.data.parameters.track_intensity, reference_intensity
@@ -366,13 +367,13 @@ class TrackingLogic(LogicBase):
             print(self.data.parameters.max_xy_parameters)
             print(self.data.parameters.max_z_parameters)
 
-            self.tracking_finished_signal.emit()
-
             if self.data.parameters.track_by_intensity:
                 reference_intensity = self.get_current_counts()
                 self.start_track_intensity_signal.emit(
                     self.data.parameters.track_intensity, reference_intensity
                 )
+            elif self.data.parameters.track_by_interval:
+                self.tracking_finished_signal.emit()
 
     @Slot(tuple, tuple)
     def max_xyz(self, xy_parameters: tuple, z_parameters: tuple) -> tuple:

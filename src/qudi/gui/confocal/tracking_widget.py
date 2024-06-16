@@ -214,6 +214,8 @@ class TrackingWidget(QWidget):
 class TrackingParametersDialog(QDialog):
 
     status_msg = Signal(str)
+    tracking_monitor_signal = Signal(str)
+    connect_tracking_interval_signal = Signal(bool)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -233,6 +235,16 @@ class TrackingParametersDialog(QDialog):
 
         self.current_values = self.get_parameters()
         self.status_msg.emit(f'Accepted new scan parameters {self.current_values}')
+
+        if self.track_with_tcspc_radiobutton.isChecked():
+            self.tracking_monitor_signal.emit('TCSPC')
+        elif self.track_with_timetrace_radiobutton.isChecked():
+            self.tracking_monitor_signal.emit('TimeTrace')
+
+        if self.connect_interval_track_to_tcspc_checkbox.isChecked():
+            self.connect_tracking_interval_signal.emit(True)
+        else:
+            self.connect_tracking_interval_signal.emit(False)
         super().accept()
 
     def reject(self):
