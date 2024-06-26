@@ -1,4 +1,4 @@
-from qudi.interface.template_interface import TemplateInterface
+
 from qudi.core.statusvariable import StatusVar
 from qudi.core.configoption import ConfigOption
 from qudi.util.mutex import Mutex
@@ -8,9 +8,10 @@ import pyvisa as visa
 from pyvisa.constants import StopBits, Parity
 import logging
 from time import sleep
-from dict_TC110 import commands, data_types
 
-class TurboPump(Base):
+
+
+class PumpHardware(Base):
     """
     Models the turbo pump instrument
     
@@ -42,9 +43,9 @@ class TurboPump(Base):
                               'STOP_BITS' : StopBits.one}
         self.rm = visa.ResourceManager('@py')
         self.devices = self.rm.list_resources()
+        print("test")
+        print(self.devices)
         self.port = self.devices[0]
-        self.inst = self.rm.open_resource(self.port, baud_rate=self.communication["BAUDRATE"], data_bits=self.communication["DATA_BITS"], parity=self.communication["PARITY"], stop_bits=self.communication["STOP_BITS"])
-        self.inst.write_termination = '\r'
         self.current_status = 'Idle'
         self.data_types = {0:{'description':'False / true', 'length':'06', 'example':'000000 / 111111'},
             1:{'description':'Positive integer number', 'length':'06', 'example':'000000 to 999999'},
@@ -143,6 +144,7 @@ class TurboPump(Base):
             self.port = port        
         self.device_id = self._format_id(device_id)
         if self.port in self.devices:
+            print(f'Connecting to {self.port}')
             self.inst = self.rm.open_resource(self.port, baud_rate=self.communication["BAUDRATE"], data_bits=self.communication["DATA_BITS"], parity=self.communication["PARITY"], stop_bits=self.communication["STOP_BITS"])
             self.inst.write_termination = '\r'
             # try communicating and try other ports in self.devices if unsuccessful. If all fails, raise Exception('No Pfeiffer device found.').
@@ -151,11 +153,18 @@ class TurboPump(Base):
         
     @classmethod
     def _pad_payload(cls, payload, length):
-        payload = str(payload)
-        if len(payload) >= length:
+        if type(payload) == bool:
+            if payload:
+                payload = '111111'
+            else:
+                payload = '000000'
             return payload
         else:
-            return cls._pad_payload('0'+payload, length)
+            payload = str(payload)
+            if len(payload) >= length:
+                return payload
+            else:
+                return cls._pad_payload('0'+payload, length)
     @classmethod
     def _format_id(cls, id):
         if type(id) not in [str,int]:
@@ -207,25 +216,29 @@ class TurboPump(Base):
         else:
             device_id = str(self.device_id)
         param_number = str(comand["number"])
-        if comand['access'] == 'RW':
-            action = '00'
-            payload_length = self.data_types[comand["data type"]]["length"]
-        elif comand['access'] == 'R':
+        if comand['access'] == 'RW' and payload != '=?':
             action = '10'
+            payload_length = self.data_types[comand["data type"]]["length"]
+        elif comand['access'] == 'R' or payload == '=?':
+            action = '00'
             payload_length = "02"
         else:
             raise Exception('Unknow access type')
+        """"
         if payload< comand['min'] or comand['max']< payload:
             raise ValueError(f'Payload out of range. {comand["min"]} <= {payload} <= {comand["max"]}') 
-        partial_message = device_id + action + param_number +payload_length+ self._pad_payload(str(payload),int(payload_length))
+        """
+        partial_message = device_id + action + param_number +payload_length+ self._pad_payload(payload,int(payload_length))
         checksum = self._calculate_checksum(partial_message)
         message = partial_message + checksum
+        print(f"sending message: {message}")
         return message
     
     def send_message(self, coamnd, paylooad):
         message = self.build_message(coamnd, paylooad)
         self.inst.write(message)
         response = self.read_message()
+        print(response)
         return response
 
     def read_message(self):
@@ -245,3 +258,4 @@ class TurboPump(Base):
             else:
                 message = {'device_id':device_id, 'action' : action, 'param_number' : param_number, 'payload_length' : payload_length, 'payload' : payload}
                 return message
+            
