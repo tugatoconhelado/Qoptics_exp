@@ -47,6 +47,7 @@
     <addaction name="save_action"/>
     <addaction name="save_as_action"/>
     <addaction name="load_action"/>
+    <addaction name="export_lifetime_action"/>
     <addaction name="conver_menu"/>
     <addaction name="separator"/>
     <addaction name="clear_spc_memory_action"/>
@@ -392,6 +393,11 @@
   <action name="save_settings_action">
    <property name="text">
     <string>Save settings</string>
+   </property>
+  </action>
+  <action name="export_lifetime_action">
+   <property name="text">
+    <string>Export</string>
    </property>
   </action>
  </widget>

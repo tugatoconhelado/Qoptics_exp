@@ -6,6 +6,7 @@ from PySide2.QtCore import Slot, Signal, Qt, SIGNAL
 from qudi.core.module import GuiBase
 from qudi.core.connector import Connector
 from qudi.gui.confocal.confocal_mainwindow import ConfocalMainWindow
+from qudi.logic import plot
 import functools
 
 
@@ -62,6 +63,11 @@ class ConfocalGui(GuiBase):
         )
         self._mw.position_control_widget.set_offset_signal.connect(
             self._mw.confocal_widget.scan_parameters_dialog.set_offset,
+            Qt.QueuedConnection
+        )
+
+        self._mw.export_confocal_image_action.triggered.connect(
+            self.export_confocal_image_plot,
             Qt.QueuedConnection
         )
 
@@ -243,8 +249,7 @@ class ConfocalGui(GuiBase):
         self._mw.confocal_widget.previous_button.clicked.emit()
 
         self.show()
-
-        
+       
     def on_deactivate(self) -> None:
         self._mw.close()
 
@@ -294,6 +299,15 @@ class ConfocalGui(GuiBase):
         self._mw.confocal_widget.image_bw_widget.heatmap.setTitle(
             filename, **{'size': '7pt'})
         self._mw.confocal_widget.filename_label.setText(filename)
+
+    @Slot()
+    def export_confocal_image_plot(self):
+
+        plot.confocal_image_plot(
+            image_data=self._confocal_logic().data.counter_image_fw,
+            x_data=self._confocal_logic().data.x,
+            y_data=self._confocal_logic().data.y,
+        )
 
     @Slot(str, int)
     def update_statusbar(self, message: str, timeout: int = 5000) -> None:

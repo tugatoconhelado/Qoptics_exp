@@ -93,8 +93,16 @@ QPushButton#stop_button{
   stop:1 rgba(255, 0, 0, 255));
 }
 
-QCheckBox{
-    color: #fff;
+QCheckBox
+{
+    spacing: 5px;
+    outline: none;
+    margin-bottom: 2px;
+}
+
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
 }
 
 QRadioButton{
@@ -216,7 +224,7 @@ QToolTip
 
 }
 
-QSpinBox, QDoubleSpinBox
+QAbstractSpinBox
 {
   border-radius: 8px;
   border: 1px solid #e0e4e7;
@@ -225,15 +233,15 @@ QSpinBox, QDoubleSpinBox
   color: #fff;
 }
 
-QSpinBox::hover, QDoubleSpinBox::hover, QSpinBox::focus, QDoubleSpinBox::focus
+QAbstractSpinBox::hover, QAbstractSpinBox::focus
 {
   border: 1px solid #700aa6;
 }
 
-QSpinBox::up-button, QDoubleSpinBox::up-button,
-QSpinBox::down-button, QDoubleSpinBox::down-button {
+QAbstractSpinBox::up-button, QAbstractSpinBox::down-button
+{
     subcontrol-origin: border;
-    width: 18px;
+    width: 12px;
     height: 4px;
     border-radius: 4px;
     background: #770ecc;
@@ -242,24 +250,26 @@ QSpinBox::down-button, QDoubleSpinBox::down-button {
     outline: 5px;
 }
 
-QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover,
-QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {
+QAbstractSpinBox::up-button:hover, QAbstractSpinBox::down-button:hover
+{
     background: #700aa6;
     background-color: #700aa6;
     border: 1px solid #8f14f5;
 }
 
-QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed,
-QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed {
+QAbstractSpinBox::up-button:pressed, QAbstractSpinBox::down-button:pressed 
+{
     background-color: #4a086e;
 }
 
-QSpinBox::up-arrow, QDoubleSpinBox::up-arrow{
+QAbstractSpinBox::up-arrow
+{
   image: url(C:/EXP/python/Qoptics_exp/artwork/icons/up_arrow_solid.png);
   width: 7px;
   height: 7px;
 }
-QSpinBox::down-arrow, QDoubleSpinBox::down-arrow{
+QAbstractSpinBox::down-arrow
+{
   image: url(C:/EXP/python/Qoptics_exp/artwork/icons/down_arrow_solid.png);
   width: 7px;
   height: 7px;
@@ -298,9 +308,9 @@ QComboBox QAbstractItemView
 }
 
 QComboBox::drop-down {
-    subcontrol-origin: padding;
+    subcontrol-origin: border;
     subcontrol-position: top right;
-    width: 18px;
+    width: 12px;
     border-radius: 4px;
     background: #770ecc;
     border: 1px solid #770ecc;

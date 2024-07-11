@@ -43,9 +43,17 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <widget class="QMenu" name="export_menu">
+     <property name="title">
+      <string>Export</string>
+     </property>
+     <addaction name="export_confocal_image_action"/>
+     <addaction name="export_tracking_image_action"/>
+    </widget>
     <addaction name="save_action"/>
     <addaction name="save_as_action"/>
     <addaction name="load_action"/>
+    <addaction name="export_menu"/>
     <addaction name="separator"/>
     <addaction name="exit_action"/>
    </widget>
@@ -157,6 +165,16 @@
   <action name="actionStop_tracking">
    <property name="text">
     <string>&amp;Stop tracking</string>
+   </property>
+  </action>
+  <action name="export_confocal_image_action">
+   <property name="text">
+    <string>Confocal Image</string>
+   </property>
+  </action>
+  <action name="export_tracking_image_action">
+   <property name="text">
+    <string>Tracking Image</string>
    </property>
   </action>
  </widget>

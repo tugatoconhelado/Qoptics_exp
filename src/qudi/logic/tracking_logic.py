@@ -61,6 +61,9 @@ class TrackingData:
 
     parameters : TrackingParameterData = None
     img : ConfocalImageData = None
+    z_profile : tuple = None
+    fast_profile : tuple = None
+    slow_profile : tuple = None
     tracking_log : list = None
 
 

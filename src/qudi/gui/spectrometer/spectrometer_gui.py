@@ -10,6 +10,7 @@ from qudi.core.module import GuiBase
 from qudi.core.connector import Connector
 from qudi.gui.template.template_main_window import TemplateMainWindow
 from qudi.gui.spectrometer.spectrometer_mainwindow_gui import SpectrometerMainWindow
+from qudi.logic import plot
 import functools
 
 
@@ -34,6 +35,14 @@ class SpectrometerGui(GuiBase):
         self._mw = SpectrometerMainWindow()
 
         # connect all GUI internal signals
+        self._mw.export_average_spectrum_action.triggered.connect(
+            self.export_average_spectrum,
+            Qt.QueuedConnection
+        )
+        self._mw.export_current_spectrum_action.triggered.connect(
+            self.export_current_spectrum,
+            Qt.QueuedConnection
+        )
         self._mw.target_point_average.sigPositionChanged.connect(
             self.update_target_point_label,
             Qt.QueuedConnection
@@ -224,6 +233,22 @@ class SpectrometerGui(GuiBase):
         self._mw.average_spectrum_plot.setTitle(filename, **{'size': '7pt'})
         self._mw.filename_label.setText(filename)
     
+    @Slot()
+    def export_average_spectrum(self):
+
+        plot.spectrum_plot(
+            self._spectrometer_logic().data.wavelength,
+            self._spectrometer_logic().data.average
+        )
+
+    @Slot()
+    def export_current_spectrum(self):
+
+        plot.spectrum_plot(
+            self._spectrometer_logic().data.wavelength,
+            self._spectrometer_logic().data.spectrum
+        )
+
 
     @Slot(str, int)
     def update_statusbar(self, message: str, timeout: int = 5000) -> None:

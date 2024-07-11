@@ -5,6 +5,7 @@ import pyqtgraph as pg
 from qudi.core.module import GuiBase
 from qudi.core.connector import Connector
 from qudi.gui.tcspc.tcspc_mainwindow import TCSPCMainWindow, TCSPC_parameters_editor
+from qudi.logic import plot
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -55,6 +56,9 @@ class TCSPCGui(GuiBase):
         )
 
         # Measurement control functions
+        self._mw.export_lifetime_action.triggered.connect(
+            self.export_lifetime, Qt.QueuedConnection
+        )
         self._mw.stop_button.clicked.connect(
             self._tcspc_logic().stop_measurement, Qt.QueuedConnection
         )
@@ -71,6 +75,19 @@ class TCSPCGui(GuiBase):
         self._mw.save_button.clicked.connect(
             self._tcspc_logic().save_data, Qt.QueuedConnection
         )
+        self._mw.save_as_action.triggered.connect(
+            functools.partial(
+            self._tcspc_logic().save_data_as
+            ),
+            Qt.QueuedConnection
+        )
+        self._mw.load_action.triggered.connect(
+            functools.partial(
+                self._tcspc_logic().load_data
+            ),
+            Qt.QueuedConnection
+        )
+
         self._mw.load_button.clicked.connect(
             functools.partial(
                 self._tcspc_logic().load_data
@@ -158,6 +175,14 @@ class TCSPCGui(GuiBase):
 
     def restart_measurement(self):
         self._mw.restart_button.setEnabled(False)
+
+    @Slot()
+    def export_lifetime(self):
+        
+        plot.lifetime_plot(
+            self._tcspc_logic().data.time_bins,
+            self._tcspc_logic().data.histogram,
+        )
 
     @Slot(str)
     def update_file_label(self, new_file: str):

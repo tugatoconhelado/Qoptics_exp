@@ -446,9 +446,18 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <widget class="QMenu" name="export_menu">
+     <property name="title">
+      <string>Export</string>
+     </property>
+     <addaction name="separator"/>
+     <addaction name="export_current_spectrum_action"/>
+     <addaction name="export_average_spectrum_action"/>
+    </widget>
     <addaction name="save_action"/>
     <addaction name="save_as_action"/>
     <addaction name="load_action"/>
+    <addaction name="export_menu"/>
     <addaction name="separator"/>
     <addaction name="exit_action"/>
    </widget>
@@ -510,6 +519,16 @@
   <action name="actionSet_acquisition_parameters">
    <property name="text">
     <string>Set acquisition parameters</string>
+   </property>
+  </action>
+  <action name="export_current_spectrum_action">
+   <property name="text">
+    <string>Current spectrum</string>
+   </property>
+  </action>
+  <action name="export_average_spectrum_action">
+   <property name="text">
+    <string>Averaged spectrum</string>
    </property>
   </action>
  </widget>

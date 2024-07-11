@@ -24,15 +24,17 @@ import os
 @dataclasses.dataclass
 class TCSPCParameterData:
 
-    display_time = 0
-    collect_time = 0
+    display_time: int = 1
+    collect_time: int = 1
+    tac_range: float= 10.2
+    tac_gain: int = 1
 
 @dataclasses.dataclass
 class TCSPCData:
 
+    parameters: TCSPCParameterData = TCSPCParameterData()
     time_bins: np.ndarray = np.array([])
     histogram: np.ndarray = np.array([])
-    parameters: TCSPCParameterData = TCSPCParameterData()
 
 
 # qudi logic measurement modules must inherit qudi.core.module.LogicBase or other logic modules.
@@ -138,7 +140,11 @@ class TCSPCLogic(LogicBase):
     def get_rates(self):
 
         with self._mutex:
-            rates = self._tcspc_hardware().read_rate_counter(0)
+            try:
+                rates = self._tcspc_hardware().read_rate_counter(0)
+            except Exception as e:
+                print(f'Error reading rates: {e}')
+                return
             self.rate_values = (
                 rates.sync_rate,
                 rates.cfd_rate,
@@ -173,6 +179,8 @@ class TCSPCLogic(LogicBase):
         
         self.data.parameters.display_time = display_time
         self.data.parameters.collect_time = collect_time
+        self.data.parameters.tac_range = tac_range
+        self.data.parameters.tac_gain = tac_gain
 
         self.time_conversion = tac_range / (4096 * tac_gain)
 
@@ -305,7 +313,6 @@ class TCSPCLogic(LogicBase):
                 
                 self.elapsed_time = time.monotonic() - self.start_time
                 self.progress = (self.elapsed_time + self.time_from_start)  / self.data.parameters.collect_time * 100
-                print(f'Progress: {self.progress}')
                 self.progress_signal.emit(min(self.progress, 100))
 
 
@@ -339,6 +346,7 @@ class TCSPCLogic(LogicBase):
         """
         data_dict = dataclasses.asdict(self.data)
         data_dict.pop('parameters')
+        print(self.data.parameters)
         filepath = self.filemanager.save(
             data=data_dict,
             metadata=dataclasses.asdict(self.data.parameters)
