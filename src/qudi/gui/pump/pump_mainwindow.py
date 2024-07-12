@@ -1,57 +1,26 @@
-
-from qudi.core.statusvariable import StatusVar
-from qudi.core.configoption import ConfigOption
-from qudi.util.mutex import Mutex
-from qudi.core.module import Base
-from PySide2.QtCore import QObject, Signal
-import pyvisa as visa
-from pyvisa.constants import StopBits, Parity
-import logging
-from time import sleep
+from PySide2.QtWidgets import QDialog, QWidget, QMainWindow, QApplication, QProgressBar
+from PySide2.QtCore import Slot, Signal, QDir, Qt, QTimer
+from PySide2.QtGui import QFont
+from qudi.util.uic import loadUi
+import sys
+import os
+import numpy as np
 
 
+class PumpMainWindow(QMainWindow):
 
-class PumpHardware(Base):
-    """
-    Models the turbo pump instrument
-    
-    Properties
-    ----------
-    
-    Methods
-    -------
-    connect
-    
-    _pad_payload
-    
-    _format_id
-    
-    _calculate_checksum
-    """
-    
-    status_msg_signal = Signal(str)
+    conect_signal = Signal(str)
+    parameter_signal = Signal(str)
+    get_parameter_for_setter_signal = Signal(str)
+    set_parameter_signal = Signal(str, float)
 
-    def __init__(self, *args, **kwargs) -> None:
-
-        super().__init__(*args, **kwargs)
-
-        self.device_id = self._format_id(1)
-        self.communication = {'BAUDRATE' : 9600,
-                              'DATA_BITS' : 8,
-                              'PARITY' : Parity.none,
-                              'START_BITS' : 1,
-                              'STOP_BITS' : StopBits.one}
-        self.rm = visa.ResourceManager('@py')
-        self.devices = self.rm.list_resources()
-        self.current_status = 'Idle'
-        self.connected = False
-        self.data_types = {0:{'description':'False / true', 'length':'06', 'example':'000000 / 111111'},
+    data_types = {0:{'description':'False / true', 'length':'06', 'example':'000000 / 111111'},
             1:{'description':'Positive integer number', 'length':'06', 'example':'000000 to 999999'},
             2:{'description':'Positive fixed comma number', 'length':'06', 'example':'001571' 'equal to 15,71'},
             4:{'description':'Symbol chain', 'length':'06', 'example':'TC_400'},
             7:{'description':'Positive integer number', 'length':'03', 'example':'000 to 999'},
             11:{'description':'Symbol chain', 'length':'16', 'example':'BrezelBier&Wurst'}}
-        self.commands = {'Heating': {'number': '001',  'description': 'Heating', 'data type': 0, 'access': 'RW', 'min': 0, 'max': 1, 'default': 0, 'non-volatile': True},
+    commands = {'Heating': {'number': '001',  'description': 'Heating', 'data type': 0, 'access': 'RW', 'min': 0, 'max': 1, 'default': 0, 'non-volatile': True},
             'Standby': {'number': '002',  'description': 'Standby', 'data type': 0, 'access': 'RW', 'min': 0, 'max': 1, 'default': 0, 'non-volatile': True},
             'RUTimeCtrl': {'number': '004',  'description': 'Run-up time control', 'data type': 0, 'access': 'RW', 'min': 0, 'max': 1, 'default': 1, 'non-volatile': True},
             'ErrorAckn': {'number': '009',  'description': 'Error acknowledgement', 'data type': 0, 'access': 'W', 'min': 1, 'max': 1, 'default': 1, 'non-volatile': False},
@@ -92,12 +61,12 @@ class PumpHardware(Base):
             'Nominal_Spd': {'number': '315',  'description': 'Nominal rotation speed (Hz)', 'data type': 1, 'access': 'R', 'min': 0, 'max': 999999, 'default': None, 'non-volatile': False},
             'DrvPower': {'number': '316',  'description': 'Drive power (W)', 'data type': 1, 'access': 'R', 'min': 0, 'max': 999999, 'default': None, 'non-volatile': False},
             'PumpCylces': {'number': '319',  'description': 'Pump cycles', 'data type': 1, 'access': 'R', 'min': 0, 'max': 65535, 'default': None, 'non-volatile': True},
-            'TempElec': {'number': '326',  'description': 'Temperature electronic (ºC)', 'data type': 1, 'access': 'R', 'min': 0, 'max': 999999, 'default': None, 'non-volatile': False},
-            'TempPmpBot': {'number': '330',  'description': 'Temperature pump bottom part (ºC)', 'data type': 1, 'access': 'R', 'min': 0, 'max': 999999, 'default': None, 'non-volatile': False},
+            'TempElec': {'number': '326',  'description': 'Temperature electronic (°C)', 'data type': 1, 'access': 'R', 'min': 0, 'max': 999999, 'default': None, 'non-volatile': False},
+            'TempPmpBot': {'number': '330',  'description': 'Temperature pump bottom part (°C)', 'data type': 1, 'access': 'R', 'min': 0, 'max': 999999, 'default': None, 'non-volatile': False},
             'AccelDecel': {'number': '336',  'description': 'Acceleration / Deceleration (rpm/s)', 'data type': 1, 'access': 'R', 'min': 0, 'max': 999999, 'default': None, 'non-volatile': False},
             'Pressure': {'number': '340',  'description': 'Active pressure value (mbar)', 'data type': 7, 'access': 'R', 'min': 1E-10, 'max': 1E3, 'default': None, 'non-volatile': False},
-            'TempBearng': {'number': '342',  'description': 'Temperature bearing (ºC)', 'data type': 1, 'access': 'R', 'min': 0, 'max': 999999, 'default': None, 'non-volatile': False},
-            'TempMotor': {'number': '346',  'description': 'Temperature motor (ºC)', 'data type': 1, 'access': 'R', 'min': 0, 'max': 999999, 'default': None, 'non-volatile': False},
+            'TempBearng': {'number': '342',  'description': 'Temperature bearing (°C)', 'data type': 1, 'access': 'R', 'min': 0, 'max': 999999, 'default': None, 'non-volatile': False},
+            'TempMotor': {'number': '346',  'description': 'Temperature motor (°C)', 'data type': 1, 'access': 'R', 'min': 0, 'max': 999999, 'default': None, 'non-volatile': False},
             'ElecName': {'number': '349',  'description': 'Name of electronic drive unit', 'data type': 4, 'access': 'R', 'min': None, 'max': None, 'default': None, 'non-volatile': False},
             'Ctr_Name': {'number': '350',  'description': 'Type of display and control unit', 'data type': 4, 'access': 'R', 'min': None, 'max': None, 'default': None, 'non-volatile': False},
             'Ctr_Software': {'number': '351',  'description': 'Software of display and control unit', 'data type': 4, 'access': 'R', 'min': None, 'max': None, 'default': None, 'non-volatile': False},
@@ -131,177 +100,96 @@ class PumpHardware(Base):
             'Servicelin': {'number': '795',  'description': 'Insert service line', 'data type': 7, 'access': 'RW', 'min': None, 'max': None, 'default': 795, 'non-volatile': False},
             'RS485Adr': {'number': '797',  'description': 'RS485 device address', 'data type': 1, 'access': 'RW', 'min': 1, 'max': 255, 'default': 1, 'non-volatile': True}}
         
-    def on_activate(self) -> None:
-        pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        loadUi(
+            os.path.join(os.path.dirname(__file__), 'pump.ui'),
+            self
+        )
 
-    def on_deactivate(self) -> None:
-        pass
+        self.connect_button.clicked.connect(self.req_connect)
+        self.parameter_box.currentIndexChanged.connect(self.req_parameter)
+        self.parameter_set_box.currentIndexChanged.connect(self.update_setter)
+        self.set_button.clicked.connect(self.set_parameter)
+
     
+    @Slot(list)
+    def refresh_ports(self, list_ports: list) -> None:
+        self.ports_box.clear()
+        self.ports_box.addItems(list_ports)
+    
+    @Slot()
+    def unlock_connect(self) -> None:
+        self.connect_button.setEnabled(True)
+        self.disconnect_button.setEnabled(False)
 
+    @Slot()
+    def lock_connect(self) -> None:
+        self.connect_button.setEnabled(False)
+        self.disconnect_button.setEnabled(True)
 
+    @Slot()
+    def req_connect(self) -> None:
+        self.conect_signal.emit(self.ports_box.currentText())
 
-    def connect(self, device_id=1, port=None):
-        if port is not None:
-            self.port = port        
-        self.device_id = self._format_id(device_id)
-        if self.port in self.devices:
-            self.inst = self.rm.open_resource(self.port, baud_rate=self.communication["BAUDRATE"], data_bits=self.communication["DATA_BITS"], parity=self.communication["PARITY"], stop_bits=self.communication["STOP_BITS"])
-            self.inst.write_termination = '\r'
-            self.inst.read_termination = '\r'
-            try:
-                response = self.send_message(self.commands['HW_Version'],'=?')
-                
+    @Slot()
+    def create_parameter_combo_box(self) -> None:
+        self.parameter_box.clear()
+        for key in self.commands.keys():
+            if self.commands[key]['access'] == 'RW' or self.commands[key]['access'] == 'R':
+                self.parameter_box.addItem(key)
+            if self.commands[key]['access'] == 'RW':
+                self.parameter_set_box.addItem(key)
 
-                if response['payload'] == '020100':
-                    self.connected = True
+        
+    @Slot()
+    def req_parameter(self) -> None:
+        self.parameter_signal.emit(self.parameter_box.currentText())
 
+    @Slot(str, str)
+    def update_parameter(self, parameter: str, description: str) -> None:
 
-                else:
-                    raise Exception('No Pfeiffer device found.')
-            except TimeoutError:
+        self.parameter_value.setText(parameter)
+        self.parameter_value.setToolTip(description)
 
-                self.connected = False
-
-
-
-
+    @Slot()
+    def update_setter(self) -> None:
+        max_value = self.commands[self.parameter_set_box.currentText()]['max']
+        min_value = self.commands[self.parameter_set_box.currentText()]['min']
+        data_type = self.commands[self.parameter_set_box.currentText()]['data type']
+        if self.commands[self.parameter_set_box.currentText()]['max'] != None:
+            self.setter_spin_box.setMaximum(max_value)
+            self.setter_spin_box.setMinimum(min_value)
+            if data_type == 2:
+                if max_value == 9999.99:
+                    self.setter_spin_box.setDecimals(2)
+                elif max_value == 1:
+                    self.setter_spin_box.setDecimals(5)
+                elif max_value == 100:
+                    self.setter_spin_box.setDecimals(2)
+            self.get_parameter_for_setter_signal.emit(self.parameter_set_box.currentText())
             
-            # try communicating and try other ports in self.devices if unsuccessful. If all fails, raise Exception('No Pfeiffer device found.').
-        else:
-            raise Exception('No Pfeiffer device found.')
         
-    def disconnect(self):
-        self.inst.close()
-        self.connected = False
-        
-    @classmethod
-    def _pad_payload(cls, payload, length):
-        if type(payload) == bool:
-            if payload:
-                payload = '111111'
-            else:
-                payload = '000000'
-            return payload
+    @Slot(float)
+    def update_parameter_for_setter(self, value: float) -> None:
+        if value != -1:
+            self.setter_spin_box.setValue(value)
         else:
-            payload = str(payload)
-            if len(payload) >= length:
-                return payload
-            else:
-                return cls._pad_payload('0'+payload, length)
-    @classmethod
-    def _format_id(cls, id):
-        if type(id) not in [str,int]:
-            raise TypeError(f'ID should be an integer between 1 and 255. {type(id)} was given.')
-        if int(id) > 255 or int(id) < 1:
-            raise ValueError(f'ID should be an integer between 1 and 255. {id} was given.')
-        formatted_id = cls._pad_payload(str(int(id)),3)
-        return formatted_id
-    @classmethod
-    def _calculate_checksum(cls, message_string):
-        #Could also just attempt conversion with message_string = str(message_string)
-        if type(message_string)==str:
-            checksum = cls._pad_payload(str(sum(message_string.encode('ascii')) % 256),3)
-            return checksum
-        else:
-            raise TypeError(f'Expected input of type string but received {type(message_string)}.')
-        
-    @classmethod
-    def _received_ok(cls, received_string):
-        if type(received_string)==str:
-            bool_result = cls._calculate_checksum(received_string[:-3])==received_string[-3:]
-        else:
-            raise TypeError(f'Expected input of type string but received {type(received_string)}.')
-        return bool_result
-    
-    @staticmethod
-    def cast(payload,command):
-        
-        if command["data type"] == 0:
-            out = bool(int(payload))
-        elif command["data type"] == 1:
-            out = int(payload)
-        elif command["data type"] == 2:
-            out = float(payload)
-        elif command["data type"] == 4:
-            out = str(payload)
-        elif command["data type"] == 7:
-            out = int(payload)
-        elif command["data type"] == 11:
-            out = str(payload)
-        else:
-            raise Exception('Unknwon data type.')
-        return out
-    
-    #The function recieves a command (dict) and a payload (int) and returns the message to be sent to the device
-    def build_message(self,comand, payload):
-        if self.device_id == None:
-            self.connect()
-        else:
-            device_id = str(self.device_id)
-        param_number = str(comand["number"])
-        if comand['access'] == 'RW' and payload != '=?':
-            action = '10'
-            payload_length = self.data_types[comand["data type"]]["length"]
-        elif comand['access'] == 'R' or payload == '=?':
-            action = '00'
-            payload_length = "02"
-        else:
-            raise Exception('Unknow access type')
-        """"
-        if payload< comand['min'] or comand['max']< payload:
-            raise ValueError(f'Payload out of range. {comand["min"]} <= {payload} <= {comand["max"]}') 
-        """
-        partial_message = device_id + action + param_number +payload_length+ self._pad_payload(payload,int(payload_length))
-        checksum = self._calculate_checksum(partial_message)
-        message = partial_message + checksum
-        
-        return message
-    
-    def send_message(self, coamnd, paylooad):
-        message = self.build_message(coamnd, paylooad)
-        self.inst.write(message)  
-        response = self.read_message()
-        
-        return response
+            self.setter_spin_box.setValue(0)
 
-    def read_message(self):
-        
-        full_response = self.inst.read(termination='\r')
-        
+    @Slot(float)
+    def set_parameter(self) -> None:
+        value = self.setter_spin_box.value()
+        self.set_parameter_signal.emit(self.parameter_set_box.currentText(), value)
 
-        if not self._received_ok(full_response):
-            logging.warning('Checksum error.')
-            return None
-        else:
-            device_id = full_response[:3]
-            action = full_response[3:5]
-            param_number = full_response[5:8]
-            payload_length = int(full_response[8:10])
-            payload = full_response[10:-3]
-            if payload_length != len(payload):
-                logging.warning('Payload length error.')
-                return None
-            else:
-                message = {'device_id':device_id, 'action' : action, 'param_number' : param_number, 'payload_length' : payload_length, 'payload' : payload}
-                return message
-    
-    def get_parameter(self, parameter_name: str):
-        if self.connected:
-            parameter_read = self.send_message(self.commands[parameter_name],'=?')
-        else:
-            parameter_read = {'device_id':1, 'action' : 10, 'param_number' : '666', 'payload_length' : 6, 'payload' : 'ERROR'}
-        
-        return parameter_read
-    
-    def set_parameter(self, parameter_name: str, value):
-        if self.connected:
-            data_type = self.commands[parameter_name]['data type']
-            if data_type == 0:
-                if value:
-                    value = True
-                else:
-                    value = False
-            response = self.send_message(self.commands[parameter_name],value)
-        else:
-            response = {'device_id':1, 'action' : 10, 'param_number' : '666', 'payload_length' : 6, 'payload' : 'ERROR'}
-        return response
+
+       
+
+if __name__ == '__main__':
+
+    sys.path.append('artwork')
+    app = QApplication(sys.argv)
+    w = PumpMainWindow()
+    w.show()
+    w.raise_()
+    sys.exit(app.exec_())
