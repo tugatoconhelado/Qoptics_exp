@@ -39,6 +39,7 @@ class GalvoHardware(Base):
         self.slow_um_per_volts = 5 / 1.12
         self.tasks = []
         self.current_position = (0, 0)
+        self._mutex = Mutex()
 
         self.settings = {
             "Device": "Dev1",

@@ -17,13 +17,44 @@ from qudi.logic.filemanager import FileManager
 from qudi.logic.confocal_logic import ConfocalImageData, ConfocalImageParameterData
 import dataclasses
 from qudi.logic.fit_extra import fit_gaussian, gaussian
+import functools
 
+
+def set_parameters_before(function):
+    
+    @functools.wraps(function)
+    def set_parameters(self, *args):
+        self.set_tracking_parameters(*args)
+        return function(self, *args)
+    return set_parameters
+
+@dataclasses.dataclass
+class MaxXYParameterData:
+
+    scan_size: tuple = ()
+    offset: tuple = ()
+    pixels: tuple = ()
+    pixel_time: float = 0
+    fit_gaussian: bool = False
+
+@dataclasses.dataclass
+class MaxZParameterData:
+
+    scan_size: tuple = ()
+    offset: tuple = ()
+    pixels: tuple = ()
+    pixel_time: float = 0
+    fit_gaussian: bool = False
 
 @dataclasses.dataclass
 class TrackingParameterData:
     
+    max_xy_parameters: MaxXYParameterData = MaxXYParameterData()
+    max_z_parameters: MaxZParameterData = MaxZParameterData()
     track_interval : int = 1
     track_intensity : int = 4
+    track_by_interval : bool = False
+    track_by_intensity : bool = False
 
 @dataclasses.dataclass
 class TrackingData:
@@ -35,14 +66,21 @@ class TrackingData:
 
 class TrackingLogic(LogicBase):
 
-    data_signal = Signal(ConfocalImageData)
-    point_profile_fit_signal = Signal(tuple, tuple, tuple)
-    z_profile_fit_signal = Signal(tuple, tuple)
+    img_data_signal = Signal(np.ndarray)
+    point_profile_fit_signal = Signal(tuple, tuple)
+    point_profile_signal = Signal(np.ndarray, np.ndarray, np.ndarray, np.ndarray)
+    tracking_points_signal = Signal(np.ndarray)
+    z_profile_fit_signal = Signal(tuple)
+    z_profile_signal = Signal(np.ndarray, np.ndarray)
     save_signal = Signal()
     max_point_signal = Signal(tuple)
     max_z_signal = Signal(tuple)
     img_size_signal = Signal(tuple, tuple, tuple)
     status_msg_signal = Signal(str)
+    call_set_offset_signal = Signal()
+    tracking_finished_signal = Signal()
+    start_track_intensity_signal = Signal(int, float)
+    interval_clock_signal = Signal()
 
     # Declare connectors to other logic modules or hardware modules to interact with
     _apd_hardware = Connector(
@@ -74,13 +112,69 @@ class TrackingLogic(LogicBase):
         self.position = [0, 0, 0]
         self.measure = True
         self.keep_scanning = True
+        self.continue_tracking = True
+        self.maxing_iteration = 0
+        self.fit_gaussian = (True, True, True)
 
 
     def on_activate(self) -> None:
-        pass
+        
+        # Set up a Qt timer to send periodic signals according to tracking time
+        self.__timer = QTimer(parent=self)
+        self.__timer.setInterval(60 * 1000)
+        self.__timer.setSingleShot(False)
+
+        # Connect timeout signal to increment slot
+        self.__timer.timeout.connect(self.interval_clock_signal.emit)
 
     def on_deactivate(self) -> None:
         pass
+
+    @Slot(tuple)
+    def set_fit_gaussian(self, fit_gaussian: tuple) -> None:
+        """
+        Sets the fit gaussian parameters for the tracking logic
+        """
+        self.fit_gaussian = fit_gaussian
+
+    def set_tracking_parameters(self, xy_parameters = None, z_parameters = None, tracking_parameters = None):
+
+        if xy_parameters is not None:
+            self.data.parameters.max_xy_parameters = MaxXYParameterData(
+                *xy_parameters)
+        if z_parameters is not None:
+            self.data.parameters.max_z_parameters = MaxZParameterData(
+                *z_parameters)
+        if tracking_parameters is not None:
+            self.data.parameters.track_by_intensity = tracking_parameters[0][0]
+            self.data.parameters.track_intensity = tracking_parameters[0][1]
+            self.data.parameters.track_by_interval = tracking_parameters[1][0]
+            self.data.parameters.track_interval = tracking_parameters[1][1]
+
+    @Slot()
+    def on_start_maxing(self) -> None:
+        """
+        Sets the maxing iteration to 0 and the keep_scanning flag to True
+        so that the maxing iteration can be stopped at any time.
+
+        This should get called before any maxing process is started by ensuring
+        the signal connected to this slot is connected before the others.
+        """
+        self.maxing_iteration = 0
+        self.keep_scanning = True
+
+    @Slot()
+    def stop_maxing(self):
+        """
+        Stops the maxing iteration by setting the keep_scanning flag to False
+        and the maxing_iteration to 0.
+        
+        This slot should be connected to the user stop event
+        """
+        self.keep_scanning = False
+        self.continue_tracking = False
+        self.maxing_iteration = 0
+        self.__timer.stop()
 
     @Slot(tuple, tuple, tuple, float)
     def confocal_image(self, scan_size: tuple, offset: tuple, pixels: tuple,
@@ -92,6 +186,7 @@ class TrackingLogic(LogicBase):
         self.data.img.parameters.pixels = pixels
         self.data.img.parameters.pixel_time = pixel_time
         self.status_msg_signal.emit(f'Tracking: Starting scan with parameters: {self.data.img.parameters}')
+        self.log.info(f'Starting scan with parameters: {self.data.img.parameters}')
 
         pixel_time = pixel_time / 1000 # From ms to seconds
 
@@ -114,13 +209,13 @@ class TrackingLogic(LogicBase):
         number_samples = 2 * pixels[0] * pixels[1]
         samp_rate = float(1 / pixel_time)
 
-        clock, scan = self._galvo_hardware.set_scan(
+        clock, scan = self._galvo_hardware().set_scan(
             scan_size=scan_size,
             offset=offset, 
             pixels=pixels, 
             pixel_time=pixel_time
         )
-        clock_apd, fluorescence_reader = self._apd_hardware.set_apd(
+        clock_apd, fluorescence_reader = self._apd_hardware().set_apd(
             frequency=samp_rate, 
             samples=number_samples, 
             clock=clock
@@ -141,11 +236,11 @@ class TrackingLogic(LogicBase):
                 timeout=float(2 * pixel_time * pixels[0])
             )
 
-            readed_counts = np.array(readed_counts)
+            readed_counts = np.array(readed_counts) * 1 / pixel_time
             self.log.debug(f'iteration: {iteration}')
 
-            fluorescence = np.diff(readed_counts)
-            
+            fluorescence = np.diff(readed_counts) # Convert to cps
+
             if iteration == 0:
                 level_fluorescence = fluorescence[0]
 
@@ -158,13 +253,14 @@ class TrackingLogic(LogicBase):
             
             level_fluorescence = readed_counts[-1]
 
+
             forward_fluorescence = fluorescence[0: pixels[0]]
             backward_fluorescence = np.flipud(fluorescence[pixels[0]::])
 
             self.data.img.counter_image_fw[iteration, :] = forward_fluorescence
             self.data.img.counter_image_bw[iteration, :] = backward_fluorescence
 
-            self.data_signal.emit(
+            self.img_data_signal.emit(
                 copy.copy(self.data.img.counter_image_fw)
             )
 
@@ -174,40 +270,128 @@ class TrackingLogic(LogicBase):
 
             if iteration >= pixels[1] - 1:
                 scan.wait_until_done(timeout=2 * pixel_time * pixels[0] * pixels[1])
+                self.stop_acquisition()
             iteration += 1
 
 
-        self.data_signal.emit(
+        self.img_data_signal.emit(
             copy.copy(self.data.img.counter_image_fw)
         )
 
         self.save_signal.emit()
         self.stop_acquisition()
-        self._galvo_hardware.go_to_xy_point(self.data.img.parameters.offset)
+        self._galvo_hardware().go_to_xy_point(self.data.img.parameters.offset)
         
         return self.data.img.counter_image_fw
 
-    @Slot(tuple, bool, int, bool, int)
-    def track_point(self, offset: tuple, track_intensity: bool = False,
-            track_intensity_value: int = 4, track_interval: bool = False,
-            track_interval_value: int = 1) -> None:
+    @Slot(tuple, tuple, tuple)
+    def start_tracking(self, max_xy_params: tuple, max_z_params: tuple,
+        track_params: tuple) -> None:
 
-        while self.track_point:
-            self.max_xyz(point=offset)
-            time.sleep(3)
+        print('Starting tracking')
+        print(track_params)
 
-    @Slot(tuple)
-    def max_xyz(self, point, parameters: tuple) -> tuple:
+        self.data.parameters.max_xy_parameters = MaxXYParameterData(
+            *max_xy_params)
+        self.data.parameters.max_z_parameters = MaxZParameterData(
+            *max_z_params)
+
+        self.data.parameters.track_by_intensity = track_params[0][0]
+        self.data.parameters.track_intensity = track_params[0][1]
+        self.data.parameters.track_by_interval = track_params[1][0]
+        self.data.parameters.track_interval = track_params[1][1]
+
+        self.data.tracking_log = []
+
+        self.continue_tracking = True
+        
+        if self.data.parameters.track_by_interval:
+            self.interval_clock_signal.emit()
+            self.__timer.setInterval(
+                self.data.parameters.track_interval * 1000 * 60)
+            self.__timer.start()
+
+        elif self.data.parameters.track_by_intensity:
+            self.track_point()
+            reference_intensity = self.get_current_counts()
+            self.start_track_intensity_signal.emit(
+                self.data.parameters.track_intensity, reference_intensity
+            )
+
+    def get_current_counts(self):
+        frequency = 1000
+        samples = int(0.1 * frequency)
+        clock, reader = self._apd_hardware().set_apd(
+            frequency=frequency,
+            samples=samples,
+            continuous=True
+        )
+        clock.start()
+        reader.start()
+        #self._apd_hardware().start_apd()
+        counts = self._apd_hardware().get_fluorescence(
+            samples=samples,
+            frequency=frequency,
+            time_out=1
+        )
+
+        counts = np.diff(counts)
+        mean_counts = np.mean(counts)
+        counts_std = np.std(counts)
+
+        self._apd_hardware().stop()
+
+        return mean_counts
+
+    @Slot()
+    def track_point(self):
+
+        if not self.continue_tracking:
+            print('Stopping tracking')
+            self.__timer.stop()
+            return
+        elif self.continue_tracking:
+            position = self.max_xyz(
+                dataclasses.astuple(self.data.parameters.max_xy_parameters),
+                dataclasses.astuple(self.data.parameters.max_z_parameters)
+            )
+            self.data.tracking_log.append(position)
+            print(self.data.tracking_log)
+            self.tracking_points_signal.emit(np.array(self.data.tracking_log))
+
+            self.data.parameters.max_xy_parameters.offset = position[0:2]
+            self.data.parameters.max_z_parameters.offset = position[2:3]
+
+            print(type(position[2:3]))
+
+            print(self.data.parameters.max_xy_parameters)
+            print(self.data.parameters.max_z_parameters)
+
+            if self.data.parameters.track_by_intensity:
+                reference_intensity = self.get_current_counts()
+                self.start_track_intensity_signal.emit(
+                    self.data.parameters.track_intensity, reference_intensity
+                )
+            elif self.data.parameters.track_by_interval:
+                self.tracking_finished_signal.emit()
+
+    @Slot(tuple, tuple)
+    def max_xyz(self, xy_parameters: tuple, z_parameters: tuple) -> tuple:
         """
         Finds the (x, y, z) point for which the maximum of PL is found
         """
-        max_point = self.max_xy(point=point)
-        max_point = self.max_z(point=point)
-        return max_point
+        self.log.info('Starting max_xyz')
+        max_point = self.max_xy(*xy_parameters)
+        self.stop_acquisition()
+        max_z = self.max_z(*z_parameters)
+        max_point = self.max_xy(
+            xy_parameters[0], max_point, xy_parameters[2],
+            xy_parameters[3], xy_parameters[4])
+        return (max_point[0], max_point[1], max_z[0])
 
-    @Slot(tuple, tuple, tuple, float)  
+    @Slot(tuple, tuple, tuple, float, bool)  
     def max_xy(self, scan_size: tuple, offset:tuple,
-            pixels: tuple, pixel_time: float) -> tuple:
+            pixels: tuple, pixel_time: float, fit_gauss: bool) -> tuple:
         """
         Finds the (x, y) point for which the maximum of PL is found
 
@@ -221,12 +405,16 @@ class TrackingLogic(LogicBase):
             (x, y) number of pixels of the scan.
         pixel_time : float
             Time that the laser will be on each pixel.
+        fit_gauss : bool
+            Flag to fit a gaussian to the profile of the image.
 
         Returns
         -------
         max_point : tuple
             (x, y) point for which the maximum of PL is found.
         """
+        self.log.info('Starting max_xy')
+        self.log.info(f'Iteration: {self.maxing_iteration}')
         point = offset
         img = self.confocal_image(
             scan_size=scan_size,
@@ -234,29 +422,32 @@ class TrackingLogic(LogicBase):
             pixels=pixels,
             pixel_time=pixel_time
         )
+        self.stop_acquisition()
         self.measure = True
-        print('---------------------------')
-        print('Looking for max (x, y) point')
+        self.log.debug('---------------------------')
+        self.log.debug('Looking for max (x, y) point')
 
-        max_point = self.find_max_point(img)
+        max_point = self.find_max_point(img, fit_gauss)
         # Send max point info to the GUI #TODO
 
+        self.maxing_iteration += 1
+
         if math.dist(point, max_point) <= 0.1:
-            # Send the information to the GUI #TODO
-            # Go to the point #TODO
-            print('Distance is ok')
+            self.log.debug('Distance is ok')
             self.max_point_signal.emit(max_point)
+            self.go_to_xy_point(max_point)
+            self.call_set_offset_signal.emit()
             self.position[0] = max_point[0]
             self.position[1] = max_point[1]
             return max_point
         elif math.dist(point, max_point) > 0.1:
-            print('Distance is not ok')
+            self.log.debug('Distance is not ok')
             if self.keep_scanning:
-                return self.max_xy(scan_size, max_point, pixels, pixel_time)
+                return self.max_xy(scan_size, max_point, pixels, pixel_time, fit_gauss)
 
     @Slot(tuple, tuple, tuple, float)  
     def max_z(self, scan_size: tuple, offset: tuple, pixels: tuple,
-            pixel_time: float) -> tuple:
+            pixel_time: float, fit_gauss: bool) -> tuple:
         """
         Finds the z position for which the maximum of PL is found
 
@@ -270,24 +461,38 @@ class TrackingLogic(LogicBase):
             (x, y) number of pixels of the z scan.
         pixel_time : float
             Time that the laser will be on each pixel.
+        fit_gauss : bool
+            Flag to fit a gaussian to the profile of the scan.
 
         Returns
         -------
         max_point : tuple
             (x, y) point for which the maximum of PL is found.
         """
+        self.log.info('Starting max_z')
+        self.log.info(f'Iteration: {self.maxing_iteration}')
+        self.maxing_iteration += 1
         z_values, z_scan = self.z_scan(scan_size, offset, pixels, pixel_time)
-        self.measure = True
-        self.z_profile_fit_signal.emit((z_values, z_scan), ([], []))
-        max_z = self.find_max_z_point(z_values, z_scan)
+        max_z = self.find_max_z_point(z_values, z_scan, fit_gauss)
         if abs(offset[0]-max_z) < 0.1:
-            self._piezo_hardware.go_to_z_point(max_z)
             self.position[2] = max_z
-            self.max_z_signal.emit((max_z))
+            self.go_to_z_point(max_z)
+            self.max_z_signal.emit((max_z, ))
+            self.call_set_offset_signal.emit()
             return (max_z, )
         elif abs(offset[0]-max_z) > 0.1:
-            print('You wont catch me')
-            #return self.max_z(max_z)
+            if self.keep_scanning:
+                return self.max_z(scan_size, (max_z, ), pixels, pixel_time, fit_gauss)
+
+    @Slot(float)
+    def go_to_z_point(self, new_point: float):
+        with self._mutex:
+            self._piezo_hardware().go_to_z_point(new_point)
+
+    @Slot(tuple)
+    def go_to_xy_point(self, new_point: tuple):
+        with self._mutex:
+            self._galvo_hardware().go_to_xy_point(new_point)
 
     def z_scan(self, scan_size: tuple, offset: tuple, pixels: tuple,
             pixel_time: tuple) -> tuple:
@@ -310,49 +515,61 @@ class TrackingLogic(LogicBase):
         z_scan : np.ndarray
             Array with the counts of the z scan.
         """
-        print('Creating z scan')
-        self.measure = True
-        pixel_time = pixel_time / 1000 # From ms to seconds
-        clock, z_scan, z_values = self._piezo_hardware.set_z_scan(
-            scan_size, offset, pixels, pixel_time
-        )
+        with self._mutex:
+            self.stop_acquisition()
+        with self._mutex:
+            self.log.debug('Creating z scan')
+            self.measure = True
+            pixel_time = pixel_time / 1000 # From ms to seconds
+            clock, z_scan, z_values = self._piezo_hardware().set_z_scan(
+                scan_size, offset, pixels, pixel_time
+            )
+            clock_apd, fluorescence_reader = self._apd_hardware().set_apd(
+                frequency=1 / pixel_time, 
+                samples=pixels[0], 
+                clock=clock
+            )
 
-        clock_apd, fluorescence_reader = self._apd_hardware.set_apd(
-            frequency=1 / pixel_time, 
-            samples=pixels[0], 
-            clock=clock
-        )
+            self.log.info('Starting Z scan')
+            clock.start()
+            z_scan.start()
+            fluorescence_reader.start()
 
-        print('Running Z scan')
-        clock.start()
-        fluorescence_reader.start()
-        z_scan.start()
-
-        readed_counts = fluorescence_reader.read(
-            number_of_samples_per_channel=pixels[0],
-            timeout=float(pixel_time * pixels[0])
-        )
-
-        fluorescence = np.diff(readed_counts)
-        fluorescence = np.insert(fluorescence, -1, readed_counts[0])
-        self.stop_acquisition()
-        return (z_values, fluorescence)
+            readed_counts = fluorescence_reader.read(
+                number_of_samples_per_channel=pixels[0],
+                timeout=float(pixel_time * pixels[0])
+            )
+            readed_counts = np.array(readed_counts) * 1 / pixel_time
+            fluorescence = np.diff(readed_counts)
+            fluorescence = np.insert(fluorescence, -1, readed_counts[0])
+            self.stop_acquisition()
+            return (z_values, fluorescence)
     
-    def find_max_z_point(self, z_values: np.ndarray, z_scan: np.ndarray) -> float:
+    def find_max_z_point(self, z_values: np.ndarray, z_scan: np.ndarray, fit_gauss: bool) -> float:
         """
         Finds the maximum of a z scan
         
         Parameters
         ----------
-        z_scan : tuple
-            (z_values, fluorescence) of the z scan
+        z_values : np.ndarray
+            Z values of the z scan.
+        z_scan : np.ndarray
+            fluorescence of the z scan
+        fit_gauss : bool
+            Flag to fit a gaussian to the profile of the z scan
         """
         max_z = z_values[np.argmax(z_scan)]
+        self.z_profile_signal.emit(z_values, z_scan)
+        z_report_str = f'Max z: {max_z}\n'
+        if not fit_gauss:
+            self.log.info(f'Max point: {max_z}')
+            return max_z
         try:
             z_fit = fit_gaussian(z_values, z_scan)
             max_z = z_fit[0][1]
-            print(f'Fitted gaussian: {z_fit[0]}')
-            print(f'z_values: {np.min(z_values)}, {np.max(z_values)}')
+            z_report_str += f"Fast axis FWHM: {z_fit[0][2] * 2.355}\n"
+            z_report_str += f'Fitted Max point: {max_z}'
+            self.log.info(z_report_str)
 
             z_fit_prof = (
                     np.linspace(np.min(z_values), np.max(z_values), 500),
@@ -361,14 +578,12 @@ class TrackingLogic(LogicBase):
                         *z_fit[0])
             )
 
-            self.z_profile_fit_signal.emit(
-                    (z_values, z_scan),
-                    z_fit_prof
-            )
+            self.z_profile_fit_signal.emit(z_fit_prof)
         except Exception as e:
-            print(f'Error fitting: {e}')
+            self.log.info(f'Error fitting: {e}')
             return max_z
         finally:
+            self.log.info(f'Max point: {max_z}')
             return max_z
 
     def find_img_profile_at_point(self, img: np.ndarray, point: tuple) -> tuple:
@@ -386,7 +601,7 @@ class TrackingLogic(LogicBase):
 
         return (fast_axis_profile, slow_axis_profile)
 
-    def find_max_point(self, img: np.ndarray) -> tuple:
+    def find_max_point(self, img: np.ndarray, fit_gauss: bool) -> tuple:
         """
         Finds the maximum point of an image.
 
@@ -400,13 +615,15 @@ class TrackingLogic(LogicBase):
         ----------
         img : np.ndarray
             Image for which the maximum point will be found
+        fit_gauss : bool
+            Flag to fit a gaussian to the profile of the image
 
         Returns
         -------
         tuple
             Point for which the maximum of the image is found
         """
-        print('Looking for max point')
+        self.log.debug('Looking for max point in find_max_point')
         max_index = np.unravel_index(np.argmax(img), img.shape)
 
         # It may not be obvious but when the index are retreived they give the
@@ -417,19 +634,26 @@ class TrackingLogic(LogicBase):
             self.data.img.y[max_index[0]]
         )
         fast_prof, slow_prof = self.find_img_profile_at_point(img, max_point)
+        self.point_profile_signal.emit(
+            self.data.img.x, fast_prof, self.data.img.y, slow_prof)
+        
+        if not fit_gauss:
+            self.log.info(f'Max point: {max_point}')
+            return max_point
 
+        fit_report_str = f'Max point: {max_point}\n'
         try:
-            print('Trying fit')
             #fit_gaussian retruns a tuple with the fit parameters and the
             #covariance matrix. We only need the fit parameters.
 
             fast_fit = fit_gaussian(self.data.img.x, fast_prof)
             slow_fit = fit_gaussian(self.data.img.y, slow_prof)
-            print(f"Fast axis FWHM: {fast_fit[0][2] * 2.355}")
-            print(f"Slow axis FWHM: {slow_fit[0][2] * 2.355}")
-            max_point = (fast_fit[0][1], slow_fit[0][1])
 
-            print('Trying fit')
+            max_point = (fast_fit[0][1], slow_fit[0][1])
+            fit_report_str += f"Fast axis FWHM: {fast_fit[0][2] * 2.355}\n"
+            fit_report_str += f"Slow axis FWHM: {slow_fit[0][2] * 2.355}\n"
+            fit_report_str += f'Fitted Max point: {max_point}'
+            self.log.info(fit_report_str)
 
             fast_fit_prof = (
                 np.linspace(np.min(self.data.img.x), np.max(self.data.img.x), 500),
@@ -443,34 +667,32 @@ class TrackingLogic(LogicBase):
                     np.linspace(np.min(self.data.img.y), np.max(self.data.img.y), 500),
                     *slow_fit[0])
             )
-            print('Trying fit')
-            self.point_profile_fit_signal.emit(
-                max_point,
-                ((self.data.img.x, fast_prof), fast_fit_prof),
-                ((self.data.img.y, slow_prof), slow_fit_prof)
-            )
-            print('Fitted gaussian')
+            self.point_profile_fit_signal.emit(fast_fit_prof, slow_fit_prof)
+
         except Exception as err:
-            print(f'Error fitting: {err}')
+            self.log.info(f'Error fitting: {err}')
             return max_point
         finally:
-            print(f'Returning max point: {max_point}')
+            self.log.info(f'Max point: {max_point}')
             return max_point
-    
-    def go_to_xy_point(self, point: tuple):
-    
-        self._galvo_hardware.go_to_xy_point(point)
 
     @Slot()
     def stop_acquisition(self):
+        """
+        Stops the acquisition of the APD, the galvo and the piezo.
         
-        self.keep_scanning = True
-        if self.measure is False:
-            self.keep_scanning = False
-        self.status_msg_signal.emit('Tracking: Stopping acquisition')
+        This method should be called to stop the acquisition of an image.
+        To stop the iteration process of the maxing, the stop_maxing method
+        should be called.
+        That way, the image acquisition can make sure that the galvo, apd and piezo
+        are stopped before and after image acquisition to avoid problems.
+        In other words, this method is both internal and external (user) use,
+        meanwhile the stop_maxing method is only for external use.
+        """
         self.measure = False
         self.log.info('Stopping acquisition')
+        self.status_msg_signal.emit('Tracking: Stopping acquisition')
 
-        self._apd_hardware().stop()
         self._galvo_hardware().stop()
+        self._apd_hardware().stop()
         self._piezo_hardware().stop()

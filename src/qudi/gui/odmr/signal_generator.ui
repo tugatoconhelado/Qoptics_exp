@@ -1,0 +1,573 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>689</width>
+    <height>559</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="4,6,5">
+   <item>
+    <widget class="QGroupBox" name="connection_box">
+     <property name="title">
+      <string>Connection</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <item>
+       <layout class="QVBoxLayout" name="connection_layout">
+        <item>
+         <layout class="QHBoxLayout" name="devices_layout">
+          <item>
+           <widget class="QLabel" name="devices_label">
+            <property name="text">
+             <string>Devices</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="devices_combobox"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="refresh_button">
+            <property name="text">
+             <string>Refresh</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="connect_layout">
+          <item>
+           <widget class="QPushButton" name="connect_button">
+            <property name="text">
+             <string>Connect</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="disconnect_button">
+            <property name="text">
+             <string>Disconnect</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QLabel" name="status_label">
+          <property name="text">
+           <string>Status</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_5" stretch="1,1,1,1">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <widget class="QLabel" name="label_21">
+            <property name="text">
+             <string>Clock</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButton_2">
+            <property name="text">
+             <string>Enable</string>
+            </property>
+            <property name="autoExclusive">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_8">
+          <item>
+           <widget class="QLabel" name="label_22">
+            <property name="text">
+             <string>HF Output (RF Doubler)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButton_3">
+            <property name="text">
+             <string>Enable</string>
+            </property>
+            <property name="autoExclusive">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_9">
+          <item>
+           <widget class="QLabel" name="label_23">
+            <property name="text">
+             <string>LF Output (BNC)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButton_4">
+            <property name="text">
+             <string>Enable</string>
+            </property>
+            <property name="autoExclusive">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item>
+           <widget class="QLabel" name="label_19">
+            <property name="text">
+             <string>RF Output (Type N)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButton">
+            <property name="text">
+             <string>Enable</string>
+            </property>
+            <property name="autoExclusive">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="modulation_box">
+     <property name="title">
+      <string>Modulation</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_6" stretch="1,1,1">
+        <item>
+         <layout class="QHBoxLayout" name="modulation_layout" stretch="2,1,1">
+          <item>
+           <widget class="QLabel" name="modulation_label">
+            <property name="text">
+             <string>Modulation</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="modulation_on_radiobutton">
+            <property name="text">
+             <string>On</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="modulation_off_radiobutton">
+            <property name="text">
+             <string>Off</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="modulation_type_layout" stretch="1,1">
+          <item>
+           <widget class="QLabel" name="modulation_type_label">
+            <property name="text">
+             <string>Modulation Type</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="modulation_type_combobox">
+            <property name="currentIndex">
+             <number>3</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>AM</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>FM</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>PhaseM</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Sweep</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Pulse</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>I/O</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="modulation_function_layout" stretch="1,1">
+          <item>
+           <widget class="QLabel" name="modulation_function_label">
+            <property name="text">
+             <string>Modulation Function</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="modulation_function_combobox">
+            <property name="currentIndex">
+             <number>1</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>Sine</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Ramp</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Triangle</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Square</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Noise</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>External</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <layout class="QGridLayout" name="gridLayout_2" rowstretch="1,1,1,1,1,1" columnstretch="1,1">
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_14">
+            <property name="text">
+             <string>Pulse Width</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_15">
+            <property name="text">
+             <string>PRBS Period</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_11">
+            <property name="text">
+             <string>Modulation Rate</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>Deviation</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string>Pulse period</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_16">
+            <property name="text">
+             <string>PRBS Length</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_11">
+            <property name="suffix">
+             <string>Hz</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_12"/>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_13">
+            <property name="suffix">
+             <string>sec</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_14">
+            <property name="suffix">
+             <string>sec</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_15">
+            <property name="suffix">
+             <string>sec</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="ScienSpinBox" name="spinBox_16">
+            <property name="minimum">
+             <number>8</number>
+            </property>
+            <property name="maximum">
+             <number>19</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="signal_synthesis_box">
+     <property name="title">
+      <string>Signal Synthesis</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <layout class="QGridLayout" name="signal_synthesis_layout">
+        <item row="0" column="1">
+         <widget class="ScienDSpinBox" name="freq_spinbox">
+          <property name="suffix">
+           <string>Hz</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="ofsl_label">
+          <property name="text">
+           <string>Offset of LF (BNC)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="ofsc_label">
+          <property name="text">
+           <string>Offset of Clock</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="rphs_label">
+          <property name="text">
+           <string>Rel Phase</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="phas_label">
+          <property name="text">
+           <string>Phase</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="ofsd_label">
+          <property name="text">
+           <string>Offset of DC</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="freq_label">
+          <property name="text">
+           <string>Frequency</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="ScienDSpinBox" name="rphs_spinbox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="suffix">
+           <string>deg</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="ScienDSpinBox" name="ofsl_spinbox">
+          <property name="suffix">
+           <string>V</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="ScienDSpinBox" name="ofsd_spinbox">
+          <property name="suffix">
+           <string>V</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="ScienDSpinBox" name="ofsc_spinbox">
+          <property name="suffix">
+           <string>V</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="ScienDSpinBox" name="ampc_spinbox">
+          <property name="suffix">
+           <string>Vpp</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="3">
+         <widget class="ScienDSpinBox" name="amph_spinbox">
+          <property name="suffix">
+           <string>dBm</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="3">
+         <widget class="ScienDSpinBox" name="ampl_spinbox">
+          <property name="suffix">
+           <string>dBm</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="3">
+         <widget class="ScienDSpinBox" name="ampr_spinbox">
+          <property name="suffix">
+           <string>dBm</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QLabel" name="ampc_label">
+          <property name="text">
+           <string>Amplitude of Clock</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="2">
+         <widget class="QLabel" name="amph_label">
+          <property name="text">
+           <string>Amplitude of HF (RF Doubler)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="2">
+         <widget class="QLabel" name="ampl_label">
+          <property name="text">
+           <string>Amplitude of LF (BNC)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="2">
+         <widget class="QLabel" name="ampr_label">
+          <property name="text">
+           <string>Amplitude of RF (Type N)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="ScienSpinBox" name="phas_spinbox">
+          <property name="suffix">
+           <string>deg</string>
+          </property>
+          <property name="prefix">
+           <string/>
+          </property>
+          <property name="minimum">
+           <number>-360</number>
+          </property>
+          <property name="maximum">
+           <number>360</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ScienDSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>qudi.util.widgets.scientific_spinbox</header>
+  </customwidget>
+  <customwidget>
+   <class>ScienSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header>qudi.util.widgets.scientific_spinbox</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

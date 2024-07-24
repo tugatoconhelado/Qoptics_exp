@@ -1,6 +1,6 @@
 from qudi.util.uic import loadUi
-from PySide2.QtWidgets import QDialog, QMainWindow, QVBoxLayout
-from PySide2.QtCore import Slot, Signal, Qt
+from PySide2.QtWidgets import QDialog, QMainWindow, QVBoxLayout, QProgressBar
+from PySide2.QtCore import Slot, Signal, Qt, QSize, QTimer
 import pyqtgraph as pg
 import numpy as np
 import matplotlib.pyplot as plt
@@ -23,7 +23,16 @@ class TCSPCMainWindow(QMainWindow):
         self.parameters_editor = TCSPC_parameters_editor(self)
         self.system_parameters_action.triggered.connect(self.parameters_editor.show, Qt.QueuedConnection)
 
+
+        self.progress_bar_timer = QTimer()
+        self.progress_bar_timer.setInterval(5000)
+        self.progress_bar_timer.timeout.connect(self.hide_progress_bar)
+
+        self.set_status_bar()
         self.configure_plots()
+        print(self.rates_widget.size())
+        self.rates_widget.setMaximumSize(QSize(400, 400))
+        print(self.rates_dockwidget.widget().size())
 
     def configure_plots(self):
         
@@ -39,7 +48,7 @@ class TCSPCMainWindow(QMainWindow):
 
         self.counts_plot_ax = self.counts_plot_figure.add_subplot(111)
 
-        self.counts_plot_ax.set_facecolor('#302e2f')
+        self.counts_plot_ax.set_facecolor('#000000')
         self.counts_plot_ax.xaxis.label.set_color('#b3aca9')
         self.counts_plot_ax.yaxis.label.set_color('#b3aca9')
         self.counts_plot_ax.tick_params(axis='x', colors='#b3aca9')
@@ -48,7 +57,7 @@ class TCSPCMainWindow(QMainWindow):
         self.counts_plot_ax.spines['top'].set_color('#b3aca9')
         self.counts_plot_ax.spines['right'].set_color('#b3aca9')
         self.counts_plot_ax.spines['left'].set_color('#b3aca9')
-        self.counts_plot_figure.set_facecolor('#302e2f')
+        self.counts_plot_figure.set_facecolor('#000000')
 
         for item in self.counts_plot_ax.get_xticklabels():
             item.set_fontsize(8)
@@ -66,7 +75,7 @@ class TCSPCMainWindow(QMainWindow):
         self.counts_plot_ax.spines['left'].set_linewidth(0.5)
         self.counts_plot_ax.spines['bottom'].set_linewidth(0.5)
 
-        self.counts_plot_rects = self.counts_plot_ax.bar(self.rates_labels, y_values, width=0.6, color='green')
+        self.counts_plot_rects = self.counts_plot_ax.bar(self.rates_labels, y_values, width=0.6, color='#31e30e')
         self.counts_plot_ax.set_yscale('log')
 
         value_str = ""
@@ -127,6 +136,36 @@ class TCSPCMainWindow(QMainWindow):
             self.fifo_overflow_checkbox.setChecked(False)
 
         self.status_log_label.setText(str(status))
+
+    def set_status_bar(self):
+
+        self.progress_bar = QProgressBar(self)
+        self.progress_bar.setMaximum(100)
+        self.progress_bar.setMinimum(0)
+        self.progress_bar.setAlignment(Qt.AlignRight)
+        self.progress_bar.setFixedSize(100, 15)
+        self.statusbar.addPermanentWidget(self.progress_bar)
+        self.setStatusBar(self.statusbar)
+
+        self.hide_progress_bar()
+
+    @Slot(int, int)
+    def update_status_bar_progress(self, value: int, timeout=5000) -> None:
+
+        if value == 0:
+            self.progress_bar.show()
+            self.progress_bar_timer.stop()
+        self.progress_bar.setValue(value)
+
+        if value == 100:
+            self.progress_bar_timer.start()
+
+    def hide_progress_bar(self):
+
+        self.progress_bar.hide()
+        self.progress_bar_timer.stop()
+
+
 
 class TCSPC_parameters_editor(QDialog):
 

@@ -60,6 +60,11 @@ class ConfocalWidget(QWidget):
         )
         self.filename_label.setText('')
         self.image_fw_widget.heatmap.setTitle('Forward scan', **{'size': '7pt'})
+        self.image_bw_widget.heatmap.setTitle('Backward scan', **{'size': '7pt'})
+        self.update_image(
+            np.zeros((pixels[0], pixels[1])),
+            np.zeros((pixels[0], pixels[1]))
+        )
 
     def on_stop_image(self):
 
@@ -130,12 +135,6 @@ class ScanParametersDialog(QDialog):
         self.scan_pixel_256_button.clicked.connect(
             functools.partial(self._change_scan_pixel_spinbox, 256)
         )
-
-        self.scan_pixel_32_button.clicked.emit()
-        self.scan_size_5_button.clicked.emit()
-        self.pixel_time_spinbox.setValue(5)
-        self.slow_axis_offset_spinbox.setValue(0)
-        self.fast_axis_offset_spinbox.setValue(0)
 
         self.current_values = self.get_scan_parameters()
 

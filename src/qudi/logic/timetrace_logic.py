@@ -60,6 +60,7 @@ class TimeTraceLogic(LogicBase):
     data_signal = Signal(np.ndarray, np.ndarray)
     experiment_status_signal = Signal(bool)
     file_changed_signal = Signal(str)
+    track_point_signal = Signal()
 
     # Declare static parameters that can/must be declared in the qudi configuration
     #_increment_interval = ConfigOption(name='increment_interval', default=1, missing='warn')
@@ -80,6 +81,7 @@ class TimeTraceLogic(LogicBase):
         parameters = TimeTraceParameterData()
         self.data = TimeTraceData(parameters=parameters)
         self.measure = False
+        self.track_intensity = False
 
         self.time_counter = 0
         self.filemanager = FileManager(
@@ -97,6 +99,13 @@ class TimeTraceLogic(LogicBase):
         #self.__timer.timeout.disconnect()
         #self.__timer = None
         pass
+
+    @Slot(int, float)
+    def start_track_intensity(self, intensity_percent, reference_intensity) -> None:
+        self.track_intensity = True
+        self.intensity_threshold = 100 - intensity_percent
+        self.reference_intensity = reference_intensity
+        self.log.info(f'Starting intensity tracking with threshold {intensity_percent}% and reference intensity {reference_intensity}')
 
     @Slot(int, float, float)
     def start_acquisition(self, samp_freq: int, refresh_time : float, window_time: float) -> None:
@@ -165,6 +174,14 @@ class TimeTraceLogic(LogicBase):
 
             self.time_counter += 1
 
+            if self.track_intensity:
+                self.log.debug(f'Intensity: {np.average(read_data)}' +
+                    f' Reference: {self.reference_intensity * self.intensity_threshold / 100}')
+                if np.average(read_data) < self.reference_intensity * self.intensity_threshold / 100:
+                    self.log.info(f'Intensity {np.average(read_data)} below threshold {self.reference_intensity * self.intensity_threshold / 100}')
+                    self.stop_acquisition()
+                    self.track_point_signal.emit()
+
             QApplication.processEvents()
 
     def get_fluorescence(self, samples: int, frequency: int, time_out: float) -> float:
@@ -215,6 +232,8 @@ class TimeTraceLogic(LogicBase):
 
         self.data_signal.emit(self.data.time_array, self.data.counts)
 
+        return self.data.counts
+
     def stop_acquisition(self, *args):
         """
         Stops the measurement.
@@ -225,6 +244,7 @@ class TimeTraceLogic(LogicBase):
         self.status_msg_signal.emit('TimeTrace: Stopping Acquisition')
         self.measure = False
         self.experiment_status_signal.emit(False)
+        self.track_intensity = False
 
         self._apd_hardware().stop()
 
@@ -273,7 +293,6 @@ class TimeTraceLogic(LogicBase):
 
             self.log.info(f'Loaded data from {filepath}')
             self.file_changed_signal.emit(filepath)
-
 
     def load_previous_data(self):
 

@@ -27,6 +27,8 @@ class PumpHardware(Base):
     _format_id
     
     _calculate_checksum
+
+    _Testing git
     """
     
     status_msg_signal = Signal(str)
