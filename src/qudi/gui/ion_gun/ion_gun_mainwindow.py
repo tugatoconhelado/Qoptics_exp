@@ -1,55 +1,20 @@
-
-from qudi.core.statusvariable import StatusVar
-from qudi.core.configoption import ConfigOption
-from qudi.util.mutex import Mutex
-from qudi.core.module import Base
-from PySide2.QtCore import QObject, Signal
-import pyvisa as visa
-from pyvisa.constants import StopBits, Parity
-import logging
-from time import sleep
+from PySide2.QtWidgets import QDialog, QWidget, QMainWindow, QApplication, QProgressBar
+from PySide2.QtCore import Slot, Signal, QDir, Qt, QTimer
+from PySide2.QtGui import QFont
+from qudi.util.uic import loadUi
+import sys
+import os
+import numpy as np
 
 
+class IonGunMainWindow(QMainWindow):
 
-class IonGunHardware(Base):
-    """
-    Models the turbo pump instrument
-    
-    Properties
-    ----------
-    
-    Methods
-    -------
-    connect
-    
-    _pad_payload
-    
-    _format_id
-    
-    _calculate_checksum
-    """
-    
-    status_msg_signal = Signal(str)
+    conect_signal = Signal(str)
+    parameter_signal = Signal(str)
+    get_parameter_for_setter_signal = Signal(str)
+    set_parameter_signal = Signal(str, float)
 
-    def __init__(self, *args, **kwargs) -> None:
-
-        super().__init__(*args, **kwargs)
-
-        self.communication = {'BAUDRATE' : 1200,
-                              'DATA_BITS' : 8,
-                              'PARITY' : Parity.none,
-                              'START_BITS' : 1,
-                              'STOP_BITS' : StopBits.one}
-        self.rm = visa.ResourceManager('@py')
-        self.devices = self.rm.list_resources()
-        self.connected = False
-        self.data_types = {0:{'description':'False / true', 'length':'06', 'example':'000000 / 111111'},
-            1:{'description':'Positive integer number', 'length':'06', 'example':'000000 to 999999'},
-            2:{'description':'Positive fixed comma number', 'length':'06', 'example':'001571' 'equal to 15,71'},
-            4:{'description':'Symbol chain', 'length':'06', 'example':'TC_400'},
-            7:{'description':'Positive integer number', 'length':'03', 'example':'000 to 999'},
-            11:{'description':'Symbol chain', 'length':'16', 'example':'BrezelBier&Wurst'}}
-        self.commands = {'Remote enable':{'ASCII string':'RE', 'description':'Remote enable','access':'NP'},
+    commands = {'Remote enable':{'ASCII string':'RE', 'description':'Remote enable','access':'NP'},
                 'Local':{'ASCII string':'LO', 'description':'Local','access':'NP'},
                 'Enabl local':{'ASCII string':'EN', 'description':'Enable local','access':'NP'},
                 'Operate':{'ASCII string':'OP', 'description':'Operate','access':'NP'},
@@ -89,57 +54,96 @@ class IonGunHardware(Base):
                 'Filament voltage':{'ASCII string':'FU', 'description':'Filament voltage','access':'R', 'scale factor':1, 'unit':'V'},
                 'Filament current':{'ASCII string':'FI', 'description':'Filament current','access':'R', 'scale factor':10, 'unit':'A'},
         }
-        self.error_comands = {'Current limit error':{'ASCII string':'CL', 'description':'Current limit error','access':'R'},
-                'Cathode fail error':{'ASCII string':'VL', 'description':'Cathode fail error','access':'R'},
-                'Regulation error':{'ASCII string':'RE', 'description':'Regulation error','access':'R'},
-                'Energy error':{'ASCII string':'EN', 'description':'Energy error','access':'R'},
-                'Extractor error':{'ASCII string':'EX', 'description':'Extractor error','access':'R'},
-                'Focus 1 error':{'ASCII string':'F1', 'description':'Focus 1 error','access':'R'},
-                'Focus 2 error':{'ASCII string':'F2', 'description':'Focus 2 error','access':'R'},
-        }
-    def on_activate(self) -> None:
-        pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        loadUi(
+            os.path.join(os.path.dirname(__file__), 'ion_gun.ui'),
+            self
+        )
 
-    def on_deactivate(self) -> None:
-        pass
+        self.connect_button.clicked.connect(self.req_connect)
+        self.parameter_box.currentIndexChanged.connect(self.req_parameter)
+        self.parameter_set_box.currentIndexChanged.connect(self.update_setter)
+        self.set_button.clicked.connect(self.set_parameter)
+
     
-    def connect(self, port=None):
-        if port is not None:
-            self.port = port        
-        if self.port in self.devices:
-            self.inst = self.rm.open_resource(self.port, baud_rate=self.communication["BAUDRATE"], data_bits=self.communication["DATA_BITS"], parity=self.communication["PARITY"], stop_bits=self.communication["STOP_BITS"])
+    @Slot(list)
+    def refresh_ports(self, list_ports: list) -> None:
+        self.ports_box.clear()
+        self.ports_box.addItems(list_ports)
+    
+    @Slot()
+    def unlock_connect(self) -> None:
+        self.connect_button.setEnabled(True)
+        self.disconnect_button.setEnabled(False)
+
+    @Slot()
+    def lock_connect(self) -> None:
+        self.connect_button.setEnabled(False)
+        self.disconnect_button.setEnabled(True)
+
+    @Slot()
+    def req_connect(self) -> None:
+        self.conect_signal.emit(self.ports_box.currentText())
+
+    @Slot()
+    def create_parameter_combo_box(self) -> None:
+        self.parameter_box.clear()
+        for key in self.commands.keys():
+            if self.commands[key]['access'] == 'RW' or self.commands[key]['access'] == 'R':
+                self.parameter_box.addItem(key)
+            if self.commands[key]['access'] == 'RW':
+                self.parameter_set_box.addItem(key)
+
+        
+    @Slot()
+    def req_parameter(self) -> None:
+        self.parameter_signal.emit(self.parameter_box.currentText())
+
+    @Slot(str, str)
+    def update_parameter(self, parameter: str, description: str) -> None:
+
+        self.parameter_value.setText(parameter)
+        self.parameter_value.setToolTip(description)
+
+    @Slot()
+    def update_setter(self) -> None:
+        max_value = self.commands[self.parameter_set_box.currentText()]['max']
+        min_value = self.commands[self.parameter_set_box.currentText()]['min']
+        data_type = self.commands[self.parameter_set_box.currentText()]['data type']
+        if self.commands[self.parameter_set_box.currentText()]['max'] != None:
+            self.setter_spin_box.setMaximum(max_value)
+            self.setter_spin_box.setMinimum(min_value)
+            if data_type == 2:
+                if max_value == 9999.99:
+                    self.setter_spin_box.setDecimals(2)
+                elif max_value == 1:
+                    self.setter_spin_box.setDecimals(5)
+                elif max_value == 100:
+                    self.setter_spin_box.setDecimals(2)
+            self.get_parameter_for_setter_signal.emit(self.parameter_set_box.currentText())
             
-    def disconnect(self):
-        self.inst.close()
-        self.connected = False
         
-    @classmethod
-    def _pad_payload(cls, payload, command):
-        if payload != '?' and payload != '':
-            factor = cls.commands[command]['scale factor']
-            value = str(int(payload*factor))
+    @Slot(float)
+    def update_parameter_for_setter(self, value: float) -> None:
+        if value != -1:
+            self.setter_spin_box.setValue(value)
         else:
-            value = payload
-        return value
-        
-    #The function recieves a command (dict) and a payload (int or str) and returns the message to be sent to the device
-    def build_message(self,comand, payload):
-        acsii_string = comand['ASCII string']
-        payload = self._pad_payload(payload, comand)
-        message = (acsii_string+payload+'\r').encode()
-        
-    def send_message(self, coamnd, paylooad):
-        message = self.build_message(coamnd, paylooad)
-        self.inst.write(message)  
-        response = self.read_message()
-        return response
+            self.setter_spin_box.setValue(0)
 
-    def read_message(self):
-        full_response = self.inst.read(termination='\r')
-        print(full_response)
-    
-    def get_parameter(self, parameter_name: str):
-        pass
-    
-    def set_parameter(self, parameter_name: str, value):
-        pass
+    @Slot(float)
+    def set_parameter(self) -> None:
+        value = self.setter_spin_box.value()
+        self.set_parameter_signal.emit(self.parameter_set_box.currentText(), value)
+
+
+       
+
+if __name__ == '__main__':
+
+    sys.path.append('artwork')
+    app = QApplication(sys.argv)
+    w = IonGunMainWindow()
+    w.show()
+    w.raise_()
+    sys.exit(app.exec_())

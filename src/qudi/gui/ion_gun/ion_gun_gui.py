@@ -10,88 +10,55 @@ from PySide2.QtCore import Slot, Qt
 from qudi.core.module import GuiBase
 from qudi.core.connector import Connector
 from qudi.gui.template.template_main_window import TemplateMainWindow
-from qudi.gui.pump.pump_mainwindow import PumpMainWindow
+from qudi.gui.ion_gun.ion_gun_mainwindow import IonGunMainWindow
 from qudi.logic import filemanager
 import functools
 
 
-class PumpGui(GuiBase):
+class IonGunGui(GuiBase):
     """ This is a simple template GUI measurement module for qudi """
     
-    _pump_logic = Connector(name='pump_logic', interface='PumpLogic')
+    _ion_gun_logic = Connector(name='ion_gun_logic', interface='IonGunLogic')
 
 
     def on_activate(self) -> None:
-        self._mw = PumpMainWindow()
-        '''
-         self._mw.turn_on_button.clicked.connect(
-            self._pump_logic().start_pump,
-            Qt.QueuedConnection
-        )
-        '''
-       
+        self._mw = IonGunMainWindow()
+        
         self._mw.conect_signal.connect(
-            self._pump_logic().connect_pump,
+            self._ion_gun_logic().connect_ion_gun,
             Qt.QueuedConnection
         )
 
         self._mw.refresh_button.clicked.connect(
-            self._pump_logic().refresh_ports,
+            self._ion_gun_logic().refresh_ports,
             Qt.QueuedConnection
         )
 
         self._mw.disconnect_button.clicked.connect(
-            self._pump_logic().disconnect_pump,
+            self._ion_gun_logic().disconnect_ion_gun,
             Qt.QueuedConnection
         )
 
         
-        self._pump_logic().refresh_ports_signal.connect(
+        self._ion_gun_logic().refresh_ports_signal.connect(
             self._mw.refresh_ports,
             Qt.QueuedConnection
         )
 
-        self._pump_logic().unlock_connect_signal.connect(
+        self._ion_gun_logic().unlock_connect_signal.connect(
             self._mw.unlock_connect,
             Qt.QueuedConnection
         )
 
-        self._pump_logic().lock_connect_signal.connect(
+        self._ion_gun_logic().lock_connect_signal.connect(
             self._mw.lock_connect,
             Qt.QueuedConnection
         )
 
-        self._pump_logic().lock_connect_signal.connect(
+        self._ion_gun_logic().lock_connect_signal.connect(
             self._mw.create_parameter_combo_box,
             Qt.QueuedConnection
         )
-        
-
-        self._mw.parameter_signal.connect(
-            self._pump_logic().get_parameter,
-            Qt.QueuedConnection
-        )
-
-        self._pump_logic().update_parameter_signal.connect(
-            self._mw.update_parameter,
-            Qt.QueuedConnection
-        )
-
-        self._mw.get_parameter_for_setter_signal.connect(
-            self._pump_logic().get_parameter_for_setter,
-            Qt.QueuedConnection
-        )
-
-        self._pump_logic().update_parameter_for_setter_signal.connect(
-            self._mw.update_parameter_for_setter,
-            Qt.QueuedConnection
-        )
-        '''
-        self._mw.set_parameter_signal.connect(
-            self._pump_logic(),
-            Qt.QueuedConnection
-        )
-        '''
         
 
         self.show()
