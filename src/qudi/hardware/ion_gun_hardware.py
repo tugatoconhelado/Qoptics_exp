@@ -8,6 +8,7 @@ import pyvisa as visa
 from pyvisa.constants import StopBits, Parity
 import logging
 from time import sleep
+import serial
 
 
 
@@ -51,7 +52,7 @@ class IonGunHardware(Base):
             11:{'description':'Symbol chain', 'length':'16', 'example':'BrezelBier&Wurst'}}
         self.commands = {'Remote enable':{'ASCII string':'RE', 'description':'Remote enable','access':'NP'},
                 'Local':{'ASCII string':'LO', 'description':'Local','access':'NP'},
-                'Enabl local':{'ASCII string':'EN', 'description':'Enable local','access':'NP'},
+                'Enable local':{'ASCII string':'EN', 'description':'Enable local','access':'NP'},
                 'Operate':{'ASCII string':'OP', 'description':'Operate','access':'NP'},
                 'Standby':{'ASCII string':'SB', 'description':'Standby','access':'NP'},
                 'Degas':{'ASCII string':'DG', 'description':'Degas','access':'NP'},
@@ -104,11 +105,21 @@ class IonGunHardware(Base):
         pass
     
     def connect(self, port=None):
+
         if port is not None:
             self.port = port        
         if self.port in self.devices:
-            self.inst = self.rm.open_resource(self.port, baud_rate=self.communication["BAUDRATE"], data_bits=self.communication["DATA_BITS"], parity=self.communication["PARITY"], stop_bits=self.communication["STOP_BITS"])
-            
+          
+            self.inst = self.rm.open_resource(self.port, baud_rate=self.communication["BAUDRATE"])
+            self.inst.write_termination = '\r'
+            self.id = self.inst.query('*IDN?')
+
+            self.connected = True
+
+
+
+
+
     def disconnect(self):
         self.inst.close()
         self.connected = False
@@ -123,23 +134,37 @@ class IonGunHardware(Base):
         return value
         
     #The function recieves a command (dict) and a payload (int or str) and returns the message to be sent to the device
-    def build_message(self,comand, payload):
-        acsii_string = comand['ASCII string']
-        payload = self._pad_payload(payload, comand)
-        message = (acsii_string+payload+'\r').encode()
+    def build_message(self,command, payload):
+        acsii_string = command['ASCII string']
+        payload = self._pad_payload(payload, command)
+        message = acsii_string+payload
+        return message
         
-    def send_message(self, coamnd, paylooad):
-        message = self.build_message(coamnd, paylooad)
+    def send_message(self, command, paylooad):
+        message = self.build_message(command, paylooad)
         self.inst.write(message)  
         response = self.read_message()
         return response
 
     def read_message(self):
-        full_response = self.inst.read(termination='\r')
-        print(full_response)
+        
+        full_response = self.inst.read()
+        response_list = full_response.split(' ')
+        if len(response_list) == 2:
+            payload = response_list[1].split('\r')[0]
+        else:
+            payload = response_list[0].split('\r')[0]
+        
+
+        return payload
     
     def get_parameter(self, parameter_name: str):
-        pass
+        self.inst.read()
+        
+        response = self.send_message(self.commands[parameter_name], '?')
+
+        return response
+
     
     def set_parameter(self, parameter_name: str, value):
         pass

@@ -19,6 +19,7 @@ class IonGunLogic(LogicBase):
     refresh_ports_signal = Signal(list)
     unlock_connect_signal = Signal()
     lock_connect_signal = Signal()
+    update_parameter_signal = Signal(str,str)
 
 
 
@@ -44,7 +45,8 @@ class IonGunLogic(LogicBase):
 
     @Slot()
     def connect_ion_gun(self, port_name: str):
-        self._ion_gun_hardware().connect(device_id=1, port = self.dict_ports[port_name])
+
+        self._ion_gun_hardware().connect(port = self.dict_ports[port_name])
         if self._ion_gun_hardware().connected:
             self.lock_connect_signal.emit()
 
@@ -70,34 +72,12 @@ class IonGunLogic(LogicBase):
     @Slot(str)
     def get_parameter(self, parameter_name: str):
 
-        parameter_read = self._ion_gun_hardware().get_parameter(parameter_name)
-        value = parameter_read['payload']
-        data_type = self._ion_gun_hardware().commands[parameter_name]['data type']
-
-        max_value = self._ion_gun_hardware().commands[parameter_name]['max']
+        value = self._ion_gun_hardware().get_parameter(parameter_name)
+        if parameter_name == 'Error status':
+            value = self.process_error_status(value)
         description = self._ion_gun_hardware().commands[parameter_name]['description']
 
-        if value.isdigit():
-            value = int(value)
-            if data_type == 2:
-                if max_value == 9999.99:
-                    value = value/100
 
-                elif max_value == 1:
-                    value = value/100000
-                elif max_value == 100:
-                    value = value/100
-            if data_type == 0:
-                if value == 0:
-                    value = "OFF"
-                else:
-                    value = "ON"
-            if '(' in description:
-                unit = description.split('(')[1].split(')')[0]
-                value = str(value) + " " + unit
-
-        
-        value = str(value)
 
         self.update_parameter_signal.emit(value, description)
     
@@ -150,6 +130,19 @@ class IonGunLogic(LogicBase):
                     value = value/100
         self.update_parameter_for_setter_signal.emit(value)
         #self.get_parameter_for_setter(parameter_name)
+
+    @Slot(str)
+    def process_error_status(self, error_status: str):
+        error_list = error_status.split(';')
+        value = ''
+        for error in self._ion_gun_hardware().error_comands.keys():
+            error_code = self._ion_gun_hardware().error_comands[error]['ASCII string']
+            error_code += 'T'
+            if error_code in error_list:
+                value += error + ';'
+        if value == '':
+            value = 'No errors'
+        return value
         
         
 

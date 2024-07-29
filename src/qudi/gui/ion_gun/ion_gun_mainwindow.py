@@ -110,18 +110,12 @@ class IonGunMainWindow(QMainWindow):
     def update_setter(self) -> None:
         max_value = self.commands[self.parameter_set_box.currentText()]['max']
         min_value = self.commands[self.parameter_set_box.currentText()]['min']
-        data_type = self.commands[self.parameter_set_box.currentText()]['data type']
+
         if self.commands[self.parameter_set_box.currentText()]['max'] != None:
             self.setter_spin_box.setMaximum(max_value)
             self.setter_spin_box.setMinimum(min_value)
-            if data_type == 2:
-                if max_value == 9999.99:
-                    self.setter_spin_box.setDecimals(2)
-                elif max_value == 1:
-                    self.setter_spin_box.setDecimals(5)
-                elif max_value == 100:
-                    self.setter_spin_box.setDecimals(2)
-            self.get_parameter_for_setter_signal.emit(self.parameter_set_box.currentText())
+            
+            #self.get_parameter_for_setter_signal.emit(self.parameter_set_box.currentText())
             
         
     @Slot(float)

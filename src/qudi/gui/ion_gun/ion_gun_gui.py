@@ -39,6 +39,10 @@ class IonGunGui(GuiBase):
             Qt.QueuedConnection
         )
 
+        self._mw.parameter_signal.connect(
+            self._ion_gun_logic().get_parameter,
+            Qt.QueuedConnection
+        )
         
         self._ion_gun_logic().refresh_ports_signal.connect(
             self._mw.refresh_ports,
@@ -60,8 +64,10 @@ class IonGunGui(GuiBase):
             Qt.QueuedConnection
         )
         
-
-        self.show()
+        self._ion_gun_logic().update_parameter_signal.connect(
+            self._mw.update_parameter,
+            Qt.QueuedConnection
+        )
 
 
     def on_deactivate(self) -> None:
@@ -69,7 +75,7 @@ class IonGunGui(GuiBase):
         #self._template_logic().sigCounterUpdated.disconnect(self._mw.count_spinbox.setValue)
         # Use "plain" disconnects (without argument) only on signals owned by this module
         # Close main window
-        self._mw.turn_on_button.clicked.disconnect()
+
         self._mw.close()
 
     def show(self) -> None:
