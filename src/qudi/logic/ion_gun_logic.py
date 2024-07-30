@@ -83,52 +83,14 @@ class IonGunLogic(LogicBase):
     
     @Slot(str)
     def get_parameter_for_setter(self, parameter_name: str):
-        parameter_read = self._ion_gun_hardware().get_parameter(parameter_name)
-        value = parameter_read['payload']
-        data_type = self._ion_gun_hardware().commands[parameter_name]['data type']
-        max_value = self._ion_gun_hardware().commands[parameter_name]['max']
-        if value.isdigit():
-            value = float(int(value))
-            if data_type == 2:
-                if max_value == 9999.99:
-                    value = value/100
-                elif max_value == 1:
-                    value = value/100000
-                elif max_value == 100:
-                    value = value/100
-        else:
-            value = -1
-        
-
-        self.update_parameter_for_setter_signal.emit(value)
+        pass
     
     @Slot(str, float)
     def set_parameter(self, parameter_name: str, value: float):
-        data_type = self._ion_gun_hardware().commands[parameter_name]['data type']
-        max_value = self._ion_gun_hardware().commands[parameter_name]['max']
-        if data_type == 2:
-            if max_value == 9999.99:
-                value = value*100
-            elif max_value == 1:
-                value = value*100000
-            elif max_value == 100:
-                value = value*100
-        value = int(value)
+       
+        
         response = self._ion_gun_hardware().set_parameter(parameter_name, value)
-        value = response['payload']
-        #Create a funtion for this part, is the same as get_parameter
-        data_type = self._ion_gun_hardware().commands[parameter_name]['data type']
-        max_value = self._ion_gun_hardware().commands[parameter_name]['max']
-        if value.isdigit():
-            value = float(int(value))
-            if data_type == 2:
-                if max_value == 9999.99:
-                    value = value/100
-                elif max_value == 1:
-                    value = value/100000
-                elif max_value == 100:
-                    value = value/100
-        self.update_parameter_for_setter_signal.emit(value)
+        
         #self.get_parameter_for_setter(parameter_name)
 
     @Slot(str)
@@ -143,6 +105,11 @@ class IonGunLogic(LogicBase):
         if value == '':
             value = 'No errors'
         return value
+    
+    @Slot(str)
+    def set_no_parameter(self, parameter_name: str):
+        responce = self._ion_gun_hardware().set_parameter(parameter_name, '')
+        
         
         
 

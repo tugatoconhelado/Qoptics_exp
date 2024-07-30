@@ -275,7 +275,7 @@
      <item>
       <widget class="QRadioButton" name="radio_remote">
        <property name="text">
-        <string>Remote</string>
+        <string>Remote enable</string>
        </property>
       </widget>
      </item>

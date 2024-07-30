@@ -4,8 +4,8 @@ from qudi.core.configoption import ConfigOption
 from qudi.util.mutex import Mutex
 from qudi.core.module import Base
 from PySide2.QtCore import QObject, Signal
-import pyvisa as visa
-from pyvisa.constants import StopBits, Parity
+import serial
+import serial.tools.list_ports
 import logging
 from time import sleep
 import serial
@@ -36,13 +36,11 @@ class IonGunHardware(Base):
 
         super().__init__(*args, **kwargs)
 
-        self.communication = {'BAUDRATE' : 1200,
-                              'DATA_BITS' : 8,
-                              'PARITY' : Parity.none,
-                              'START_BITS' : 1,
-                              'STOP_BITS' : StopBits.one}
-        self.rm = visa.ResourceManager('@py')
-        self.devices = self.rm.list_resources()
+        self.communication = {'BAUDRATE' : 1200}
+        self.ports = ports = serial.tools.list_ports.comports()
+        self.devices = []
+        for port in ports:
+            self.devices.append(port.device)
         self.connected = False
         self.data_types = {0:{'description':'False / true', 'length':'06', 'example':'000000 / 111111'},
             1:{'description':'Positive integer number', 'length':'06', 'example':'000000 to 999999'},
@@ -109,10 +107,15 @@ class IonGunHardware(Base):
         if port is not None:
             self.port = port        
         if self.port in self.devices:
+            print('Connecting to ', self.port)
           
-            self.inst = self.rm.open_resource(self.port, baud_rate=self.communication["BAUDRATE"])
-            self.inst.write_termination = '\r'
-            self.id = self.inst.query('*IDN?')
+            self.inst = serial.Serial(self.port, baudrate= self.communication["BAUDRATE"], timeout=0.1)
+            
+            self.inst.write(b'*IND?\r')
+            self.id = self.inst.readlines()
+            print(self.id)
+
+            
 
             self.connected = True
 
@@ -137,7 +140,7 @@ class IonGunHardware(Base):
     def build_message(self,command, payload):
         acsii_string = command['ASCII string']
         payload = self._pad_payload(payload, command)
-        message = acsii_string+payload
+        message = (acsii_string+payload+'\r').encode()
         return message
         
     def send_message(self, command, paylooad):
@@ -148,23 +151,35 @@ class IonGunHardware(Base):
 
     def read_message(self):
         
-        full_response = self.inst.read()
-        response_list = full_response.split(' ')
-        if len(response_list) == 2:
-            payload = response_list[1].split('\r')[0]
+        full_response = self.inst.readlines()
+        print(full_response)
+        if full_response != []:
+            data = full_response[0].decode().split('\r')
+            data = data[0].split(' ')
+            if len(data) == 2:
+                response = data[1]
+            else:
+                response = data[0]
         else:
-            payload = response_list[0].split('\r')[0]
+            response = 'No response'
+        print(response)
+        return response
         
-
-        return payload
     
     def get_parameter(self, parameter_name: str):
-        self.inst.read()
         
-        response = self.send_message(self.commands[parameter_name], '?')
+        if self.connected:
+            
+            response = self.send_message(self.commands[parameter_name], '?')
 
-        return response
+            return response
+        else:
+            return None
 
     
     def set_parameter(self, parameter_name: str, value):
-        pass
+        if self.connected:
+            response = self.send_message(self.commands[parameter_name], value)
+            return response
+        else:
+            return None

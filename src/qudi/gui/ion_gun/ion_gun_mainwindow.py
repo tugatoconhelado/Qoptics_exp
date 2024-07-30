@@ -13,6 +13,7 @@ class IonGunMainWindow(QMainWindow):
     parameter_signal = Signal(str)
     get_parameter_for_setter_signal = Signal(str)
     set_parameter_signal = Signal(str, float)
+    no_parameter_signal = Signal(str)
 
     commands = {'Remote enable':{'ASCII string':'RE', 'description':'Remote enable','access':'NP'},
                 'Local':{'ASCII string':'LO', 'description':'Local','access':'NP'},
@@ -65,8 +66,52 @@ class IonGunMainWindow(QMainWindow):
         self.parameter_box.currentIndexChanged.connect(self.req_parameter)
         self.parameter_set_box.currentIndexChanged.connect(self.update_setter)
         self.set_button.clicked.connect(self.set_parameter)
+        self.control_radios = [self.radio_remote, self.radio_local]
+        self.mode_radios = [self.radio_operate, self.radio_standby, self.radio_degas, self.radio_off]
+        self.high_voltage_radios = [self.radio_hv_on, self.radio_hv_off]
+        for radio in self.control_radios:
+            radio.toggled.connect(self.req_control)
+        
+        for radio in self.mode_radios:
+            radio.toggled.connect(self.req_mode)
 
+        for radio in self.high_voltage_radios:
+            radio.toggled.connect(self.req_high_voltage)
+
+    @Slot()
+    def req_control(self) -> None:
+        for radio in self.control_radios:
+            if radio.isChecked():
+                current_radio = radio
+        for radio in self.control_radios:
+            if radio != current_radio:
+                radio.setChecked(False) 
+        self.no_parameter_signal.emit(current_radio.text())
+
+
+    @Slot()
+    def req_mode(self) -> None:
+        for radio in self.mode_radios:
+            if radio.isChecked():
+                current_radio = radio
+        for radio in self.mode_radios:
+            if radio != current_radio:
+                radio.setChecked(False)
+        self.no_parameter_signal.emit(current_radio.text())
     
+    @Slot()
+    def req_high_voltage(self) -> None:
+        for radio in self.high_voltage_radios:
+            if radio.isChecked():
+                current_radio = radio
+        for radio in self.high_voltage_radios:
+            if radio != current_radio:
+                radio.setChecked(False)
+        self.no_parameter_signal.emit(current_radio.text())
+                
+
+
+
     @Slot(list)
     def refresh_ports(self, list_ports: list) -> None:
         self.ports_box.clear()
@@ -131,7 +176,7 @@ class IonGunMainWindow(QMainWindow):
         self.set_parameter_signal.emit(self.parameter_set_box.currentText(), value)
 
 
-       
+    
 
 if __name__ == '__main__':
 

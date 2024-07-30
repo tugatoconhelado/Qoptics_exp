@@ -44,6 +44,11 @@ class IonGunGui(GuiBase):
             Qt.QueuedConnection
         )
         
+        self._mw.no_parameter_signal.connect(
+            self._ion_gun_logic().set_no_parameter,
+            Qt.QueuedConnection
+        )
+
         self._ion_gun_logic().refresh_ports_signal.connect(
             self._mw.refresh_ports,
             Qt.QueuedConnection
