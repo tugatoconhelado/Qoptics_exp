@@ -42,12 +42,6 @@ class IonGunHardware(Base):
         for port in ports:
             self.devices.append(port.device)
         self.connected = False
-        self.data_types = {0:{'description':'False / true', 'length':'06', 'example':'000000 / 111111'},
-            1:{'description':'Positive integer number', 'length':'06', 'example':'000000 to 999999'},
-            2:{'description':'Positive fixed comma number', 'length':'06', 'example':'001571' 'equal to 15,71'},
-            4:{'description':'Symbol chain', 'length':'06', 'example':'TC_400'},
-            7:{'description':'Positive integer number', 'length':'03', 'example':'000 to 999'},
-            11:{'description':'Symbol chain', 'length':'16', 'example':'BrezelBier&Wurst'}}
         self.commands = {'Remote enable':{'ASCII string':'RE', 'description':'Remote enable','access':'NP'},
                 'Local':{'ASCII string':'LO', 'description':'Local','access':'NP'},
                 'Enable local':{'ASCII string':'EN', 'description':'Enable local','access':'NP'},
@@ -59,34 +53,34 @@ class IonGunHardware(Base):
                 'HV on':{'ASCII string':'HE', 'description':'High Voltage on','access':'NP'},
                 'HV off':{'ASCII string':'HA', 'description':'High Voltage off','access':'NP'},
                 'Operating status':{'ASCII string':'OS', 'description':'Operating status','access':'NP'},
-                'Error status':{'ASCII string':'ES', 'description':'Error status','access':'R'},
-                'Emision current':{'ASCII string':'EC', 'description':'Emision current','access':'RW', 'min':10, 'max':10000, 'scale factor':0.1, 'unit':'µA'},
-                'Energy':{'ASCII string':'EN', 'description':'Energy','access':'RW', 'min':0, 'max':5000, 'scale factor':1, 'unit':'eV'},
-                'Extractor voltage':{'ASCII string':'EX', 'description':'Extractor voltage','access':'RW', 'min':60, 'max':100, 'scale factor':100, 'unit':'%'},
-                'Focus 1 voltage':{'ASCII string':'F1', 'description':'Focus 1 voltage','access':'RW', 'min':0, 'max':100, 'scale factor':100, 'unit':'%'},
-                'Focus 2 voltage':{'ASCII string':'F2', 'description':'Focus 2 voltage','access':'RW', 'min':0, 'max':100, 'scale factor':100, 'unit':'%'},
-                'Position X':{'ASCII string':'X0', 'description':'Position X','access':'RW', 'min':-5000, 'max':5000, 'scale factor':0.1, 'unit':'µA'},
-                'Position Y':{'ASCII string':'Y0', 'description':'Position Y','access':'RW', 'min':-5000, 'max':5000, 'scale factor':0.1, 'unit':'µA'},
-                'Width X':{'ASCII string':'WX', 'description':'Width X','access':'RW', 'min':0, 'max':10000, 'scale factor':0.01, 'unit':'µA'},
-                'Width Y':{'ASCII string':'WY', 'description':'Width Y','access':'RW', 'min':0, 'max':10000, 'scale factor':0.01, 'unit':'µA'},
-                'Blanking X':{'ASCII string':'BX', 'description':'Blanking X','access':'RW', 'min':1, 'max':30, 'scale factor':1, 'unit':'%'},
-                'Blanking Y':{'ASCII string':'BY', 'description':'Blanking Y','access':'RW', 'min':1, 'max':30, 'scale factor':1, 'unit':'%'},
-                'Blanking level':{'ASCII string':'BL', 'description':'Blanking level','access':'RW', 'min':0, 'max':1, 'scale factor':1, 'unit':''},
-                'Time per dot':{'ASCII string':'TD', 'description':'Time per dot','access':'RW', 'min':30, 'max':30000, 'scale factor':1, 'unit':'µs'},
-                'Angle phi':{'ASCII string':'PH', 'description':'Angle phi','access':'RW', 'min':-90, 'max':90, 'scale factor':1, 'unit':'°'},
-                'Angle theta':{'ASCII string':'TH', 'description':'Angle theta','access':'RW', 'min':-85, 'max':85, 'scale factor':1, 'unit':'°'},
-                'L': {'ASCII string':'L', 'description':'lenght L','access':'RW', 'min':100, 'max':99900, 'scale factor':0.01, 'unit':'µm'},
-                'D': {'ASCII string':'D', 'description':'diameter D','access':'RW', 'min':100, 'max':99900, 'scale factor':0.01, 'unit':'µm'},
-                'Deflection X':{'ASCII string':'VX', 'description':'Deflection X','access':'RW', 'min':1, 'max':200, 'scale factor':1, 'unit':'V/°'},
-                'Deflection Y':{'ASCII string':'VY', 'description':'Deflection Y','access':'RW', 'min':1, 'max':200, 'scale factor':1, 'unit':'V/°'},
-                'Energy current':{'ASCII string':'ENI', 'description':'Energy current','access':'R', 'scale factor':1, 'unit':'µA'},
-                'Energy module temperature':{'ASCII string':'ENT', 'description':'Energy module temperature','access':'R', 'scale factor':1, 'unit':'°C'},
-                'Extractor current':{'ASCII string':'exi', 'description':'Extractor current','access':'R', 'scale factor':1, 'unit':'µA'},
-                'Focus 1 current':{'ASCII string':'f1i', 'description':'Focus 1 current','access':'R', 'scale factor':1, 'unit':'µA'},
-                'Focus 2 current':{'ASCII string':'f2i', 'description':'Focus 2 current','access':'R', 'scale factor':1, 'unit':'µA'},
-                'Focus module temperature':{'ASCII string':'f1t', 'description':'Focus 1 module temperature','access':'R', 'scale factor':1, 'unit':'°C'},
-                'Filament voltage':{'ASCII string':'FU', 'description':'Filament voltage','access':'R', 'scale factor':1, 'unit':'V'},
-                'Filament current':{'ASCII string':'FI', 'description':'Filament current','access':'R', 'scale factor':10, 'unit':'A'},
+                'Error status':{'ASCII string':'ES', 'description':'Error status','access':'R','unit R':'', 'unit W':''},
+                'Emision current':{'ASCII string':'EC', 'description':'Emision current','access':'RW', 'min':10, 'max':10000, 'scale factor':0.1, 'unit R':'µA', 'unit W':'µA'},
+                'Energy':{'ASCII string':'EN', 'description':'Energy','access':'RW', 'min':0, 'max':5000, 'scale factor':1, 'unit R':'eV', 'unit W':'eV'},
+                'Extractor voltage':{'ASCII string':'EX', 'description':'Extractor voltage','access':'RW', 'min':60, 'max':100, 'scale factor':100, 'unit R':'V', 'unit W':'%'},
+                'Focus 1 voltage':{'ASCII string':'F1', 'description':'Focus 1 voltage','access':'RW', 'min':0, 'max':100, 'scale factor':100, 'unit R':'V', 'unit W':'%'},
+                'Focus 2 voltage':{'ASCII string':'F2', 'description':'Focus 2 voltage','access':'RW', 'min':0, 'max':100, 'scale factor':100, 'unit R':'V', 'unit W':'%'},
+                'Position X':{'ASCII string':'X0', 'description':'Position X','access':'RW', 'min':-5000, 'max':5000, 'scale factor':0.1, 'unit R':'µm', 'unit W':'µm'},
+                'Position Y':{'ASCII string':'Y0', 'description':'Position Y','access':'RW', 'min':-5000, 'max':5000, 'scale factor':0.1, 'unit R':'µm', 'unit W':'µm'},
+                'Width X':{'ASCII string':'WX', 'description':'Width X','access':'RW', 'min':0, 'max':10000, 'scale factor':0.01, 'unit R':'µm', 'unit W':'µm'},
+                'Width Y':{'ASCII string':'WY', 'description':'Width Y','access':'RW', 'min':0, 'max':10000, 'scale factor':0.01, 'unit R':'µm', 'unit W':'µm'},
+                'Blanking X':{'ASCII string':'BX', 'description':'Blanking X','access':'RW', 'min':1, 'max':30, 'scale factor':1, 'unit R':'%', 'unit W':'%'},
+                'Blanking Y':{'ASCII string':'BY', 'description':'Blanking Y','access':'RW', 'min':1, 'max':30, 'scale factor':1, 'unit R':'%', 'unit W':'%'},
+                'Blanking level':{'ASCII string':'BL', 'description':'Blanking level','access':'RW', 'min':0, 'max':1, 'scale factor':1, 'unit R':'', 'unit W':''},
+                'Time per dot':{'ASCII string':'TD', 'description':'Time per dot','access':'RW', 'min':30, 'max':30000, 'scale factor':1, 'unit R':'µs', 'unit W':'µs'},
+                'Angle phi':{'ASCII string':'PH', 'description':'Angle phi','access':'RW', 'min':-90, 'max':90, 'scale factor':1, 'unit R':'°', 'unit W':'°'},
+                'Angle theta':{'ASCII string':'TH', 'description':'Angle theta','access':'RW', 'min':-85, 'max':85, 'scale factor':1, 'unit R':'°', 'unit W':'°'},
+                'L': {'ASCII string':'L', 'description':'lenght L','access':'RW', 'min':100, 'max':99900, 'scale factor':0.01, 'unit R':'µm', 'unit W':'µm'},
+                'M': {'ASCII string':'M', 'description':'lenght M','access':'RW', 'min':100, 'max':99900, 'scale factor':0.01, 'unit R':'µm', 'unit W':'µm'},
+                'Deflection X':{'ASCII string':'VX', 'description':'Deflection X','access':'RW', 'min':1, 'max':200, 'scale factor':1, 'unit R':'V/°', 'unit W':'V/°'},
+                'Deflection Y':{'ASCII string':'VY', 'description':'Deflection Y','access':'RW', 'min':1, 'max':200, 'scale factor':1, 'unit R':'V/°', 'unit W':'V/°'},
+                'Energy current':{'ASCII string':'ENI', 'description':'Energy current','access':'R', 'scale factor':1, 'unit R':'µA', 'unit W':'µA'},
+                'Energy module temperature':{'ASCII string':'ENT', 'description':'Energy module temperature','access':'R', 'scale factor':1, 'unit R':'°C', 'unit W':'°C'},
+                'Extractor current':{'ASCII string':'exi', 'description':'Extractor current','access':'R', 'scale factor':1, 'unit R':'µA', 'unit W':'µA'},
+                'Focus 1 current':{'ASCII string':'f1i', 'description':'Focus 1 current','access':'R', 'scale factor':1, 'unit R':'µA', 'unit W':'µA'},
+                'Focus 2 current':{'ASCII string':'f2i', 'description':'Focus 2 current','access':'R', 'scale factor':1, 'unit R':'µA', 'unit W':'µA'},
+                'Focus module temperature':{'ASCII string':'f1t', 'description':'Focus 1 module temperature','access':'R', 'scale factor':1, 'unit R':'°C', 'unit W':'°C'},
+                'Filament voltage':{'ASCII string':'FU', 'description':'Filament voltage','access':'R', 'scale factor':100, 'unit R':'V', 'unit W':'V'},
+                'Filament current':{'ASCII string':'FI', 'description':'Filament current','access':'R', 'scale factor':10, 'unit R':'A', 'unit W':'A'},
         }
         self.error_comands = {'Current limit error':{'ASCII string':'CL', 'description':'Current limit error','access':'R'},
                 'Cathode fail error':{'ASCII string':'VL', 'description':'Cathode fail error','access':'R'},
@@ -113,11 +107,13 @@ class IonGunHardware(Base):
             
             self.inst.write(b'*IND?\r')
             self.id = self.inst.readlines()
-            print(self.id)
 
-            
+            if self.id != []:
+                self.connected = True
+            else:
+                self.connected = False
 
-            self.connected = True
+       
 
 
 
@@ -146,23 +142,36 @@ class IonGunHardware(Base):
     def send_message(self, command, paylooad):
         message = self.build_message(command, paylooad)
         self.inst.write(message)  
-        response = self.read_message()
+        response = self.read_message(command)
         return response
 
-    def read_message(self):
+    def read_message(self, command):
         
         full_response = self.inst.readlines()
-        print(full_response)
-        if full_response != []:
-            data = full_response[0].decode().split('\r')
-            data = data[0].split(' ')
-            if len(data) == 2:
-                response = data[1]
-            else:
-                response = data[0]
+        response = ''
+        if command['access'] != 'NP':
+            if full_response != []:
+                value = full_response[0].decode().split('\r')
+                value = value[0].split(' ')
+                if command['ASCII string'] == 'ES':
+                    value = value[0]
+                    response = value[0]
+                else:
+                    value = value[1]
+                    if command['unit R'] != command['unit W']:
+                        factor = 1
+                    else:  
+                        factor = command['scale factor']
+                
+                    value = float(value)/factor
+                    response = str(value) + ' ' + command['unit R']
+            
+
+            
+
         else:
             response = 'No response'
-        print(response)
+
         return response
         
     
