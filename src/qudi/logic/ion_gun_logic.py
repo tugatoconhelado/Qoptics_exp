@@ -73,13 +73,14 @@ class IonGunLogic(LogicBase):
     def get_parameter(self, parameter_name: str):
 
         value = self._ion_gun_hardware().get_parameter(parameter_name)
-        if parameter_name == 'Error status':
-            value = self.process_error_status(value)
-        description = self._ion_gun_hardware().commands[parameter_name]['description']
+        if value != None:
+            if parameter_name == 'Error status':
+                value = self.process_error_status(value)
+            description = self._ion_gun_hardware().commands[parameter_name]['description']
 
 
 
-        self.update_parameter_signal.emit(value, description)
+            self.update_parameter_signal.emit(value, description)
     
     @Slot(str)
     def get_parameter_for_setter(self, parameter_name: str):

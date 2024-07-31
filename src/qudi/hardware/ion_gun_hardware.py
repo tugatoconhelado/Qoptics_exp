@@ -9,7 +9,7 @@ import serial.tools.list_ports
 import logging
 from time import sleep
 import serial
-
+from time import time
 
 
 class IonGunHardware(Base):
@@ -107,6 +107,7 @@ class IonGunHardware(Base):
             
             self.inst.write(b'*IND?\r')
             self.id = self.inst.readlines()
+            print(self.id)
 
             if self.id != []:
                 self.connected = True
@@ -141,17 +142,24 @@ class IonGunHardware(Base):
         
     def send_message(self, command, paylooad):
         message = self.build_message(command, paylooad)
-        self.inst.write(message)  
+        self.inst.write(message)
+        waiting = self.inst.in_waiting
+        if waiting > 0:
+            self.inst.read(waiting) 
         response = self.read_message(command)
         return response
 
     def read_message(self, command):
         
-        full_response = self.inst.readlines()
+        full_response = self.inst.readline()
+        
+   
+
+        
         response = ''
         if command['access'] != 'NP':
-            if full_response != []:
-                value = full_response[0].decode().split('\r')
+            if full_response != b'' and full_response != b'\n':
+                value = full_response.decode().split('\r')
                 value = value[0].split(' ')
                 if command['ASCII string'] == 'ES':
                     value = value[0]
@@ -165,21 +173,23 @@ class IonGunHardware(Base):
                 
                     value = float(value)/factor
                     response = str(value) + ' ' + command['unit R']
-            
-
-            
-
         else:
             response = 'No response'
 
         return response
         
+        
+        
+        
+        
+        
     
     def get_parameter(self, parameter_name: str):
         
         if self.connected:
-            
+      
             response = self.send_message(self.commands[parameter_name], '?')
+         
 
             return response
         else:

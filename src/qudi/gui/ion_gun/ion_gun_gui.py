@@ -74,6 +74,7 @@ class IonGunGui(GuiBase):
             Qt.QueuedConnection
         )
 
+        self.show()
 
     def on_deactivate(self) -> None:
         # Disconnect all connections done in "on_activate"
