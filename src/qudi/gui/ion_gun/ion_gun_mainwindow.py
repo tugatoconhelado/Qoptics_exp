@@ -62,6 +62,7 @@ class IonGunMainWindow(QMainWindow):
             self
         )
 
+        self.box_created = False
         self.connect_button.clicked.connect(self.req_connect)
         self.parameter_box.currentIndexChanged.connect(self.req_parameter)
         self.parameter_set_box.currentIndexChanged.connect(self.update_setter)
@@ -133,12 +134,14 @@ class IonGunMainWindow(QMainWindow):
 
     @Slot()
     def create_parameter_combo_box(self) -> None:
-        self.parameter_box.clear()
-        for key in self.commands.keys():
-            if self.commands[key]['access'] == 'RW' or self.commands[key]['access'] == 'R':
-                self.parameter_box.addItem(key)
-            if self.commands[key]['access'] == 'RW':
-                self.parameter_set_box.addItem(key)
+        if not self.box_created:
+            self.box_created = True
+            self.parameter_box.clear()
+            for key in self.commands.keys():
+                if self.commands[key]['access'] == 'RW' or self.commands[key]['access'] == 'R':
+                    self.parameter_box.addItem(key)
+                if self.commands[key]['access'] == 'RW':
+                    self.parameter_set_box.addItem(key)
 
         
     @Slot()
@@ -153,14 +156,17 @@ class IonGunMainWindow(QMainWindow):
 
     @Slot()
     def update_setter(self) -> None:
-        max_value = self.commands[self.parameter_set_box.currentText()]['max']
-        min_value = self.commands[self.parameter_set_box.currentText()]['min']
+        parameter = self.parameter_set_box.currentText()
+        max_value = self.commands[parameter]['max']
+        min_value = self.commands[parameter]['min']
 
-        if self.commands[self.parameter_set_box.currentText()]['max'] != None:
+        if self.commands[parameter]['max'] != None:
             self.setter_spin_box.setMaximum(max_value)
             self.setter_spin_box.setMinimum(min_value)
+            step = 1/self.commands[parameter]['scale factor']
+            self.setter_spin_box.setSingleStep(step)
             
-            #self.get_parameter_for_setter_signal.emit(self.parameter_set_box.currentText())
+            self.get_parameter_for_setter_signal.emit(self.parameter_set_box.currentText())
             
         
     @Slot(float)
@@ -173,7 +179,8 @@ class IonGunMainWindow(QMainWindow):
     @Slot(float)
     def set_parameter(self) -> None:
         value = self.setter_spin_box.value()
-        self.set_parameter_signal.emit(self.parameter_set_box.currentText(), value)
+        name = self.parameter_set_box.currentText()
+        self.set_parameter_signal.emit(name, value)
 
 
     

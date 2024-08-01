@@ -54,7 +54,7 @@ class IonGunHardware(Base):
                 'HV off':{'ASCII string':'HA', 'description':'High Voltage off','access':'NP'},
                 'Operating status':{'ASCII string':'OS', 'description':'Operating status','access':'NP'},
                 'Error status':{'ASCII string':'ES', 'description':'Error status','access':'R','unit R':'', 'unit W':''},
-                'Emision current':{'ASCII string':'EC', 'description':'Emision current','access':'RW', 'min':10, 'max':10000, 'scale factor':0.1, 'unit R':'µA', 'unit W':'µA'},
+                'Emision current':{'ASCII string':'EC', 'description':'Emision current','access':'RW', 'min':10, 'max':10000, 'scale factor':1, 'unit R':'µA', 'unit W':'µA'},
                 'Energy':{'ASCII string':'EN', 'description':'Energy','access':'RW', 'min':0, 'max':5000, 'scale factor':1, 'unit R':'eV', 'unit W':'eV'},
                 'Extractor voltage':{'ASCII string':'EX', 'description':'Extractor voltage','access':'RW', 'min':60, 'max':100, 'scale factor':100, 'unit R':'V', 'unit W':'%'},
                 'Focus 1 voltage':{'ASCII string':'F1', 'description':'Focus 1 voltage','access':'RW', 'min':0, 'max':100, 'scale factor':100, 'unit R':'V', 'unit W':'%'},
@@ -69,8 +69,8 @@ class IonGunHardware(Base):
                 'Time per dot':{'ASCII string':'TD', 'description':'Time per dot','access':'RW', 'min':30, 'max':30000, 'scale factor':1, 'unit R':'µs', 'unit W':'µs'},
                 'Angle phi':{'ASCII string':'PH', 'description':'Angle phi','access':'RW', 'min':-90, 'max':90, 'scale factor':1, 'unit R':'°', 'unit W':'°'},
                 'Angle theta':{'ASCII string':'TH', 'description':'Angle theta','access':'RW', 'min':-85, 'max':85, 'scale factor':1, 'unit R':'°', 'unit W':'°'},
-                'L': {'ASCII string':'L', 'description':'lenght L','access':'RW', 'min':100, 'max':99900, 'scale factor':0.01, 'unit R':'µm', 'unit W':'µm'},
-                'M': {'ASCII string':'M', 'description':'lenght M','access':'RW', 'min':100, 'max':99900, 'scale factor':0.01, 'unit R':'µm', 'unit W':'µm'},
+                'L': {'ASCII string':'L', 'description':'lenght L','access':'RW', 'min':100, 'max':99900, 'scale factor':0.001, 'unit R':'µm', 'unit W':'µm'},
+                'M': {'ASCII string':'M', 'description':'lenght M','access':'RW', 'min':100, 'max':99900, 'scale factor':0.001, 'unit R':'µm', 'unit W':'µm'},
                 'Deflection X':{'ASCII string':'VX', 'description':'Deflection X','access':'RW', 'min':1, 'max':200, 'scale factor':1, 'unit R':'V/°', 'unit W':'V/°'},
                 'Deflection Y':{'ASCII string':'VY', 'description':'Deflection Y','access':'RW', 'min':1, 'max':200, 'scale factor':1, 'unit R':'V/°', 'unit W':'V/°'},
                 'Energy current':{'ASCII string':'ENI', 'description':'Energy current','access':'R', 'scale factor':1, 'unit R':'µA', 'unit W':'µA'},
@@ -101,33 +101,21 @@ class IonGunHardware(Base):
         if port is not None:
             self.port = port        
         if self.port in self.devices:
-            print('Connecting to ', self.port)
-          
             self.inst = serial.Serial(self.port, baudrate= self.communication["BAUDRATE"], timeout=0.1)
-            
             self.inst.write(b'*IND?\r')
             self.id = self.inst.readlines()
-            print(self.id)
-
-            if self.id != []:
+            if self.id != b'':
                 self.connected = True
             else:
                 self.connected = False
-
-       
-
-
-
-
 
     def disconnect(self):
         self.inst.close()
         self.connected = False
         
-    @classmethod
-    def _pad_payload(cls, payload, command):
+    def _pad_payload(self, payload, command):
         if payload != '?' and payload != '':
-            factor = cls.commands[command]['scale factor']
+            factor = command['scale factor']
             value = str(int(payload*factor))
         else:
             value = payload
@@ -150,52 +138,40 @@ class IonGunHardware(Base):
         return response
 
     def read_message(self, command):
-        
-        full_response = self.inst.readline()
-        
-   
 
-        
+        full_response = self.inst.readline()
         response = ''
         if command['access'] != 'NP':
             if full_response != b'' and full_response != b'\n':
                 value = full_response.decode().split('\r')
                 value = value[0].split(' ')
-                if command['ASCII string'] == 'ES':
-                    value = value[0]
-                    response = value[0]
+                print(value)
+                if value[0] != 'SYRemote':
+                    if command['ASCII string'] == 'ES':
+                        value = value[0]
+                        response = value[0]
+                    else:
+                        value = value[1]
+                        if command['unit R'] != command['unit W']:
+                            factor = 1
+                        else:  
+                            factor = command['scale factor']
+                        value = float(value)/factor
+                        response = str(value)
                 else:
-                    value = value[1]
-                    if command['unit R'] != command['unit W']:
-                        factor = 1
-                    else:  
-                        factor = command['scale factor']
-                
-                    value = float(value)/factor
-                    response = str(value) + ' ' + command['unit R']
+                    response = 'Not in Remote mode'
         else:
             response = 'No response'
-
         return response
         
-        
-        
-        
-        
-        
-    
     def get_parameter(self, parameter_name: str):
         
         if self.connected:
-      
             response = self.send_message(self.commands[parameter_name], '?')
-         
-
             return response
         else:
             return None
 
-    
     def set_parameter(self, parameter_name: str, value):
         if self.connected:
             response = self.send_message(self.commands[parameter_name], value)

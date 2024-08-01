@@ -49,6 +49,16 @@ class IonGunGui(GuiBase):
             Qt.QueuedConnection
         )
 
+        self._mw.set_parameter_signal.connect(
+            self._ion_gun_logic().set_parameter,
+            Qt.QueuedConnection
+        )
+
+        self._mw.get_parameter_for_setter_signal.connect(
+            self._ion_gun_logic().get_parameter_for_setter,
+            Qt.QueuedConnection
+        )
+
         self._ion_gun_logic().refresh_ports_signal.connect(
             self._mw.refresh_ports,
             Qt.QueuedConnection
@@ -74,8 +84,11 @@ class IonGunGui(GuiBase):
             Qt.QueuedConnection
         )
 
+        self._ion_gun_logic().update_parameter_for_setter_signal.connect(
+            self._mw.update_parameter_for_setter,
+            Qt.QueuedConnection
+        )
         self.show()
-
     def on_deactivate(self) -> None:
         # Disconnect all connections done in "on_activate"
         #self._template_logic().sigCounterUpdated.disconnect(self._mw.count_spinbox.setValue)
