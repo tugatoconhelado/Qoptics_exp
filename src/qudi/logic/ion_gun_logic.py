@@ -37,7 +37,6 @@ class ImplantationMatrix:
     def remove_implantation_spot(self):
         self.implantation_matrix.pop()
     
-
     def add_implantation_spot_parameter(self, parameter_name: str, value: float):
         self.current_implantation_spot.extra_parameter[parameter_name] = value
     
@@ -47,18 +46,12 @@ class ImplantationMatrix:
     def set_sacrifice_point(self, pos_x: float, pos_y: float):
         self.sacrifice_point = (pos_x, pos_y)
 
-    
-        
-
-
 class IonGunLogic(LogicBase):
     refresh_ports_signal = Signal(list)
     unlock_connect_signal = Signal()
     lock_connect_signal = Signal()
     update_parameter_signal = Signal(str,str)
     update_parameter_for_setter_signal = Signal(float)
-
-
 
     _ion_gun_hardware = Connector(name='ion_gun_hardware',
                                    interface='IonGunHardware'
@@ -67,7 +60,6 @@ class IonGunLogic(LogicBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.implantation_matrix = ImplantationMatrix()
-
         self.current_values = {'Emision current':10000,
                 'Energy':5000,
                 'Extractor voltage':90.01,
@@ -89,18 +81,10 @@ class IonGunLogic(LogicBase):
                 'Deflection Y':67
 
         }
-
-
-        
-
-        
-       
-                
         self._mutex = Mutex()  # Mutex for access serialization
         
     def on_activate(self) -> None:
         pass
-
 
     def on_deactivate(self) -> None:
         # Stop timer and delete
@@ -109,7 +93,6 @@ class IonGunLogic(LogicBase):
         #self.__timer = None
         pass
 
-   
     @Slot()
     def connect_ion_gun(self, port_name: str):
 
@@ -123,7 +106,6 @@ class IonGunLogic(LogicBase):
         if not self._ion_gun_hardware().connected:
             self.unlock_connect_signal.emit()
             
-
     @Slot()
     def refresh_ports(self):
         list_ports= self._ion_gun_hardware().devices
@@ -157,14 +139,10 @@ class IonGunLogic(LogicBase):
     
     @Slot(str, float)
     def set_parameter(self, parameter_name: str, value: float):
-       
-        
         response = self._ion_gun_hardware().set_parameter(parameter_name, value)
         print(response)
         if response != 'Not in Remote mode':
-
             self.current_values[parameter_name] = value
-
 
     @Slot(str)
     def process_error_status(self, error_status: str):
@@ -204,16 +182,28 @@ class IonGunLogic(LogicBase):
         self.implantation_matrix.set_sacrifice_point(pos_x, pos_y)
     
     @Slot()
-    def start_matrix(self):
-        for spot in self.implantation_matrix.implantation_matrix:
-            self._ion_gun_hardware().set_parameter('Position X', spot.position_x)
-            self._ion_gun_hardware().set_parameter('Position Y', spot.position_y)
-            self._ion_gun_hardware().set_parameter('Time per dot', spot.implantation_time)
-            for parameter in spot.extra_parameter.keys():
-                self._ion_gun_hardware().set_parameter(parameter, spot.extra_parameter[parameter])
-            sleep(spot.implantation_time)
+    def move_to_sacrice_point(self):
         self._ion_gun_hardware().set_parameter('Position X', self.implantation_matrix.sacrifice_point[0])
         self._ion_gun_hardware().set_parameter('Position Y', self.implantation_matrix.sacrifice_point[1])
-        self._ion_gun_hardware().set_parameter('Time per dot', 50)
-        self.implantation_matrix = ImplantationMatrix()
-        
+
+    @Slot()
+    def get_status(self):
+        status = self._ion_gun_hardware().get_status()
+        print(status)
+
+    @Slot()
+    def start_matrix(self):
+        for spot in self.implantation_matrix.implantation_matrix:
+            self.move_to_sacrice_point()
+            for parameter in spot.extra_parameter.keys():
+                self._ion_gun_hardware().set_parameter(parameter, spot.extra_parameter[parameter])
+            is_stanby = True
+            while is_stanby:
+                status = self._ion_gun_hardware().get_status()
+                #Check what is the response for get status...
+                if status == 'Standby':
+                    is_stanby = False
+            self._ion_gun_hardware().set_parameter('Position X', spot.position_x)
+            self._ion_gun_hardware().set_parameter('Position Y', spot.position_y)
+
+            

@@ -42,7 +42,7 @@
        </property>
        <property name="font">
         <font>
-         <weight>75</weight>
+         <pointsize>8</pointsize>
          <bold>true</bold>
         </font>
        </property>
@@ -75,7 +75,6 @@
           <font>
            <family>Small Fonts</family>
            <pointsize>23</pointsize>
-           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -108,7 +107,7 @@
        </property>
        <property name="font">
         <font>
-         <weight>75</weight>
+         <pointsize>8</pointsize>
          <bold>true</bold>
         </font>
        </property>
@@ -186,7 +185,7 @@
        </property>
        <property name="font">
         <font>
-         <weight>75</weight>
+         <pointsize>8</pointsize>
          <bold>true</bold>
         </font>
        </property>
@@ -273,7 +272,7 @@
        </property>
        <property name="font">
         <font>
-         <weight>75</weight>
+         <pointsize>8</pointsize>
          <bold>true</bold>
         </font>
        </property>
@@ -338,7 +337,7 @@
        </property>
        <property name="font">
         <font>
-         <weight>75</weight>
+         <pointsize>8</pointsize>
          <bold>true</bold>
         </font>
        </property>
@@ -398,10 +397,10 @@
    <widget class="QWidget" name="verticalLayoutWidget_8">
     <property name="geometry">
      <rect>
-      <x>230</x>
-      <y>30</y>
-      <width>186</width>
-      <height>364</height>
+      <x>210</x>
+      <y>20</y>
+      <width>214</width>
+      <height>433</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -415,7 +414,7 @@
        </property>
        <property name="font">
         <font>
-         <weight>75</weight>
+         <pointsize>8</pointsize>
          <bold>true</bold>
         </font>
        </property>
@@ -435,7 +434,7 @@
        <item>
         <widget class="QLabel" name="label_15">
          <property name="text">
-          <string>Sacrifice point</string>
+          <string>Sacrifice spot</string>
          </property>
         </widget>
        </item>
@@ -449,7 +448,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QDoubleSpinBox" name="setter_spin_box_4"/>
+          <widget class="QDoubleSpinBox" name="sacr_pos_x_spin"/>
          </item>
         </layout>
        </item>
@@ -463,14 +462,14 @@
           </widget>
          </item>
          <item>
-          <widget class="QDoubleSpinBox" name="setter_spin_box_5"/>
+          <widget class="QDoubleSpinBox" name="sacr_pos_y_spin"/>
          </item>
         </layout>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_3">
+        <widget class="QPushButton" name="set_sacrifice_button">
          <property name="text">
-          <string>Set as sacrifice point</string>
+          <string>Set as sacrifice spot</string>
          </property>
         </widget>
        </item>
@@ -479,7 +478,7 @@
          <item>
           <widget class="QLabel" name="label_16">
            <property name="text">
-            <string>Implantation  point</string>
+            <string>Implantation  spot</string>
            </property>
           </widget>
          </item>
@@ -493,7 +492,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QDoubleSpinBox" name="setter_spin_box_6"/>
+            <widget class="QDoubleSpinBox" name="spot_pos_x_spin"/>
            </item>
           </layout>
          </item>
@@ -507,7 +506,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QDoubleSpinBox" name="setter_spin_box_7"/>
+            <widget class="QDoubleSpinBox" name="spot_pos_y_spin"/>
            </item>
           </layout>
          </item>
@@ -521,7 +520,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QDoubleSpinBox" name="setter_spin_box_8"/>
+            <widget class="QDoubleSpinBox" name="spot_time_spin"/>
            </item>
           </layout>
          </item>
@@ -535,24 +534,24 @@
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_5">
            <item>
-            <widget class="QComboBox" name="parameter_set_box_2"/>
+            <widget class="QComboBox" name="parameter_spot_box"/>
            </item>
            <item>
-            <widget class="QDoubleSpinBox" name="setter_spin_box_2"/>
+            <widget class="QDoubleSpinBox" name="setter_parameter_spot_box"/>
            </item>
           </layout>
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_2">
            <item>
-            <widget class="QPushButton" name="pushButton">
+            <widget class="QPushButton" name="add_parameter_button">
              <property name="text">
               <string>Add parameter</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton_2">
+            <widget class="QPushButton" name="remove_parameter_button">
              <property name="text">
               <string>Remove Paraeter</string>
              </property>
@@ -567,16 +566,16 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_12">
        <item>
-        <widget class="QPushButton" name="pushButton_4">
+        <widget class="QPushButton" name="add_spot_button">
          <property name="text">
-          <string>Add implantation point</string>
+          <string>Add implantation spot</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_5">
+        <widget class="QPushButton" name="remove_last_spot_button">
          <property name="text">
-          <string>Remove last poin</string>
+          <string>Remove last spot</string>
          </property>
         </widget>
        </item>
@@ -584,11 +583,11 @@
      </item>
     </layout>
    </widget>
-   <widget class="QPushButton" name="pushButton_6">
+   <widget class="QPushButton" name="start_matrix_button">
     <property name="geometry">
      <rect>
-      <x>240</x>
-      <y>400</y>
+      <x>220</x>
+      <y>460</y>
       <width>171</width>
       <height>23</height>
      </rect>
@@ -604,7 +603,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>37</height>
     </rect>
    </property>
   </widget>

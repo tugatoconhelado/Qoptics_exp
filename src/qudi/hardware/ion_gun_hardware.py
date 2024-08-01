@@ -178,3 +178,10 @@ class IonGunHardware(Base):
             return response
         else:
             return None
+        
+    def get_status(self):
+        if self.connected:
+            response = self.send_message(self.commands['Operating status'], '?')
+            return response
+        else:
+            return None
