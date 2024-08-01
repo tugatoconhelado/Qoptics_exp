@@ -184,7 +184,36 @@ class IonGunLogic(LogicBase):
         responce = self._ion_gun_hardware().set_parameter(parameter_name, '')
 
     @Slot()
-
+    def add_implantation_spot(self, pos_x: float, pos_y: float, implantation_time: float):
+        self.implantation_matrix.add_implantation_spot(pos_x, pos_y, implantation_time)
         
-        
+    @Slot()
+    def remove_implantation_spot(self):
+        self.implantation_matrix.remove_implantation_spot()
+    
+    @Slot(str, float)
+    def add_implantation_spot_parameter(self, parameter_name: str, value: float):
+        self.implantation_matrix.add_implantation_spot_parameter(parameter_name, value)
+    
+    @Slot(str)
+    def remove_implantation_spot_parameter(self, parameter_name: str):
+        self.implantation_matrix.remove_implantation_spot_parameter(parameter_name)
+    
+    @Slot(float, float)
+    def set_sacrifice_point(self, pos_x: float, pos_y: float):
+        self.implantation_matrix.set_sacrifice_point(pos_x, pos_y)
+    
+    @Slot()
+    def start_matrix(self):
+        for spot in self.implantation_matrix.implantation_matrix:
+            self._ion_gun_hardware().set_parameter('Position X', spot.position_x)
+            self._ion_gun_hardware().set_parameter('Position Y', spot.position_y)
+            self._ion_gun_hardware().set_parameter('Time per dot', spot.implantation_time)
+            for parameter in spot.extra_parameter.keys():
+                self._ion_gun_hardware().set_parameter(parameter, spot.extra_parameter[parameter])
+            sleep(spot.implantation_time)
+        self._ion_gun_hardware().set_parameter('Position X', self.implantation_matrix.sacrifice_point[0])
+        self._ion_gun_hardware().set_parameter('Position Y', self.implantation_matrix.sacrifice_point[1])
+        self._ion_gun_hardware().set_parameter('Time per dot', 50)
+        self.implantation_matrix = ImplantationMatrix()
         
