@@ -443,12 +443,28 @@
          <item>
           <widget class="QLabel" name="label_13">
            <property name="text">
-            <string>Position X sacrifice</string>
+            <string>Position X sacrifice (um)</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QDoubleSpinBox" name="sacr_pos_x_spin"/>
+          <widget class="QDoubleSpinBox" name="sacr_pos_x_spin">
+           <property name="decimals">
+            <number>0</number>
+           </property>
+           <property name="minimum">
+            <double>-5000.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>5000.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>10.000000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.000000000000000</double>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -457,12 +473,25 @@
          <item>
           <widget class="QLabel" name="label_14">
            <property name="text">
-            <string>Position Y sacrifice</string>
+            <string>Position Y sacrifice (um)</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QDoubleSpinBox" name="sacr_pos_y_spin"/>
+          <widget class="QDoubleSpinBox" name="sacr_pos_y_spin">
+           <property name="decimals">
+            <number>0</number>
+           </property>
+           <property name="minimum">
+            <double>-5000.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>10.000000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.000000000000000</double>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -487,12 +516,25 @@
            <item>
             <widget class="QLabel" name="label_17">
              <property name="text">
-              <string>Position X</string>
+              <string>Position X (um)</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QDoubleSpinBox" name="spot_pos_x_spin"/>
+            <widget class="QDoubleSpinBox" name="spot_pos_x_spin">
+             <property name="decimals">
+              <number>0</number>
+             </property>
+             <property name="minimum">
+              <double>-5000.000000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>5000.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>10.000000000000000</double>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
@@ -501,12 +543,25 @@
            <item>
             <widget class="QLabel" name="label_18">
              <property name="text">
-              <string>Position Y</string>
+              <string>Position Y (um)</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QDoubleSpinBox" name="spot_pos_y_spin"/>
+            <widget class="QDoubleSpinBox" name="spot_pos_y_spin">
+             <property name="decimals">
+              <number>0</number>
+             </property>
+             <property name="minimum">
+              <double>-5000.000000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>5000.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>10.000000000000000</double>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
@@ -515,12 +570,16 @@
            <item>
             <widget class="QLabel" name="label_19">
              <property name="text">
-              <string>Implantation Time</string>
+              <string>Implantation Time (s)</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QDoubleSpinBox" name="spot_time_spin"/>
+            <widget class="QDoubleSpinBox" name="spot_time_spin">
+             <property name="maximum">
+              <double>1000.000000000000000</double>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>

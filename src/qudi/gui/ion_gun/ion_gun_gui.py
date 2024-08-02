@@ -59,6 +59,36 @@ class IonGunGui(GuiBase):
             Qt.QueuedConnection
         )
 
+        self._mw.set_sacrifice_spot_signal.connect(
+            self._ion_gun_logic().set_sacrifice_spot,
+            Qt.QueuedConnection
+        ) 
+
+        self._mw.add_spot_parameter_signal.connect(
+            self._ion_gun_logic().add_implantation_spot_parameter,
+            Qt.QueuedConnection
+        )
+
+        self._mw.remove_spot_parameter_signal.connect(
+            self._ion_gun_logic().remove_implantation_spot_parameter,
+            Qt.QueuedConnection
+        )
+
+        self._mw.add_spot_signal.connect(
+            self._ion_gun_logic().add_implantation_spot,
+            Qt.QueuedConnection
+        )
+
+        self._mw.remove_last_implantation_spot_signal.connect(
+            self._ion_gun_logic().remove_implantation_spot,
+            Qt.QueuedConnection
+        )
+
+        self._mw.get_parameter_spot_setter_signal.connect(
+            self._ion_gun_logic().get_parameter_spot_setter,
+            Qt.QueuedConnection
+        )
+
         self._ion_gun_logic().refresh_ports_signal.connect(
             self._mw.refresh_ports,
             Qt.QueuedConnection
@@ -88,6 +118,13 @@ class IonGunGui(GuiBase):
             self._mw.update_parameter_for_setter,
             Qt.QueuedConnection
         )
+
+        self._ion_gun_logic().update_parameter_spot_setter_signal.connect(
+            self._mw.update_parameter_spot_setter,
+            Qt.QueuedConnection
+        )
+
+
         self.show()
     def on_deactivate(self) -> None:
         # Disconnect all connections done in "on_activate"

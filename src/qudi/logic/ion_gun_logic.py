@@ -14,12 +14,36 @@ from time import sleep
 
 import dataclasses
 
+
+@dataclasses.dataclass
+class ImplantationParameters:
+    emision_current: float = 10000
+    energy: float = 5000
+    extractor_voltage: float = 90.01
+    focus_1_voltage: float = 75.00
+    focus_2_voltage: float = 0.00
+    position_x: float = 0
+    position_y: float = 0
+    width_x: float = 0
+    width_y: float = 0
+    blanking_x: float = 1
+    blanking_y: float = 1
+    blanking_level: float = 0
+    time_per_dot: float = 50
+    angle_phi: float = 0
+    angle_theta: float = 0
+    L: float = 33000
+    M: float = 11500
+    deflection_x: float = 48
+    deflection_y: float = 67
+
 @dataclasses.dataclass
 class ImplantationSpot:
     implantation_time: float = 0
     position_x: float = 0
     position_y: float = 0
     extra_parameter: dict  = {}
+    total_parameters: ImplantationParameters = ImplantationParameters()
 
 class ImplantationMatrix:
     def __init__(self):
@@ -43,8 +67,8 @@ class ImplantationMatrix:
     def remove_implantation_spot_parameter(self, parameter_name: str):
         self.current_implantation_spot.extra_parameter.pop(parameter_name)
     
-    def set_sacrifice_point(self, pos_x: float, pos_y: float):
-        self.sacrifice_point = (pos_x, pos_y)
+    def set_sacrifice_spot(self, pos_x: float, pos_y: float):
+        self.sacrifice_spot = (pos_x, pos_y)
 
 class IonGunLogic(LogicBase):
     refresh_ports_signal = Signal(list)
@@ -52,6 +76,7 @@ class IonGunLogic(LogicBase):
     lock_connect_signal = Signal()
     update_parameter_signal = Signal(str,str)
     update_parameter_for_setter_signal = Signal(float)
+    update_parameter_spot_setter_signal = Signal(float)
 
     _ion_gun_hardware = Connector(name='ion_gun_hardware',
                                    interface='IonGunHardware'
@@ -60,27 +85,7 @@ class IonGunLogic(LogicBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.implantation_matrix = ImplantationMatrix()
-        self.current_values = {'Emision current':10000,
-                'Energy':5000,
-                'Extractor voltage':90.01,
-                'Focus 1 voltage':75.00,
-                'Focus 2 voltage':0.00,
-                'Position X':0,
-                'Position Y':0,
-                'Width X':0,
-                'Width Y':0,
-                'Blanking X':1,
-                'Blanking Y':1,
-                'Blanking level':0,
-                'Time per dot':50,
-                'Angle phi':0,
-                'Angle theta':0,
-                'L': 33000,
-                'M': 11500,
-                'Deflection X':48,
-                'Deflection Y':67
-
-        }
+        self.current_values = ImplantationParameters()
         self._mutex = Mutex()  # Mutex for access serialization
         
     def on_activate(self) -> None:
@@ -134,15 +139,23 @@ class IonGunLogic(LogicBase):
     
     @Slot(str)
     def get_parameter_for_setter(self, parameter_name: str):
-        value = self.current_values[parameter_name]
+        atribute_parameter = parameter_name.lower().replace(' ','_')
+        #Chanche the fisrt letter to upper case
+        atribute_parameter = atribute_parameter[0].upper() + atribute_parameter[1:]
+        if atribute_parameter[-1] in ['x','y']:
+            atribute_parameter = atribute_parameter[:-1] + atribute_parameter[-1].upper()
+        
+        value = getattr(self.current_values, atribute_parameter)
         self.update_parameter_for_setter_signal.emit(value)
     
     @Slot(str, float)
     def set_parameter(self, parameter_name: str, value: float):
         response = self._ion_gun_hardware().set_parameter(parameter_name, value)
+        current_spot_values = self.implantation_matrix.current_implantation_spot.total_parameters
         print(response)
         if response != 'Not in Remote mode':
-            self.current_values[parameter_name] = value
+            setattr(self.current_values, parameter_name.lower().replace(' ','_'), value)
+            setattr(current_spot_values, parameter_name.lower().replace(' ','_'), value)
 
     @Slot(str)
     def process_error_status(self, error_status: str):
@@ -172,14 +185,15 @@ class IonGunLogic(LogicBase):
     @Slot(str, float)
     def add_implantation_spot_parameter(self, parameter_name: str, value: float):
         self.implantation_matrix.add_implantation_spot_parameter(parameter_name, value)
+        setattr(self.implantation_matrix.current_implantation_spot.total_parameters, parameter_name.lower().replace(' ','_'), value)
     
     @Slot(str)
     def remove_implantation_spot_parameter(self, parameter_name: str):
         self.implantation_matrix.remove_implantation_spot_parameter(parameter_name)
     
     @Slot(float, float)
-    def set_sacrifice_point(self, pos_x: float, pos_y: float):
-        self.implantation_matrix.set_sacrifice_point(pos_x, pos_y)
+    def set_sacrifice_spot(self, pos_x: float, pos_y: float):
+        self.implantation_matrix.sacrifice_spot(pos_x, pos_y)
     
     @Slot()
     def move_to_sacrice_point(self):
@@ -191,6 +205,19 @@ class IonGunLogic(LogicBase):
         status = self._ion_gun_hardware().get_status()
         print(status)
 
+
+    @Slot(str)
+    def get_parameter_spot_setter(self, parameter_name: str):
+        atribute_parameter = parameter_name.lower().replace(' ','_')
+        #Chanche the fisrt letter to upper case
+        atribute_parameter = atribute_parameter[0].upper() + atribute_parameter[1:]
+        current_spot_values = self.implantation_matrix.current_implantation_spot.total_parameters
+        if atribute_parameter[-1] in ['x','y']:
+            atribute_parameter = atribute_parameter[:-1] + atribute_parameter[-1].upper()
+        
+        value = getattr(current_spot_values, atribute_parameter)
+        self.update_parameter_spot_setter_signal.emit(value)
+
     @Slot()
     def start_matrix(self):
         for spot in self.implantation_matrix.implantation_matrix:
@@ -200,6 +227,7 @@ class IonGunLogic(LogicBase):
             is_stanby = True
             while is_stanby:
                 status = self._ion_gun_hardware().get_status()
+                print(status)
                 #Check what is the response for get status...
                 if status == 'Standby':
                     is_stanby = False

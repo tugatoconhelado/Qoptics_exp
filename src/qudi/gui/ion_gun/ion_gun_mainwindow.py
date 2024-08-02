@@ -11,9 +11,15 @@ class IonGunMainWindow(QMainWindow):
 
     conect_signal = Signal(str)
     parameter_signal = Signal(str)
-    get_parameter_for_setter_signal = Signal(str)
     set_parameter_signal = Signal(str, float)
     no_parameter_signal = Signal(str)
+    get_parameter_for_setter_signal = Signal(str)
+    set_sacrifice_spot_signal = Signal(float, float)
+    add_spot_parameter_signal = Signal(str, float)
+    remove_spot_parameter_signal = Signal(str)
+    add_implantation_spot_signal = Signal(float, float, float)
+    remove_last_implantation_spot_signal = Signal()
+    get_parameter_spot_setter_signal = Signal(str)
 
     commands = {'Remote enable':{'ASCII string':'RE', 'description':'Remote enable','access':'NP'},
                 'Local':{'ASCII string':'LO', 'description':'Local','access':'NP'},
@@ -66,7 +72,13 @@ class IonGunMainWindow(QMainWindow):
         self.connect_button.clicked.connect(self.req_connect)
         self.parameter_box.currentIndexChanged.connect(self.req_parameter)
         self.parameter_set_box.currentIndexChanged.connect(self.update_setter)
+        self.parameter_spot_box.currentIndexChanged.connect(self.update_spot_setter)
+        self.set_sacrifice_button.clicked.connect(self.set_sacrifice_spot)
+        self.add_parameter_button.clicked.connect(self.add_spot_parameter)
+        self.remove_parameter_button.clicked.connect(self.remove_spot_parameter)
+        self.add_spot_button.clicked.connect(self.add_implantation_spot)
         self.set_button.clicked.connect(self.set_parameter)
+        self.remove_spot_button.clicked.connect(self.remove_implantation_spot)
         self.control_radios = [self.radio_remote, self.radio_local]
         self.mode_radios = [self.radio_operate, self.radio_standby, self.radio_degas, self.radio_off]
         self.high_voltage_radios = [self.radio_hv_on, self.radio_hv_off]
@@ -110,9 +122,6 @@ class IonGunMainWindow(QMainWindow):
                 radio.setChecked(False)
         self.no_parameter_signal.emit(current_radio.text())
                 
-
-
-
     @Slot(list)
     def refresh_ports(self, list_ports: list) -> None:
         self.ports_box.clear()
@@ -142,15 +151,14 @@ class IonGunMainWindow(QMainWindow):
                     self.parameter_box.addItem(key)
                 if self.commands[key]['access'] == 'RW':
                     self.parameter_set_box.addItem(key)
+                    self.parameter_spot_box.addItem(key)
 
-        
     @Slot()
     def req_parameter(self) -> None:
         self.parameter_signal.emit(self.parameter_box.currentText())
 
     @Slot(str, str)
     def update_parameter(self, parameter: str, description: str) -> None:
-
         self.parameter_value.setText(parameter)
         self.parameter_value.setToolTip(description)
 
@@ -159,28 +167,68 @@ class IonGunMainWindow(QMainWindow):
         parameter = self.parameter_set_box.currentText()
         max_value = self.commands[parameter]['max']
         min_value = self.commands[parameter]['min']
-
         if self.commands[parameter]['max'] != None:
             self.setter_spin_box.setMaximum(max_value)
             self.setter_spin_box.setMinimum(min_value)
             step = 1/self.commands[parameter]['scale factor']
             self.setter_spin_box.setSingleStep(step)
-            
-            self.get_parameter_for_setter_signal.emit(self.parameter_set_box.currentText())
-            
-        
-    @Slot(float)
-    def update_parameter_for_setter(self, value: float) -> None:
-        if value != -1:
-            self.setter_spin_box.setValue(value)
-        else:
-            self.setter_spin_box.setValue(0)
+        self.get_parameter_for_setter_signal.emit(parameter)
 
     @Slot(float)
     def set_parameter(self) -> None:
         value = self.setter_spin_box.value()
         name = self.parameter_set_box.currentText()
         self.set_parameter_signal.emit(name, value)
+
+    @Slot(float)
+    def update_parameter_for_setter(self, value: float) -> None:
+        self.setter_spin_box.setValue(value)
+
+    @Slot()
+    def update_spot_setter(self) -> None:
+        parameter = self.parameter_spot_box.currentText()
+        max_value = self.commands[parameter]['max']
+        min_value = self.commands[parameter]['min']
+        if self.commands[parameter]['max'] != None:
+            self.setter_parameter_spot_box.setMaximum(max_value)
+            self.setter_parameter_spot_box.setMinimum(min_value)
+            step = 1/self.commands[parameter]['scale factor']
+            self.setter_parameter_spot_box.setSingleStep(step)    
+        self.get_parameter_spot_setter_signal.emit(parameter)
+
+
+
+    @Slot()
+    def set_sacrifice_spot(self) -> None:
+        x = self.spot_spin_box.value()
+        y = self.spot_spin_box.value()
+        self.set_sacrifice_spot_signal.emit(x, y)
+
+    @Slot()
+    def add_spot_parameter(self) -> None:
+        parameter_name = self.parameter_spot_box.currentText()
+        value = self.spot_spin_box.value()
+        self.add_spot_parameter_signal.emit(parameter_name, value)
+
+    @Slot()
+    def remove_spot_parameter(self) -> None:
+        parameter_name = self.parameter_spot_box.currentText()
+        self.remove_spot_parameter_signal.emit(parameter_name)
+
+    @Slot()
+    def add_implantation_spot(self) -> None:
+        x = self.spot_pos_x_spin.value()
+        y = self.spot_pos_y_spin.value()
+        time = self.spot_time_spin.value()
+        self.add_implantation_spot_signal.emit(x, y, time)
+
+    @Slot()
+    def remove_implantation_spot(self) -> None:
+        self.remove_last_implantation_spot_signal.emit()
+
+    @Slot(float)
+    def update_parameter_spot_setter(self, value: float) -> None:
+        self.spot_spin_box.setValue(value)
 
 
     
