@@ -140,12 +140,13 @@ class IonGunHardware(Base):
     def read_message(self, command):
 
         full_response = self.inst.readline()
+
         response = ''
         if command['access'] != 'NP':
             if full_response != b'' and full_response != b'\n':
                 value = full_response.decode().split('\r')
                 value = value[0].split(' ')
-                print(value)
+
                 if value[0] != 'SYRemote':
                     if command['ASCII string'] == 'ES':
                         value = value[0]
@@ -161,7 +162,12 @@ class IonGunHardware(Base):
                 else:
                     response = 'Not in Remote mode'
         else:
-            response = 'No response'
+            if command['ASCII string'] == 'OS':
+                response = full_response.decode().split('\r')[0]
+                response = response.split(';')
+
+
+            
         return response
         
     def get_parameter(self, parameter_name: str):
@@ -182,6 +188,7 @@ class IonGunHardware(Base):
     def get_status(self):
         if self.connected:
             response = self.send_message(self.commands['Operating status'], '?')
+
             return response
         else:
             return None

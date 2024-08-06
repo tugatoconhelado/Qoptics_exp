@@ -32,31 +32,35 @@ class ImplantationParameters:
     time_per_dot: float = 50
     angle_phi: float = 0
     angle_theta: float = 0
-    L: float = 33000
-    M: float = 11500
+    l: float = 33000
+    m: float = 11500
     deflection_x: float = 48
     deflection_y: float = 67
 
 @dataclasses.dataclass
 class ImplantationSpot:
+    total_parameters: ImplantationParameters = None
     implantation_time: float = 0
     position_x: float = 0
     position_y: float = 0
-    extra_parameter: dict  = {}
-    total_parameters: ImplantationParameters = ImplantationParameters()
+    extra_parameter: dict  = None
+    
 
 class ImplantationMatrix:
     def __init__(self):
         self.implantation_matrix = []
-        self.sacrifice_point = (0,0)
-        self.current_implantation_spot = ImplantationSpot()
+        self.sacrifice_spot = (0,0)
+        parameters = ImplantationParameters()
+        self.current_implantation_spot = ImplantationSpot(total_parameters=parameters, extra_parameter={})
     
     def add_implantation_spot(self,pos_x: float, pos_y: float, implantation_time: float):
         self.current_implantation_spot.position_x = pos_x
         self.current_implantation_spot.position_y = pos_y
         self.current_implantation_spot.implantation_time = implantation_time
         self.implantation_matrix.append(self.current_implantation_spot)
-        self.current_implantation_spot = ImplantationSpot()
+        parameters = ImplantationParameters()
+        self.current_implantation_spot = ImplantationSpot(total_parameters=parameters, extra_parameter={})
+    
 
     def remove_implantation_spot(self):
         self.implantation_matrix.pop()
@@ -89,7 +93,7 @@ class IonGunLogic(LogicBase):
         self._mutex = Mutex()  # Mutex for access serialization
         
     def on_activate(self) -> None:
-        pass
+        self.get_status()
 
     def on_deactivate(self) -> None:
         # Stop timer and delete
@@ -97,10 +101,20 @@ class IonGunLogic(LogicBase):
         #self.__timer.timeout.disconnect()
         #self.__timer = None
         pass
+    
+    def pad_parameter_name_class(self, parameter_name: str):
+        atribute_parameter = parameter_name.lower().replace(' ','_')
+        return atribute_parameter
+
+    def pad_parameter_name_dict(self, parameter_name: str):
+        atribute_parameter = parameter_name.lower().replace('_',' ')
+        atribute_parameter = atribute_parameter[0].upper() + atribute_parameter[1:]
+        if atribute_parameter[-1] in ['x','y']:
+            atribute_parameter = atribute_parameter[:-1] + atribute_parameter[-1].upper()
+        return atribute_parameter
 
     @Slot()
     def connect_ion_gun(self, port_name: str):
-
         self._ion_gun_hardware().connect(port = self.dict_ports[port_name])
         if self._ion_gun_hardware().connected:
             self.lock_connect_signal.emit()
@@ -125,7 +139,6 @@ class IonGunLogic(LogicBase):
 
     @Slot(str)
     def get_parameter(self, parameter_name: str):
-
         value = self._ion_gun_hardware().get_parameter(parameter_name)
         if value != None:
             if parameter_name == 'Error status':
@@ -133,18 +146,11 @@ class IonGunLogic(LogicBase):
             description = self._ion_gun_hardware().commands[parameter_name]['description']
             unit = self._ion_gun_hardware().commands[parameter_name]['unit R']
             value = str(value) + ' ' + unit
-
-
             self.update_parameter_signal.emit(value, description)
     
     @Slot(str)
     def get_parameter_for_setter(self, parameter_name: str):
-        atribute_parameter = parameter_name.lower().replace(' ','_')
-        #Chanche the fisrt letter to upper case
-        atribute_parameter = atribute_parameter[0].upper() + atribute_parameter[1:]
-        if atribute_parameter[-1] in ['x','y']:
-            atribute_parameter = atribute_parameter[:-1] + atribute_parameter[-1].upper()
-        
+        atribute_parameter = self.pad_parameter_name_class(parameter_name)
         value = getattr(self.current_values, atribute_parameter)
         self.update_parameter_for_setter_signal.emit(value)
     
@@ -152,10 +158,11 @@ class IonGunLogic(LogicBase):
     def set_parameter(self, parameter_name: str, value: float):
         response = self._ion_gun_hardware().set_parameter(parameter_name, value)
         current_spot_values = self.implantation_matrix.current_implantation_spot.total_parameters
-        print(response)
+
         if response != 'Not in Remote mode':
-            setattr(self.current_values, parameter_name.lower().replace(' ','_'), value)
-            setattr(current_spot_values, parameter_name.lower().replace(' ','_'), value)
+            parameter_name = self.pad_parameter_name_class(parameter_name)
+            setattr(self.current_values, parameter_name, value)
+            setattr(current_spot_values, parameter_name, value)
 
     @Slot(str)
     def process_error_status(self, error_status: str):
@@ -177,7 +184,7 @@ class IonGunLogic(LogicBase):
     @Slot()
     def add_implantation_spot(self, pos_x: float, pos_y: float, implantation_time: float):
         self.implantation_matrix.add_implantation_spot(pos_x, pos_y, implantation_time)
-        
+
     @Slot()
     def remove_implantation_spot(self):
         self.implantation_matrix.remove_implantation_spot()
@@ -185,53 +192,80 @@ class IonGunLogic(LogicBase):
     @Slot(str, float)
     def add_implantation_spot_parameter(self, parameter_name: str, value: float):
         self.implantation_matrix.add_implantation_spot_parameter(parameter_name, value)
-        setattr(self.implantation_matrix.current_implantation_spot.total_parameters, parameter_name.lower().replace(' ','_'), value)
-    
+        total_parameters = self.implantation_matrix.current_implantation_spot.total_parameters
+        parameter_name = self.pad_parameter_name_class(parameter_name)
+        setattr(total_parameters, parameter_name, value)
+
     @Slot(str)
     def remove_implantation_spot_parameter(self, parameter_name: str):
         self.implantation_matrix.remove_implantation_spot_parameter(parameter_name)
+        atribute_parameter = self.pad_parameter_name_class(parameter_name)
+        value = getattr(self.current_values, atribute_parameter)
+        spot_total_parameters = self.implantation_matrix.current_implantation_spot.total_parameters
+        setattr(spot_total_parameters, atribute_parameter, value)
+
     
     @Slot(float, float)
     def set_sacrifice_spot(self, pos_x: float, pos_y: float):
-        self.implantation_matrix.sacrifice_spot(pos_x, pos_y)
+        self.implantation_matrix.sacrifice_spot = (pos_x, pos_y)
     
     @Slot()
     def move_to_sacrice_point(self):
-        self._ion_gun_hardware().set_parameter('Position X', self.implantation_matrix.sacrifice_point[0])
-        self._ion_gun_hardware().set_parameter('Position Y', self.implantation_matrix.sacrifice_point[1])
+        self._ion_gun_hardware().set_parameter('Position X', self.implantation_matrix.sacrifice_spot[0])
+        self._ion_gun_hardware().set_parameter('Position Y', self.implantation_matrix.sacrifice_spot[1])
 
     @Slot()
     def get_status(self):
         status = self._ion_gun_hardware().get_status()
-        print(status)
+        return status
 
 
     @Slot(str)
     def get_parameter_spot_setter(self, parameter_name: str):
-        atribute_parameter = parameter_name.lower().replace(' ','_')
-        #Chanche the fisrt letter to upper case
-        atribute_parameter = atribute_parameter[0].upper() + atribute_parameter[1:]
+        atribute_parameter = self.pad_parameter_name_class(parameter_name)
         current_spot_values = self.implantation_matrix.current_implantation_spot.total_parameters
-        if atribute_parameter[-1] in ['x','y']:
-            atribute_parameter = atribute_parameter[:-1] + atribute_parameter[-1].upper()
-        
         value = getattr(current_spot_values, atribute_parameter)
         self.update_parameter_spot_setter_signal.emit(value)
 
     @Slot()
     def start_matrix(self):
         for spot in self.implantation_matrix.implantation_matrix:
+
             self.move_to_sacrice_point()
             for parameter in spot.extra_parameter.keys():
                 self._ion_gun_hardware().set_parameter(parameter, spot.extra_parameter[parameter])
+                sleep(0.15)
             is_stanby = True
             while is_stanby:
-                status = self._ion_gun_hardware().get_status()
+                sleep(1)
+                status = self.get_status()
                 print(status)
+                if status == ['\n']:
+                    indicator = 'HA'
+                else:
+                    indicator = status[3]
                 #Check what is the response for get status...
-                if status == 'Standby':
+                if indicator == 'HE':
                     is_stanby = False
+                    print(f'Implantation spot {spot.position_x, spot.position_y} is ongoing')
             self._ion_gun_hardware().set_parameter('Position X', spot.position_x)
+            sleep(0.15)
             self._ion_gun_hardware().set_parameter('Position Y', spot.position_y)
+            sleep(spot.implantation_time)
+        self.move_to_sacrice_point()
+        print('Implantation matrix finished')
+
+    @Slot()
+    def show_matrix(self):
+        for spot in self.implantation_matrix.implantation_matrix:
+            print(f'Position: {spot.position_x, spot.position_y} Time: {spot.implantation_time}')
+            for parameter in spot.extra_parameter.keys():
+                print(f'{parameter}: {spot.extra_parameter[parameter]}')
+            print('\n')
+        print(f'Sacrifice spot: {self.implantation_matrix.sacrifice_spot}')
+        print('\n')
+            
+
+            
 
             

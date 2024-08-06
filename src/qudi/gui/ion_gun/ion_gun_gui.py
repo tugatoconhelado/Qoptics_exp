@@ -74,7 +74,7 @@ class IonGunGui(GuiBase):
             Qt.QueuedConnection
         )
 
-        self._mw.add_spot_signal.connect(
+        self._mw.add_implantation_spot_signal.connect(
             self._ion_gun_logic().add_implantation_spot,
             Qt.QueuedConnection
         )
@@ -86,6 +86,16 @@ class IonGunGui(GuiBase):
 
         self._mw.get_parameter_spot_setter_signal.connect(
             self._ion_gun_logic().get_parameter_spot_setter,
+            Qt.QueuedConnection
+        )
+
+        self._mw.start_matrix_signal.connect(
+            self._ion_gun_logic().start_matrix,
+            Qt.QueuedConnection
+        )
+
+        self._mw.show_matrix_signal.connect(
+            self._ion_gun_logic().show_matrix,
             Qt.QueuedConnection
         )
 

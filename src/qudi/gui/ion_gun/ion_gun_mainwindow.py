@@ -20,6 +20,8 @@ class IonGunMainWindow(QMainWindow):
     add_implantation_spot_signal = Signal(float, float, float)
     remove_last_implantation_spot_signal = Signal()
     get_parameter_spot_setter_signal = Signal(str)
+    start_matrix_signal = Signal()
+    show_matrix_signal = Signal()
 
     commands = {'Remote enable':{'ASCII string':'RE', 'description':'Remote enable','access':'NP'},
                 'Local':{'ASCII string':'LO', 'description':'Local','access':'NP'},
@@ -78,7 +80,9 @@ class IonGunMainWindow(QMainWindow):
         self.remove_parameter_button.clicked.connect(self.remove_spot_parameter)
         self.add_spot_button.clicked.connect(self.add_implantation_spot)
         self.set_button.clicked.connect(self.set_parameter)
-        self.remove_spot_button.clicked.connect(self.remove_implantation_spot)
+        self.remove_last_spot_button.clicked.connect(self.remove_implantation_spot)
+        self.start_matrix_button.clicked.connect(self.start_matrix)
+        self.show_matrix_button.clicked.connect(self.show_matrix)
         self.control_radios = [self.radio_remote, self.radio_local]
         self.mode_radios = [self.radio_operate, self.radio_standby, self.radio_degas, self.radio_off]
         self.high_voltage_radios = [self.radio_hv_on, self.radio_hv_off]
@@ -200,14 +204,14 @@ class IonGunMainWindow(QMainWindow):
 
     @Slot()
     def set_sacrifice_spot(self) -> None:
-        x = self.spot_spin_box.value()
-        y = self.spot_spin_box.value()
+        x = self.sacr_pos_x_spin.value()
+        y = self.sacr_pos_y_spin.value()
         self.set_sacrifice_spot_signal.emit(x, y)
 
     @Slot()
     def add_spot_parameter(self) -> None:
         parameter_name = self.parameter_spot_box.currentText()
-        value = self.spot_spin_box.value()
+        value = self.setter_parameter_spot_box.value()
         self.add_spot_parameter_signal.emit(parameter_name, value)
 
     @Slot()
@@ -228,8 +232,16 @@ class IonGunMainWindow(QMainWindow):
 
     @Slot(float)
     def update_parameter_spot_setter(self, value: float) -> None:
-        self.spot_spin_box.setValue(value)
+        self.setter_parameter_spot_box.setValue(value)
 
+    @Slot()
+    def start_matrix(self) -> None:
+        #self.start_matrix_button.setEnabled(False)
+        self.start_matrix_signal.emit()
+    
+    @Slot()
+    def show_matrix(self) -> None:
+        self.show_matrix_signal.emit()
 
     
 

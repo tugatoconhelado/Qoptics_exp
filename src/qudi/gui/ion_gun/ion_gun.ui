@@ -43,6 +43,7 @@
        <property name="font">
         <font>
          <pointsize>8</pointsize>
+         <weight>75</weight>
          <bold>true</bold>
         </font>
        </property>
@@ -75,6 +76,7 @@
           <font>
            <family>Small Fonts</family>
            <pointsize>23</pointsize>
+           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -108,6 +110,7 @@
        <property name="font">
         <font>
          <pointsize>8</pointsize>
+         <weight>75</weight>
          <bold>true</bold>
         </font>
        </property>
@@ -186,6 +189,7 @@
        <property name="font">
         <font>
          <pointsize>8</pointsize>
+         <weight>75</weight>
          <bold>true</bold>
         </font>
        </property>
@@ -273,6 +277,7 @@
        <property name="font">
         <font>
          <pointsize>8</pointsize>
+         <weight>75</weight>
          <bold>true</bold>
         </font>
        </property>
@@ -338,6 +343,7 @@
        <property name="font">
         <font>
          <pointsize>8</pointsize>
+         <weight>75</weight>
          <bold>true</bold>
         </font>
        </property>
@@ -415,6 +421,7 @@
        <property name="font">
         <font>
          <pointsize>8</pointsize>
+         <weight>75</weight>
          <bold>true</bold>
         </font>
        </property>
@@ -484,6 +491,9 @@
            </property>
            <property name="minimum">
             <double>-5000.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>5000.000000000000000</double>
            </property>
            <property name="singleStep">
             <double>10.000000000000000</double>
@@ -576,6 +586,9 @@
            </item>
            <item>
             <widget class="QDoubleSpinBox" name="spot_time_spin">
+             <property name="minimum">
+              <double>0.100000000000000</double>
+             </property>
              <property name="maximum">
               <double>1000.000000000000000</double>
              </property>
@@ -612,7 +625,7 @@
            <item>
             <widget class="QPushButton" name="remove_parameter_button">
              <property name="text">
-              <string>Remove Paraeter</string>
+              <string>Remove Parameter</string>
              </property>
             </widget>
            </item>
@@ -645,14 +658,27 @@
    <widget class="QPushButton" name="start_matrix_button">
     <property name="geometry">
      <rect>
-      <x>220</x>
+      <x>210</x>
       <y>460</y>
-      <width>171</width>
+      <width>212</width>
       <height>23</height>
      </rect>
     </property>
     <property name="text">
      <string>Sart implantation</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="show_matrix_button">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>490</y>
+      <width>211</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Show Matrix</string>
     </property>
    </widget>
   </widget>
@@ -662,7 +688,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>37</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
