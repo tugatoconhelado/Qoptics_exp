@@ -110,7 +110,7 @@ class ODMRLogic(LogicBase):
         iteration = 0
         self.measure = True
 
-        all_fluorescence = np.array([[]])
+        self.all_fluorescence = np.array([[]])
 
         while self.measure:
 
@@ -129,12 +129,14 @@ class ODMRLogic(LogicBase):
 
             if iteration == 0:
                 level_fluorescence = readed_fluorescence[0]
+                fluorescence = np.diff(fluorescence)
+                fluorescence = np.append(np.array(readed_fluorescence[1] - level_fluorescence), fluorescence)
             fluorescence = np.diff(fluorescence)
-            fluorescence = np.append(np.array(readed_fluorescence[1] - level_fluorescence), fluorescence)
+            fluorescence = np.append(np.array(readed_fluorescence[0] - level_fluorescence), fluorescence)
             level_fluorescence = readed_fluorescence[-1]
 
-            generator_ramp = generator_ramp[generator_ramp.argsort()]
             fluorescence = fluorescence[generator_ramp.argsort()]
+            generator_ramp = generator_ramp[generator_ramp.argsort()]
 
             self.data.frequency = (
                 self.data.parameters.frequency_center
@@ -142,11 +144,10 @@ class ODMRLogic(LogicBase):
                 * generator_ramp
             )
             if iteration == 0:
-                all_fluorescence = np.array([fluorescence])
+                self.all_fluorescence = np.array([fluorescence])
             else:
-                all_fluorescence = np.append(all_fluorescence, [fluorescence], axis=0)
-
-            averaged_fluorescence = np.average(all_fluorescence, axis=0)
+                self.all_fluorescence = np.append(self.all_fluorescence, [fluorescence], axis=0)
+            averaged_fluorescence = np.average(self.all_fluorescence, axis=0)
             self.data.fluorescence = averaged_fluorescence
 
             self.odmr_data_signal.emit(self.data.frequency, self.data.fluorescence)

@@ -139,12 +139,15 @@ class TCSPCLogic(LogicBase):
 
     def get_rates(self):
 
+        keep_reading = True
         with self._mutex:
-            try:
-                rates = self._tcspc_hardware().read_rate_counter(0)
-            except Exception as e:
-                print(f'Error reading rates: {e}')
-                return
+            while keep_reading:
+                try:
+                    rates = self._tcspc_hardware().read_rate_counter(0)
+                    keep_reading = False
+                except Exception as e:
+                    self.log.debug(f'Error reading rates: {e}')
+                    
             self.rate_values = (
                 rates.sync_rate,
                 rates.cfd_rate,
