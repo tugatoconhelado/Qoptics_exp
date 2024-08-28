@@ -10,7 +10,7 @@ from setuptools import setup, find_namespace_packages
 unix_dep = [
     'wheel>=0.37.0',
     'qudi-core>=1.4.1',
-    'numpy>=1.21.3',
+    'numpy>=2.0',
     'pyqtgraph>=0.13.0',
     'PySide2==5.15.2.1',
 ]
@@ -18,7 +18,7 @@ unix_dep = [
 windows_dep = [
     'wheel>=0.37.0',
     'qudi-core>=1.4.1',
-    'numpy>=1.21.3',
+    'numpy>=2.0',
     'pyqtgraph>=0.13.0',
     'PySide2==5.15.2.1',
 ]
@@ -55,7 +55,7 @@ setup(
     description='A template package for qudi addons.',  # Meaningful short(!) description
     long_description=long_description,  # Detailed description is taken from "README.md" file
     long_description_content_type='text/markdown',  # Content type of "README.md" file
-    url='https://github.com/Ulm-IQO/qudi-addon-template',  # URL pointing to your project page
+    url='https://github.com/tugatoconhelado/Qoptics_exp',  # URL pointing to your project page
     keywords=['qudi',             # Add tags here to be easier found by searches, e.g. on PyPI
               'experiment',
               'measurement',

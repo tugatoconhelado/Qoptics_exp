@@ -1,36 +1,24 @@
-import dataclasses
-from typing import List, Tuple, Union
-from functools import wraps
+import sys
+from PySide2.QtWidgets import QApplication, QMainWindow, QLabel
+import os
+import PySide2
+os.environ['QT_MAC_WANTS_LAYER'] = '1'
 
-@dataclasses.dataclass
-class Test:
-    a: tuple
-    b: tuple
-    c: tuple
+print(PySide2.__version__)
+# Create the application
+app = QApplication(sys.argv)
 
+# Create the main window
+window = QMainWindow()
+window.setWindowTitle("My GUI")
 
-def receive_dataclass(function) -> None:
-    
-    @wraps(function)
-    def accept_dataclass(param_data, *args):
-        if not args and dataclasses.is_dataclass(param_data):
-            # If 1 argument is given, use the dataclass as a tuple
-            return function(*dataclasses.astuple(param_data))
-        return function(param_data, *args)
-    return accept_dataclass
+# Create a label widget
+label = QLabel("Hello, World!")
+window.setCentralWidget(label)
 
-@receive_dataclass
-def my_function(a, b, c):
+# Show the window
+window.show()
+window.raise_()
 
-    print('-' * 9)
-    print(a)
-    print(b)
-    print(c)
-    print('-' * 9)
-
-if __name__ == '__main__':
-    test = Test((1, 2, 3), (4, 5, 6), (7, 8, 9))
-    test2 = [(1, 2, 3), (4, 5, 6), (7, 8, 9)]
-    print(dataclasses.astuple(test))
-    my_function((1, 2, 3), (4, 5, 6), (7, 8, 9))
-    my_function(test)  # Example usage with 3 arguments
+# Start the event loop
+sys.exit(app.exec_())
