@@ -5,6 +5,7 @@ from qudi.util.uic import loadUi
 import numpy as np
 import pyqtgraph as pg
 import sys
+import os
 
 
 class TimeTraceMainWindow(QMainWindow):
@@ -18,7 +19,7 @@ class TimeTraceMainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         loadUi(
-            r'C:\EXP\python\Qoptics_exp\src\qudi\gui\timetrace\timetrace.ui',
+            os.path.join(os.path.dirname(__file__), 'timetrace.ui'),
             self
         )
         self.exit_action.triggered.connect(self.close)

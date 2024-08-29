@@ -5,6 +5,7 @@ from qudi.util.uic import loadUi
 import numpy as np
 import pyqtgraph as pg
 import sys
+import os
 
 
 class PositionControlWidget(QWidget):
@@ -18,7 +19,7 @@ class PositionControlWidget(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         loadUi(
-            r'C:\EXP\python\Qoptics_exp\src\qudi\gui\confocal\position_control.ui',
+            os.path.join(os.path.dirname(__file__), 'position_control.ui'),
             self
         )
 

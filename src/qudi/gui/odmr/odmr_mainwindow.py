@@ -9,6 +9,7 @@ from qudi.util.widgets.scientific_spinbox import ScienDSpinBox
 import numpy as np
 import pyqtgraph as pg
 import sys
+import os
 
 
 class ODMRMainWindow(QMainWindow):
@@ -27,7 +28,7 @@ class ODMRMainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         loadUi(
-            r'C:\EXP\python\Qoptics_exp\src\qudi\gui\odmr\newodmr.ui',
+            os.path.join(os.path.dirname(__file__), 'newodmr.ui'),
             self
         )
 

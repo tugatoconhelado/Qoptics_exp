@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from bh_spc import spcm
+import os
+
 
 class TCSPCMainWindow(QMainWindow):
 
@@ -16,7 +18,7 @@ class TCSPCMainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         loadUi(
-            r'C:\EXP\python\Qoptics_exp\src\qudi\gui\tcspc\tcspc.ui',
+            os.path.join(os.path.dirname(__file__), 'tcspc.ui'),
             self
         )
 

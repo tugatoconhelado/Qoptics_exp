@@ -5,6 +5,7 @@ from qudi.util.uic import loadUi
 import numpy as np
 import pyqtgraph as pg
 import sys
+import os
 
 
 class LaserControllerMainWindow(QMainWindow):
@@ -13,7 +14,7 @@ class LaserControllerMainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         loadUi(
-            r'C:\EXP\python\Qoptics_exp\src\qudi\gui\laser\laser_controller.ui',
+            os.path.join(os.path.dirname(__file__), 'laser_controller.ui'),
             self
         )
 

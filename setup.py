@@ -13,6 +13,9 @@ unix_dep = [
     'numpy>=2.0',
     'pyqtgraph>=0.13.0',
     'PySide2==5.15.2.1',
+    'h5py',
+    'nidaqmx',
+    'seaborn',
 ]
 
 windows_dep = [
@@ -21,6 +24,10 @@ windows_dep = [
     'numpy>=2.0',
     'pyqtgraph>=0.13.0',
     'PySide2==5.15.2.1',
+    'h5py',
+    'nidaqmx',
+    'seaborn',
+    'pybhspc',
 ]
 
 # The version number of this package is derived from the content of the "VERSION" file located in

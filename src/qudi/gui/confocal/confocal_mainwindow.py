@@ -8,6 +8,7 @@ from qudi.gui.confocal.position_control_widget import PositionControlWidget
 import numpy as np
 import pyqtgraph as pg
 import sys
+import os
 
 
 class ConfocalMainWindow(QMainWindow):
@@ -16,7 +17,7 @@ class ConfocalMainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         loadUi(
-            r'C:\EXP\python\Qoptics_exp\src\qudi\gui\confocal\confocal.ui',
+            os.path.join(os.path.dirname(__file__), 'confocal.ui'),
             self
         )
 

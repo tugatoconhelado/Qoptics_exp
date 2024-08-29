@@ -3,6 +3,8 @@ from PySide2.QtCore import Slot, Signal
 from qudi.util.uic import loadUi
 import numpy as np
 import pyqtgraph as pg
+import os
+
 
 class SpectrometerMainWindow(QMainWindow):
     """
@@ -24,7 +26,7 @@ class SpectrometerMainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         loadUi(
-            r'C:\EXP\python\Qoptics_exp\src\qudi\gui\spectrometer\spectrometer.ui',
+            os.path.join(os.path.dirname(__file__), 'spectrometer.ui'),
             self
         )
 
