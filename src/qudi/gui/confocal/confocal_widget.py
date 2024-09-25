@@ -5,6 +5,7 @@ import pyqtgraph as pg
 from qudi.util.uic import loadUi
 import functools
 import os
+import seaborn as sns
 
 
 class ConfocalWidget(QWidget):

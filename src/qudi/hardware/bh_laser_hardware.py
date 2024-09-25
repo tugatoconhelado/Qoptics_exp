@@ -1,11 +1,18 @@
+from qudi.core.statusvariable import StatusVar
+from qudi.core.configoption import ConfigOption
+from qudi.util.mutex import Mutex
+from qudi.core.module import Base
+from PySide2.QtCore import Signal
 import nidaqmx
+import numpy as np
 
 
-class BHLaserHardware:
+class BHLaserHardware(Base):
 
 
-    def __init__(self) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         
+        super().__init__(*args, **kwargs)
         self.settings = {
             'device': 'Dev1',
             'port': 'port0',
@@ -22,6 +29,11 @@ class BHLaserHardware:
         self.__power = 10
         self.__on_off_status = False
 
+    def on_activate(self) -> None:
+        pass
+
+    def on_deactivate(self) -> None:
+        pass
 
     @property
     def frequency(self) -> int:
@@ -40,11 +52,11 @@ class BHLaserHardware:
             task.write(self.freq_dict[value])
 
     @property
-    def power(self) -> int:
+    def power(self) -> float:
         return self.__power
     
     @power.setter
-    def power(self, value: int) -> None:
+    def power(self, value: float) -> None:
         self.__power = value
 
         with nidaqmx.Task() as task:
@@ -82,7 +94,7 @@ class BHLaserHardware:
 
 if __name__ == '__main__':
     laser = BHLaserHardware()
-    laser.frequency = 1
-    laser.power = 0
-    laser.on_off_status = False
+    laser.frequency = 0
+    laser.power = 10
+    laser.on_off_status = True
     print(laser.frequency, laser.power, laser.on_off_status)

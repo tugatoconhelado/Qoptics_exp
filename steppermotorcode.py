@@ -58,13 +58,15 @@ def test_func():
     with nidaqmx.Task() as task:
         task.do_channels.add_do_chan('Dev2/port1/line0:2',  line_grouping=nidaqmx.constants.LineGrouping.CHAN_PER_LINE)
         task.start()
+
+        steps = 100
+        direction = 0
+
         while True:
             interval = 0.0001
-            print("Press any key to exit.")
-            #Retrocede solo si en ambas ocasiones DIR es True
-            task.write([True, True, False])
-            time.sleep(interval)
             task.write([True, True, True])
+            time.sleep(interval)
+            task.write([False, False, False])
             time.sleep(interval)
 
             if msvcrt.kbhit(): # Check the keyboard and exit if any key pressed.
@@ -72,5 +74,27 @@ def test_func():
                 print(key_stroke) # will print which key is pressed.
                 if key_stroke:
                     break
+'''
+        for i in range(steps):
+            interval = 0.0001
+            if direction == 1:
+                print('Moving forward...')
+                #Retrocede solo si en ambas ocasiones DIR es True
+                task.write([True, True, True])
+                time.sleep(interval)
+                task.write([False, False, False])
+                time.sleep(interval)
+
+            else:
+                print('Moving backward...')
+                task.write([True, True, True])
+                time.sleep(interval)
+                task.write([False, True, False])
+                time.sleep(interval)
+'''
+
+            
+
+            
 
 test_func()

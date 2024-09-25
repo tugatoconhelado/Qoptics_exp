@@ -10,6 +10,8 @@ import os
 
 class LaserControllerMainWindow(QMainWindow):
 
+    laser_power_signal = Signal(float)
+    laser_frequency_signal = Signal(int)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -19,8 +21,8 @@ class LaserControllerMainWindow(QMainWindow):
         )
 
         self.freqquency_dial_dict = {
-            0: 0,
-            1: 1,
+            0: 1,
+            1: 0,
             2: 20, 
             3: 50,
             4: 80
@@ -32,17 +34,17 @@ class LaserControllerMainWindow(QMainWindow):
 
     def init_setup(self):
 
-
         self.power_slider.valueChanged.connect(self.update_power_spinbox)
         self.frequency_dial.valueChanged.connect(self.update_frequency)
         self.power_spinbox.lineEdit().returnPressed.connect(self.update_power_slider)
-
 
     def update_power_spinbox(self):
 
         value = self.power_slider.value()
         power = value * self.power_conversion
         self.power_spinbox.setValue(power)
+        print('power', power)
+        self.laser_power_signal.emit(power)
 
     def update_power_slider(self):
 
@@ -54,6 +56,7 @@ class LaserControllerMainWindow(QMainWindow):
 
         freq = self.freqquency_dial_dict[value]
         self.frequency_label.setText(f'{freq} Hz')
+        self.laser_frequency_signal.emit(freq)
 
 
 if __name__ == '__main__':
