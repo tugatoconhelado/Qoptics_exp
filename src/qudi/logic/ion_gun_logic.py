@@ -271,6 +271,7 @@ class IonGunLogic(LogicBase):
             
         print(f'Sacrifice spot: {self.implantation_matrix.sacrifice_spot}')
         print('-'*20)
+        print(f'Current values: {dataclasses.asdict(self.current_values)}')	
          
 
 
