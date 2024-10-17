@@ -20,8 +20,8 @@ class ImplantationParameters:
     emision_current: float = 10000
     energy: float = 5000
     extractor_voltage: float = 90.01
-    focus_1_voltage: float = 75.00
-    focus_2_voltage: float = 0.00
+    focus_1_voltage: float = 90.00
+    focus_2_voltage: float = 75.00
     position_x: float = 0
     position_y: float = 0
     width_x: float = 0
@@ -32,10 +32,10 @@ class ImplantationParameters:
     time_per_dot: float = 50
     angle_phi: float = 0
     angle_theta: float = 0
-    l: float = 33000
+    l: float = 31500
     m: float = 11500
-    deflection_x: float = 48
-    deflection_y: float = 67
+    deflection_x: float = 55
+    deflection_y: float = 75
 
 @dataclasses.dataclass
 class ImplantationSpot:
@@ -250,7 +250,13 @@ class IonGunLogic(LogicBase):
                     print(f'Implantation spot {spot.position_x, spot.position_y} is ongoing')
             self._ion_gun_hardware().set_parameter('Position X', spot.position_x)
             sleep(0.15)
-            self._ion_gun_hardware().set_parameter('Position Y', spot.position_y)
+            self._ion_gun_hardware().set_parameter('Position Y', spot.position_y) 
+            '''
+            with self._mutex:
+                self._ion_gun_hardware().set_parameter('Position X', spot.position_x)
+            with self._mutex:
+                self._ion_gun_hardware().set_parameter('Position Y', spot.position_y)    
+            '''
             sleep(spot.implantation_time)
         self.move_to_sacrice_point()
         print('Implantation matrix finished')
@@ -260,12 +266,13 @@ class IonGunLogic(LogicBase):
         for spot in self.implantation_matrix.implantation_matrix:
             print(f'Position: {spot.position_x, spot.position_y} Time: {spot.implantation_time}')
             for parameter in spot.extra_parameter.keys():
-                print(f'{parameter}: {spot.extra_parameter[parameter]}')
-            print('\n')
+                print(f'    {parameter}: {spot.extra_parameter[parameter]}')
+            print('*'*20)
+            
         print(f'Sacrifice spot: {self.implantation_matrix.sacrifice_spot}')
-        print('\n')
-            
+        print('-'*20)
+         
+
 
             
-
-            
+                        
