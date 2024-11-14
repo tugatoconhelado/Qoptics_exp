@@ -5,8 +5,9 @@ from qudi.util.uic import loadUi
 import sys
 import os
 import numpy as np
-
-
+from pyqtgraph import PlotWidget, plot
+import pyqtgraph as pg
+import pyqtgraph.exporters # needed to save plotted data
 class IonGunMainWindow(QMainWindow):
 
     conect_signal = Signal(str)
@@ -22,6 +23,12 @@ class IonGunMainWindow(QMainWindow):
     get_parameter_spot_setter_signal = Signal(str)
     start_matrix_signal = Signal()
     show_matrix_signal = Signal()
+    read_xy_signal = Signal()
+    start_read_xy_signal = Signal()
+    stop_read_xy_signal = Signal()
+    clear_read_xy_signal = Signal()
+
+
 
     commands = {'Remote enable':{'ASCII string':'RE', 'description':'Remote enable','access':'NP'},
                 'Local':{'ASCII string':'LO', 'description':'Local','access':'NP'},
@@ -69,7 +76,7 @@ class IonGunMainWindow(QMainWindow):
             os.path.join(os.path.dirname(__file__), 'ion_gun.ui'),
             self
         )
-
+        self.dgb=1
         self.box_created = False
         self.connect_button.clicked.connect(self.req_connect)
         self.parameter_box.currentIndexChanged.connect(self.req_parameter)
@@ -83,6 +90,10 @@ class IonGunMainWindow(QMainWindow):
         self.remove_last_spot_button.clicked.connect(self.remove_implantation_spot)
         self.start_matrix_button.clicked.connect(self.start_matrix)
         self.show_matrix_button.clicked.connect(self.show_matrix)
+        self.read_xy_button.clicked.connect(self.read_xy)
+        self.Clear_xy_button.clicked.connect(self.clear_read_xy)
+        self.start_xy_button.clicked.connect(self.start_read_xy)
+        self.stop_xy_button.clicked.connect(self.stop_read_xy, Qt.QueuedConnection)
         self.control_radios = [self.radio_remote, self.radio_local]
         self.mode_radios = [self.radio_operate, self.radio_standby, self.radio_degas, self.radio_off]
         self.high_voltage_radios = [self.radio_hv_on, self.radio_hv_off]
@@ -242,9 +253,51 @@ class IonGunMainWindow(QMainWindow):
     @Slot()
     def show_matrix(self) -> None:
         self.show_matrix_signal.emit()
-
     
+    @Slot()
+    def read_xy(self) -> None:
+        self.read_xy_signal.emit()  
+        
+    @Slot(list)
+    def update_parameter_voltage(self, valor:list)-> None:
+        #self.label_read_x.setText(str(round(valor[0], 2)))
+        #self.label_read_y.setText(str(round(valor[1], 2)))
+        self.updateplot(valor)
+       
+    @Slot()
+    def updateplot(self, data) -> None:
+        self.graphWidget.clear()
+        self.graphWidget_2.clear()
+        datax=np.array(data[0])
+        datay=np.array(data[1])
+        t=np.linspace(0, len(data[0]), len(data[0]))
+        self.graphWidget.setLabel('left', 'Voltage X', units='V')
+        self.graphWidget_2.setLabel('left', 'Voltage Y', units='V')
+        self.graphWidget.setLabel('bottom','Time ', units='0.1s')
+        self.graphWidget_2.setLabel('bottom','Time', units='0.1s')
+        self.graphWidget.plot(t, datax, pen='r')
+        self.graphWidget_2.plot(t, datay, pen='g')
 
+
+        
+        
+
+    @Slot()
+    def clear_read_xy(self) -> None:
+        self.graphWidget.clear() 
+        self.graphWidget_2.clear()
+    @Slot()
+    def stop_read_xy(self) -> None:
+        self.stop_read_xy_signal.emit()
+        print("stop")
+        
+    @Slot()
+    def start_read_xy(self) -> None:
+        self.dgb=True
+        self.start_read_xy_signal.emit()
+        print("start")
+
+      
 if __name__ == '__main__':
 
     sys.path.append('artwork')

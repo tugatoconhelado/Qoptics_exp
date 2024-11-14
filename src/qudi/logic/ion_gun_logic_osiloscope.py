@@ -14,14 +14,13 @@ from time import sleep
 
 import dataclasses
 
-
 @dataclasses.dataclass
 class ImplantationParameters:
     emision_current: float = 10000
     energy: float = 5000
     extractor_voltage: float = 90.01
-    focus_1_voltage: float = 78.00
-    focus_2_voltage: float = 77.00
+    focus_1_voltage: float = 90.00
+    focus_2_voltage: float = 75.00
     position_x: float = 0
     position_y: float = 0
     width_x: float = 0
@@ -74,19 +73,20 @@ class ImplantationMatrix:
     def set_sacrifice_spot(self, pos_x: float, pos_y: float):
         self.sacrifice_spot = (pos_x, pos_y)
 
-class IonGunLogic(LogicBase):
+class IonGunLogicOsiloscope(LogicBase):
+    """Logic for the osiloscope module"""
     refresh_ports_signal = Signal(list)
     unlock_connect_signal = Signal()
     lock_connect_signal = Signal()
     update_parameter_signal = Signal(str,str)
     update_parameter_for_setter_signal = Signal(float)
     update_parameter_spot_setter_signal = Signal(float)
-    
+    update_parameter_voltage_signal = Signal(list)
 
     _ion_gun_hardware = Connector(name='ion_gun_hardware',
                                    interface='IonGunHardware'
                                    )
-
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.implantation_matrix = ImplantationMatrix()
@@ -276,4 +276,52 @@ class IonGunLogic(LogicBase):
         print(f'Sacrifice spot: {self.implantation_matrix.sacrifice_spot}')
         print('-'*20)
 
+    @Slot()
+    def read_xy(self):
+        valor=self._ion_gun_hardware().read_xy()
+        self.update_voltage(valor)
+        return valor
+        
+
+    @Slot(list)
+    def update_voltage(self,list):
+        self.update_parameter_voltage_signal.emit(list)   
+ 
+    @Slot()
+    def stop_read_xy(self):
+        print('stop')
+        
+
+    @Slot()
+    def start_read_xy(self):
+        list = []
+        self.continue_acquisition = True
+        while self.continue_acquisition:
+            valor=self._ion_gun_hardware().read_xy()
+            list.append(valor)
+            valor=self.create_array(list)
+            self.update_voltage(valor)
+            QApplication.processEvents()
+            
+            sleep(0.1)
+
+    @Slot()
+    def stop_acquisition(self):
+        self.continue_acquisition = False
+        print('Acquisition stopped')
+   
+    @Slot()
+    def create_array(self,list):
+        x=[]
+        y=[]
+        for i in range(len(list)):
+            x.append(list[i][0])
+            y.append(list[i][1])
     
+        return [x,y]
+    
+    
+        
+
+
+        

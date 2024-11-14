@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1175</width>
+    <height>575</height>
    </rect>
   </property>
   <property name="font">
@@ -665,7 +665,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Sart implantation</string>
+     <string>Start implantation</string>
     </property>
    </widget>
    <widget class="QPushButton" name="show_matrix_button">
@@ -681,19 +681,175 @@
      <string>Show Matrix</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="read_xy_button">
+    <property name="geometry">
+     <rect>
+      <x>470</x>
+      <y>440</y>
+      <width>301</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Read x and y</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_read_x">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>470</y>
+      <width>81</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_10">
+    <property name="geometry">
+     <rect>
+      <x>640</x>
+      <y>470</y>
+      <width>91</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Voltage y</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_read_y">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>470</y>
+      <width>71</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_12">
+    <property name="geometry">
+     <rect>
+      <x>470</x>
+      <y>470</y>
+      <width>91</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Voltage x</string>
+    </property>
+   </widget>
+   <widget class="PlotWidget" name="graphWidget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>800</x>
+      <y>130</y>
+      <width>311</width>
+      <height>171</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="start_xy_button">
+    <property name="geometry">
+     <rect>
+      <x>820</x>
+      <y>70</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Start</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="stop_xy_button">
+    <property name="geometry">
+     <rect>
+      <x>910</x>
+      <y>70</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Stop</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="Clear_xy_button">
+    <property name="geometry">
+     <rect>
+      <x>1000</x>
+      <y>70</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Clear all</string>
+    </property>
+   </widget>
+   <widget class="PlotWidget" name="graphWidget_2" native="true">
+    <property name="geometry">
+     <rect>
+      <x>800</x>
+      <y>330</y>
+      <width>311</width>
+      <height>171</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1175</width>
      <height>21</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PlotWidget</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

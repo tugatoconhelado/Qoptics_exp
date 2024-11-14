@@ -10,7 +10,7 @@ import logging
 from time import sleep
 import serial
 from time import time
-
+from qudi.gui.ion_gun.ion_gun_ni import myni
 
 class IonGunHardware(Base):
     """
@@ -29,10 +29,13 @@ class IonGunHardware(Base):
     
     _calculate_checksum
     """
-    
+
     status_msg_signal = Signal(str)
+    
 
     def __init__(self, *args, **kwargs) -> None:
+        
+        self.ni=myni()
 
         super().__init__(*args, **kwargs)
 
@@ -192,3 +195,8 @@ class IonGunHardware(Base):
             return response
         else:
             return None
+    def read_xy(self):
+        data = self.ni.read_xy()
+        
+        return data
+    

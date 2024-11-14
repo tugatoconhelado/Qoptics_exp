@@ -19,8 +19,8 @@ class IonGunGui(GuiBase):
     """ This is a simple template GUI measurement module for qudi """
     
     _ion_gun_logic = Connector(name='ion_gun_logic', interface='IonGunLogic')
-
-
+    _ion_gun_logic_osiloscope = Connector(name='ion_gun_logic_osiloscope', interface='IonGunLogicOsiloscope')
+    
     def on_activate(self) -> None:
         self._mw = IonGunMainWindow()
         
@@ -98,6 +98,19 @@ class IonGunGui(GuiBase):
             self._ion_gun_logic().show_matrix,
             Qt.QueuedConnection
         )
+        
+        self._mw.read_xy_signal.connect(
+            self._ion_gun_logic_osiloscope().read_xy,
+            Qt.QueuedConnection
+        )
+        self._mw.start_read_xy_signal.connect(
+            self._ion_gun_logic_osiloscope().start_read_xy,
+            Qt.QueuedConnection
+        )
+        self._mw.stop_read_xy_signal.connect(
+            self._ion_gun_logic_osiloscope().stop_acquisition,
+            Qt.QueuedConnection
+        )
 
         self._ion_gun_logic().refresh_ports_signal.connect(
             self._mw.refresh_ports,
@@ -108,7 +121,6 @@ class IonGunGui(GuiBase):
             self._mw.unlock_connect,
             Qt.QueuedConnection
         )
-
         self._ion_gun_logic().lock_connect_signal.connect(
             self._mw.lock_connect,
             Qt.QueuedConnection
@@ -134,6 +146,10 @@ class IonGunGui(GuiBase):
             Qt.QueuedConnection
         )
 
+        self._ion_gun_logic_osiloscope().update_parameter_voltage_signal.connect(
+            self._mw.update_parameter_voltage,
+            Qt.QueuedConnection
+        )
 
         self.show()
     def on_deactivate(self) -> None:
@@ -148,4 +164,4 @@ class IonGunGui(GuiBase):
         """ Show the main window and raise it above all others """
         self._mw.show()
         self._mw.raise_()
-    
+     
