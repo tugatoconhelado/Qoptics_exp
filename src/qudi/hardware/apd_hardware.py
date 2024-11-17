@@ -338,7 +338,9 @@ class APDHardware(Base):
         # Each datum in the array corresponds to 
         # refresh_time / (frequency * refresh_time) seconds so we must multiply
         # by frequency to have each datum correspond to 1 second (counts per s)
-        mean_counts = np.mean(counts) * frequency
+        counts = counts * frequency
+        mean_counts = np.mean(counts)
+        std_counts = np.std(counts)
 
         self.log.debug(f'Returning {mean_counts}')
         self.count_signal.emit(mean_counts)

@@ -101,6 +101,11 @@ class TrackingLogic(LogicBase):
         interface='PiezoHardware',
         optional=True
     )
+    _laser_controller_logic = Connector(
+        name='laser_controller_logic',
+        interface='LaserControllerLogic',
+        optional=True
+    )
 
     def __init__(self,*args, **kwargs):
 
@@ -184,6 +189,12 @@ class TrackingLogic(LogicBase):
         pixel_time: float) -> np.ndarray:
 
         self.stop_acquisition()
+
+        initial_laser_power = self._laser_controller_logic()._bh_laser_hardware().power
+        self._laser_controller_logic()._bh_laser_hardware().on_off_status = True
+        self._laser_controller_logic()._bh_laser_hardware().frequency = 0
+        self._laser_controller_logic()._bh_laser_hardware().power = 10
+
         self.data.img.parameters.scan_size = scan_size
         self.data.img.parameters.offset = offset
         self.data.img.parameters.pixels = pixels
@@ -285,6 +296,8 @@ class TrackingLogic(LogicBase):
         self.stop_acquisition()
         self._galvo_hardware().go_to_xy_point(self.data.img.parameters.offset)
         
+        self._laser_controller_logic()._bh_laser_hardware().power = initial_laser_power
+
         return self.data.img.counter_image_fw
 
     @Slot(tuple, tuple, tuple)
@@ -520,6 +533,12 @@ class TrackingLogic(LogicBase):
         """
         with self._mutex:
             self.stop_acquisition()
+
+        initial_laser_power = self._laser_controller_logic()._bh_laser_hardware().power
+        self._laser_controller_logic()._bh_laser_hardware().on_off_status = True
+        self._laser_controller_logic()._bh_laser_hardware().frequency = 0
+        self._laser_controller_logic()._bh_laser_hardware().power = 10
+
         with self._mutex:
             self.log.debug('Creating z scan')
             self.measure = True
@@ -546,6 +565,7 @@ class TrackingLogic(LogicBase):
             fluorescence = np.diff(readed_counts)
             fluorescence = np.insert(fluorescence, -1, readed_counts[0])
             self.stop_acquisition()
+            self._laser_controller_logic()._bh_laser_hardware().power = initial_laser_power
             return (z_values, fluorescence)
     
     def find_max_z_point(self, z_values: np.ndarray, z_scan: np.ndarray, fit_gauss: bool) -> float:

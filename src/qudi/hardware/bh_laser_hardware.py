@@ -9,6 +9,8 @@ import numpy as np
 
 class BHLaserHardware(Base):
 
+    power_signal = Signal(float)
+    frequency_signal = Signal(int)
 
     def __init__(self, *args, **kwargs) -> None:
         
@@ -50,6 +52,7 @@ class BHLaserHardware(Base):
             )
             task.start()
             task.write(self.freq_dict[value])
+        #self.frequency_signal.emit(value)
 
     @property
     def power(self) -> float:
@@ -67,6 +70,7 @@ class BHLaserHardware(Base):
             )
             task.start()
             task.write(value)
+        #self.power_signal.emit(value)
 
     @property
     def on_off_status(self) -> bool:

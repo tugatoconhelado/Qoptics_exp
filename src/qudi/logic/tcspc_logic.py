@@ -69,6 +69,11 @@ class TCSPCLogic(LogicBase):
     _tcspc_hardware = Connector(name='tcspc_hardware',
                                    interface='TCSPCHardware',
                                    optional=True)
+    _laser_controller_logic = Connector(
+        name='laser_controller_logic',
+        interface='LaserControllerLogic',
+        optional=True
+    )
     sig_parameters = Signal(dict)
     sig_rate_values = Signal(tuple)
     sig_parameter = Signal(str, float or int or str or bool)
@@ -116,7 +121,6 @@ class TCSPCLogic(LogicBase):
 
     def init_spc(self):
 
-        print('Initialising TCSPC hardware')
         with self._mutex:
             status = self._tcspc_hardware().initialise_tcspc(simulation=False)
             self.log.info(f'Initialisation status: {status}')
@@ -130,7 +134,7 @@ class TCSPCLogic(LogicBase):
         self.reference_intensity = reference_intensity
         self.intensity_percent = 100 - intensity_percent
         self.track_intensity = True
-        print(f'Starting intensity tracking with threshold {intensity_percent}% and reference intensity {reference_intensity}')
+        self.log.info(f'Starting intensity tracking with threshold {intensity_percent}% and reference intensity {reference_intensity}')
         self.skip_next_rate = True
         if self.measurement_paused:
             self.restart_measurement()
@@ -146,7 +150,7 @@ class TCSPCLogic(LogicBase):
                     rates = self._tcspc_hardware().read_rate_counter(0)
                     keep_reading = False
                 except Exception as e:
-                    self.log.debug(f'Error reading rates: {e}')
+                    pass
                     
             self.rate_values = (
                 rates.sync_rate,
@@ -160,7 +164,6 @@ class TCSPCLogic(LogicBase):
                 self.skip_next_rate = False
                 return
             if self.track_intensity:
-                print(self.rate_values[1], self.reference_intensity * self.intensity_percent / 100)
                 if self.rate_values[1] < self.reference_intensity * self.intensity_percent / 100:
                     self.log.info('Intensity dropped below threshold')
                     if self.continue_acquisition:
@@ -173,6 +176,7 @@ class TCSPCLogic(LogicBase):
 
         self.log.info('Measurement started')
 
+        self._laser_controller_logic()._bh_laser_hardware().frequency = 20
         self.time_bins = np.arange(4096)
         self.data.histogram = np.zeros(4096 - 1, dtype=np.uint32)
         tac_range = self._tcspc_hardware().get_SPC_param('tac_range')
@@ -234,6 +238,8 @@ class TCSPCLogic(LogicBase):
         self.time_from_start += self.elapsed_time
         self._tcspc_hardware().set_SPC_param('collect_time', self.time_left)
         setted_time_left = self._tcspc_hardware().get_SPC_param('collect_time')
+
+        self._laser_controller_logic()._bh_laser_hardware().frequency = 20
         self._tcspc_hardware().start_measurement(0)
         self.start_time = time.monotonic()
         self.__timer.start()
@@ -349,7 +355,6 @@ class TCSPCLogic(LogicBase):
         """
         data_dict = dataclasses.asdict(self.data)
         data_dict.pop('parameters')
-        print(self.data.parameters)
         filepath = self.filemanager.save(
             data=data_dict,
             metadata=dataclasses.asdict(self.data.parameters)

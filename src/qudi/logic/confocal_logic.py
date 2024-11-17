@@ -61,6 +61,11 @@ class ConfocalLogic(LogicBase):
         interface='PiezoHardware',
         optional=True
     )
+    _laser_controller_logic = Connector(
+        name='laser_controller_logic',
+        interface='LaserControllerLogic',
+        optional=True
+    )
 
 
     def __init__(self, *args, **kwargs):
@@ -87,6 +92,11 @@ class ConfocalLogic(LogicBase):
         pixel_time: float) -> None:
 
         self.stop_acquisition()
+
+        initial_laser_power = self._laser_controller_logic()._bh_laser_hardware().power
+        self._laser_controller_logic()._bh_laser_hardware().on_off_status = True
+        self._laser_controller_logic()._bh_laser_hardware().frequency = 0
+        self._laser_controller_logic()._bh_laser_hardware().power = 10
 
         # Sets parameters in data storage
         self.data.parameters.scan_size = scan_size
@@ -210,6 +220,7 @@ class ConfocalLogic(LogicBase):
         self.save_data()
         self.stop_acquisition()
         self._galvo_hardware().go_to_xy_point(self.data.parameters.offset)
+        self._laser_controller_logic()._bh_laser_hardware().power = initial_laser_power
 
     def go_to_xy_point(self, point: tuple):
     

@@ -59,7 +59,6 @@ class LaserControllerLogic(LogicBase):
 
     @Slot(float)
     def set_power(self, power: float) -> None:
-        print(f'power: {power}')
         self._bh_laser_hardware().power = power
 
     @Slot(int)

@@ -20,6 +20,7 @@ class LaserControllerGui(GuiBase):
     """ This is a simple template GUI measurement module for qudi """
     
     _laser_controller_logic = Connector(name='laser_controller_logic', interface='LaserControllerLogic')
+    _bh_laser_hardware = Connector(name='bh_laser_hardware', interface='BHLaserHardware')
 
     # Declare static parameters that can/must be declared in the qudi configuration
     # _my_config_option = ConfigOption(name='my_config_option', default=1, missing='warn')
@@ -42,6 +43,14 @@ class LaserControllerGui(GuiBase):
         )
         self._mw.laser_power_signal.connect(
             self._laser_controller_logic().set_power,
+            QtCore.Qt.QueuedConnection
+        )
+        self._bh_laser_hardware().frequency_signal.connect(
+            self._mw.update_frequency_status,
+            QtCore.Qt.QueuedConnection
+        )
+        self._bh_laser_hardware().power_signal.connect(
+            self._mw.update_power_status,
             QtCore.Qt.QueuedConnection
         )
 
