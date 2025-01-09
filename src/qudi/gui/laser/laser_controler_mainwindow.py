@@ -42,17 +42,14 @@ class LaserControllerMainWindow(QMainWindow):
     @Slot()
     def update_power_spinbox(self):
 
-        print('update_power_spinbox')
         value = self.power_slider.value()
         power = value * self.power_conversion
         self.power_spinbox.setValue(power)
-        print('power', power)
         self.laser_power_signal.emit(power)
 
     @Slot()
     def update_power_slider(self):
 
-        print('update_power_slider')
         value = self.power_spinbox.value()
         power = value / self.power_conversion
         self.power_slider.setValue(power)
@@ -60,11 +57,9 @@ class LaserControllerMainWindow(QMainWindow):
     @Slot()
     def update_frequency(self, value):
 
-        if not self.editing_status:
-            print('value', value)
-            freq = self.freqquency_dial_dict[value]
-            self.frequency_label.setText(f'{freq} Hz')
-            self.laser_frequency_signal.emit(freq)
+        freq = self.freqquency_dial_dict[value]
+        self.frequency_label.setText(f'{freq} Hz')
+        self.laser_frequency_signal.emit(freq)
 
     @Slot(int)
     def update_frequency_status(self, value):

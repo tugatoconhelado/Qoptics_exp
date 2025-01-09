@@ -2,7 +2,6 @@ import sys
 from PySide2.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QComboBox, QPushButton, QLabel, QMessageBox
 )
-from 
 
 class HUD(QWidget):
     def __init__(self):
