@@ -1,57 +1,56 @@
+from PySide2.QtWidgets import QDialog, QWidget, QMainWindow, QApplication
+from PySide2.QtCore import Slot, Signal, QDir, Qt
+from PySide2.QtGui import QFont
+from qudi.util.uic import loadUi
+import numpy as np
+import pyqtgraph as pg
 import sys
-from PySide2.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QComboBox, QPushButton, QLabel, QMessageBox
-)
+import os
 
-class HUD(QWidget):
-    def __init__(self):
-        super().__init__()
+class HUD(QMainWindow):
 
-        # Set up the main layout
-        self.setWindowTitle("Stepper Motor Controller")
-        self.setGeometry(300, 300, 400, 150)
-
-        layout = QVBoxLayout()
-
-        # Add dropdown lists (QComboBox)
-        self.dropdown_1 = QComboBox()
-        self.dropdown_1.addItems(["Forward", "Backward"])
-
-        self.dropdown_2 = QComboBox()
-        self.dropdown_2.addItems(["1", "10", "100", "1000"])
-
-        # Add labels and dropdowns to the layout
-        layout.addWidget(QLabel("Choose Direction"))
-        layout.addWidget(self.dropdown_1)
-
-        layout.addWidget(QLabel("Choose Number of Steps:"))
-        layout.addWidget(self.dropdown_2)
-
-        # Add a button that triggers some action
-        action_button = QPushButton("Initialize Action")
-        action_button.clicked.connect(self.initialize_action)
-
-        layout.addWidget(action_button)
-
-        # Set the main layout to the window
-        self.setLayout(layout)
+    move_signal = Signal(int, str)
+    start_mag_field_exp_signal = Signal(int, int)
 
 
-    def initialize_action(self):
-        # Get the current selections from the dropdowns
-        self.direction = self.dropdown_1.currentText()
-        self.steps = int(self.dropdown_2.currentText())
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        loadUi(
+            os.path.join(os.path.dirname(__file__), 'magnetic_field_exp.ui'),
+            self
+        )
+        self.move_button.clicked.connect(self.move_by_steps, Qt.QueuedConnection)
+        self.go_to_button.clicked.connect(self.go_to_position, Qt.QueuedConnection)
+        self.start_button.clicked.connect(self.start_mag_field_exp, Qt.QueuedConnection)
 
-        self.call_backend(self.direction, self.steps)
+        self.configure_plots()
 
-    def show_message(self, message):
-        # Show a message box with the result
-        msg_box = QMessageBox()
-        msg_box.setText(message)
-        msg_box.exec_()        
+    def move_by_steps(self):
+        steps = self.no_of_steps_spinbox.value()
+        direction = self.direction_combobox.currentText()
+        self.move_signal.emit(steps, direction)
+
+    def go_to_position(self):
+
+        position = self.move_to_spinbox.value()
+        self.move_signal.emit(position, "absolute")
+
+    def start_mag_field_exp(self):
+        range = self.scan_range_spinbox.value()
+        steps = self.scan_steps_spinbox.value()
+        self.start_mag_field_exp_signal.emit(range, steps)
+
+    def configure_plots(self):
+
+        self.plot_widget.setBackground('black')
+        self.plot_widget.setLabel('left', 'Intensity (cps)')
+        self.plot_widget.setLabel('bottom', 'Magnetic Field (steps)')
+
+        self.dataline = self.plot_widget.plot([], [], pen='yellow')
 
 
-
+    def update_plot(self, mag_field, counts):
+        self.dataline.setData(mag_field, counts)
 
 if __name__ == "__main__":
     # Check if a QApplication already exists
