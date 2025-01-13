@@ -67,7 +67,6 @@ class ConfocalLogic(LogicBase):
         optional=True
     )
 
-
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
@@ -82,6 +81,7 @@ class ConfocalLogic(LogicBase):
         )
 
     def on_activate(self) -> None:
+        
         pass
 
     def on_deactivate(self) -> None:

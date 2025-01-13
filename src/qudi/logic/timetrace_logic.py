@@ -61,6 +61,7 @@ class TimeTraceLogic(LogicBase):
     experiment_status_signal = Signal(bool)
     file_changed_signal = Signal(str)
     track_point_signal = Signal()
+    req_exp_start_signal = Signal()
 
     # Declare static parameters that can/must be declared in the qudi configuration
     #_increment_interval = ConfigOption(name='increment_interval', default=1, missing='warn')
@@ -99,6 +100,12 @@ class TimeTraceLogic(LogicBase):
         #self.__timer.timeout.disconnect()
         #self.__timer = None
         pass
+
+    @Slot(int, float)
+    def on_start_track_intensity(self, intensity_percent, reference_intensity):
+
+        self._timetrace_logic().start_track_intensity(intensity_percent, reference_intensity)
+        self._mw.req_start_timetrace()
 
     @Slot(int, float)
     def start_track_intensity(self, intensity_percent, reference_intensity) -> None:

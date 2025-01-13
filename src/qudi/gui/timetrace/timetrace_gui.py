@@ -110,6 +110,10 @@ class TimeTraceGui(GuiBase):
             self.update_statusbar,
             Qt.QueuedConnection
         )
+        self._timetrace_logic().req_exp_start_signal.connect(
+            self._mw.req_start_timetrace,
+            Qt.QueuedConnection
+        )
 
         # Show the main window and raise it above all others
         self._mw.previous_button.clicked.emit()
@@ -121,12 +125,6 @@ class TimeTraceGui(GuiBase):
         # Use "plain" disconnects (without argument) only on signals owned by this module
         # Close main window
         self._mw.close()
-
-    @Slot(int, float)
-    def on_start_track_intensity(self, intensity_percent, reference_intensity):
-
-        self._timetrace_logic().start_track_intensity(intensity_percent, reference_intensity)
-        self._mw.req_start_timetrace()
 
     @Slot(str)
     def change_current_file_labels(self, filepath: str) -> None:
