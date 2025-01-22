@@ -1,0 +1,36 @@
+site_name: Qoptics_exp
+
+theme:
+  name: "material"
+  language: en # language of the site
+  features:
+    - navigation.tabs # To have tabs instead of links
+    - navigation.tabs.sticky # So have the tabs always present at the top of the page, event when you scroll down
+    - navigation.tracking # the url evolves with the scrolling
+    - toc.integrate # to have a toc on the left
+    - navigation.top # to have a shorcut to go back on top of the page when we scroll down
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+            show_root_heading: false
+            show_root_toc_entry: false
+            show_root_full_path: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            show_source: true
+            group_by_category: true
+            show_submodules: true
+            show_if_no_docstring: false
+            show_docstring_modules: false
+
+nav:
+  - Qoptics_exp: index.md
+  - tutorials.md
+  - how-to-guides.md
+  - reference.md
+  - explanation.md
