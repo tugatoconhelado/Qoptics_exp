@@ -1,100 +1,92 @@
 import nidaqmx
 import msvcrt
 import time
+from PySide2.QtCore import QTimer, QObject, Slot
+from PySide2.QtWidgets import QApplication
+import sys
+
+class Motor(QObject):
 
 
-def moveAxisDir(direction,steps):
-    #print('moving axis direction')
-
-    Device = 'Dev2/port1/line1:3'
-    DeviceDI = '/Dev2/port0/line0:1'
-
-    with nidaqmx.Task() as taskDI:
-        taskDI.di_channels.add_di_chan(DeviceDI)
+    def __init__(self):
+        super().__init__()
         with nidaqmx.Task() as task:
-            task.do_channels.add_do_chan(Device)
-            port0 = 0*(2**2) + (1-direction)/2*(2**1) + 1*(2**0)
-            port = int(2**2 + port0)
-            port0 = int(port0)
-            print('port0', port0)
-            print('port', port)
-            task.write(port0)
+            task.do_channels.add_do_chan('Dev1/port0/line1',  line_grouping=nidaqmx.constants.LineGrouping.CHAN_PER_LINE)
             task.start()
-            halfDt = 0.0001
-            di = taskDI.read()
-            print('Initial di: ', di)
-            if di == 1 and direction == 1:
-                bStop = 0
-            elif di == 2 and direction == -1:
-                bStop = 0
-            else:
-                bStop = 0       
-            bStop = 0
-            i = 0
-            while bStop == 0 and i<steps:
-                i = i + 1
-                task.write(port)
-                #time.sleep(halfDt)
-                task.write(port0)
-                #time.sleep(halfDt)
-                di = taskDI.read()
-                #print 'di: ', di
-                if di == 1 and direction == 1:
-                    print('Reaching forward end, di: ', di)
-                    break
-                if di == 2 and direction == -1:
-                    print('Reaching backward end, di: ', di)
-                    break
 
-            print('i %i' % i)
-            task.write(0)
-            task.stop()
-        
-        taskDI.stop()
+            task.write(True)    
+        self.interval = 0.5
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.move_motor)
+        self.timer.setInterval(self.interval)
 
-#moveAxisDir(1, 1000)
+        self.task = nidaqmx.Task()
+        self.task.do_channels.add_do_chan('Dev1/port0/line2')
+        self.task.start()
+
+        self.timer.start()
+
+    @Slot()
+    def move_motor(self):
+
+        print('Moving motor')
+        if self.status is False:
+            self.task.write(True)
+            self.status = True
+        elif self.status is True:
+            self.task.write(False)
+            self.status = False
+
+        if msvcrt.kbhit(): # Check the keyboard and exit if any key pressed.
+            key_stroke = msvcrt.getch()
+            print(key_stroke) # will print which key is pressed.
+            if key_stroke:
+                self.timer.stop()
+                self.task.stop()
+                return
 
 def test_func():
+ 
     with nidaqmx.Task() as task:
-        task.do_channels.add_do_chan('Dev2/port1/line0:2',  line_grouping=nidaqmx.constants.LineGrouping.CHAN_PER_LINE)
+        task.do_channels.add_do_chan('Dev1/port0/line0',  line_grouping=nidaqmx.constants.LineGrouping.CHAN_PER_LINE)
+        interval = 0.0005
         task.start()
-
-        steps = 100
-        direction = 0
-
-        while True:
-            interval = 0.0001
-            task.write([True, True, True])
+        i = 0
+        while True:    
+            task.write(True)
             time.sleep(interval)
-            task.write([False, False, False])
+            task.write(False)
             time.sleep(interval)
 
+            i += 1
             if msvcrt.kbhit(): # Check the keyboard and exit if any key pressed.
                 key_stroke = msvcrt.getch()
                 print(key_stroke) # will print which key is pressed.
                 if key_stroke:
-                    break
-'''
-        for i in range(steps):
-            interval = 0.0001
-            if direction == 1:
-                print('Moving forward...')
-                #Retrocede solo si en ambas ocasiones DIR es True
-                task.write([True, True, True])
-                time.sleep(interval)
-                task.write([False, False, False])
-                time.sleep(interval)
+                    task.stop()
+                    return
+                
 
-            else:
-                print('Moving backward...')
-                task.write([True, True, True])
-                time.sleep(interval)
-                task.write([False, True, False])
-                time.sleep(interval)
-'''
+def test_func2():
 
-            
+    with nidaqmx.Task() as task:
+        task.ao_channels.add_ao_voltage_chan('Dev2/ao0', min_val=0, max_val=5)
+        task.start()
+        while True:
+            interval = 0.1
+            task.write(5)
+            time.sleep(interval)
+            task.write(0)
+            time.sleep(interval)
 
-            
+            #if msvcrt.kbhit(): # Check the keyboard and exit if any key pressed.
+            #    key_stroke = msvcrt.getch()
+            #    print(key_stroke)
+            #    break
 
-test_func()
+
+if __name__ == '__main__':
+    #app = QApplication(sys.argv)
+    #sys.exit(app.exec_())
+    #motor = Motor()
+    test_func()

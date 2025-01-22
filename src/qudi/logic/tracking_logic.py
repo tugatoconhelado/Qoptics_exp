@@ -207,6 +207,7 @@ class TrackingLogic(LogicBase):
         """
         self.fit_gaussian = fit_gaussian
 
+    @Slot(tuple, tuple, tuple)
     def set_tracking_parameters(self, xy_parameters = None, z_parameters = None, tracking_parameters = None):
 
         if xy_parameters is not None:
@@ -220,7 +221,8 @@ class TrackingLogic(LogicBase):
             self.data.parameters.track_intensity = tracking_parameters[0][1]
             self.data.parameters.track_by_interval = tracking_parameters[1][0]
             self.data.parameters.track_interval = tracking_parameters[1][1]
-
+        print('Setted new params')
+        
     @Slot()
     def on_start_maxing(self) -> None:
         """
@@ -454,10 +456,14 @@ class TrackingLogic(LogicBase):
                 self.tracking_finished_signal.emit()
 
     @Slot(tuple, tuple)
-    def max_xyz(self, xy_parameters: tuple, z_parameters: tuple) -> tuple:
+    def max_xyz(self, xy_parameters: tuple = None, z_parameters: tuple = None) -> tuple:
         """
         Finds the (x, y, z) point for which the maximum of PL is found
         """
+        if xy_parameters is None:
+            xy_parameters = dataclasses.astuple(self.data.parameters.max_xy_parameters)
+        if z_parameters is None:
+            z_parameters = dataclasses.astuple(self.data.parameters.max_z_parameters)
         self.log.info('Starting max_xyz')
         max_point = self.max_xy(*xy_parameters)
         self.stop_acquisition()

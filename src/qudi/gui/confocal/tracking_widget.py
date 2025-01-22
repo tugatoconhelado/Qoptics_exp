@@ -217,6 +217,7 @@ class TrackingParametersDialog(QDialog):
     status_msg = Signal(str)
     tracking_monitor_signal = Signal(str)
     connect_tracking_interval_signal = Signal(bool)
+    set_tracking_parameters_signal = Signal(tuple, tuple, tuple)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -236,6 +237,7 @@ class TrackingParametersDialog(QDialog):
 
         self.current_values = self.get_parameters()
         self.status_msg.emit(f'Accepted new scan parameters {self.current_values}')
+        self.set_tracking_parameters_signal.emit(*self.current_values)
 
         if self.track_with_tcspc_radiobutton.isChecked():
             self.tracking_monitor_signal.emit('TCSPC')
@@ -329,7 +331,7 @@ class TrackingParametersDialog(QDialog):
         self.fast_axis_offset_spinbox.setValue(offset[0])
         self.slow_axis_offset_spinbox.setValue(offset[1])
 
-        self.current_values = self.get_parameters()
+        self.accept()
 
     @Slot(float)
     def set_z_offset(self, offset: tuple) -> None:

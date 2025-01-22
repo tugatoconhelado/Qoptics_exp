@@ -7,7 +7,7 @@ import pyqtgraph as pg
 import sys
 import os
 
-class HUD(QMainWindow):
+class MFieldExpMainWindow(QMainWindow):
 
     move_signal = Signal(int, str)
     start_mag_field_exp_signal = Signal(int, int)
@@ -33,9 +33,12 @@ class HUD(QMainWindow):
     def go_to_position(self):
 
         position = self.move_to_spinbox.value()
-        self.move_signal.emit(position, "absolute")
+        self.move_signal.emit(position, "Absolute")
 
     def start_mag_field_exp(self):
+        print('Starting magnetic field experiment')
+        self.filename_label.setText("")
+        self.plot_widget.setTitle("")
         range = self.scan_range_spinbox.value()
         steps = self.scan_steps_spinbox.value()
         self.start_mag_field_exp_signal.emit(range, steps)
@@ -48,9 +51,14 @@ class HUD(QMainWindow):
 
         self.dataline = self.plot_widget.plot([], [], pen='yellow')
 
-
+    @Slot(np.ndarray, np.ndarray)
     def update_plot(self, mag_field, counts):
         self.dataline.setData(mag_field, counts)
+
+    def update_position(self, position):
+        self.current_position_label.setText(str(position))
+
+    
 
 if __name__ == "__main__":
     # Check if a QApplication already exists
@@ -58,7 +66,7 @@ if __name__ == "__main__":
     if app is None:
         app = QApplication(sys.argv)
 
-    hud = HUD()
+    hud = MFieldExpMainWindow()
     hud.show()
 
     sys.exit(app.exec_())

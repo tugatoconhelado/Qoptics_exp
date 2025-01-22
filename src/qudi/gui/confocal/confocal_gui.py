@@ -214,6 +214,9 @@ class ConfocalGui(GuiBase):
         self._mw.tracking_widget.tracking_parameters_dialog.connect_tracking_interval_signal.connect(
             self._tracking_logic().connect_tracking_interval_to_TCSPC, Qt.QueuedConnection
         )
+        self._mw.tracking_widget.tracking_parameters_dialog.set_tracking_parameters_signal.connect(
+            self._tracking_logic().set_tracking_parameters, Qt.QueuedConnection
+        )
 
         self._tracking_logic().start_track_intensity_signal.connect(
             print, Qt.QueuedConnection)

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>736</height>
+    <width>799</width>
+    <height>735</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,8 +25,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
-     <height>43</height>
+     <width>799</width>
+     <height>21</height>
     </rect>
    </property>
   </widget>
@@ -41,7 +41,7 @@
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <layout class="QVBoxLayout" name="move_by_steps_layout">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
         <layout class="QHBoxLayout" name="direction_layout">
          <item>
@@ -55,56 +55,16 @@
           <widget class="QComboBox" name="direction_combobox">
            <item>
             <property name="text">
-             <string>+1</string>
+             <string>Forward</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>-1</string>
+             <string>Backward</string>
             </property>
            </item>
           </widget>
          </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="no_of_steps_layout">
-         <item>
-          <widget class="QLabel" name="no_of_steps_label">
-           <property name="text">
-            <string>No. of Steps</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="no_of_steps_spinbox">
-           <property name="maximum">
-            <number>100000</number>
-           </property>
-           <property name="value">
-            <number>10</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="move_layout">
-         <item>
-          <widget class="QPushButton" name="move_button">
-           <property name="text">
-            <string>Move</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QVBoxLayout" name="status_layout">
-       <item>
-        <layout class="QHBoxLayout" name="current_position_layout">
          <item>
           <widget class="QLabel" name="current_position_text_label">
            <property name="text">
@@ -125,7 +85,24 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="move_to_layout">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QLabel" name="no_of_steps_label">
+           <property name="text">
+            <string>No. of Steps</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="no_of_steps_spinbox">
+           <property name="maximum">
+            <number>100000</number>
+           </property>
+           <property name="value">
+            <number>10</number>
+           </property>
+          </widget>
+         </item>
          <item>
           <widget class="QLabel" name="move_to_label">
            <property name="text">
@@ -135,6 +112,9 @@
          </item>
          <item>
           <widget class="QSpinBox" name="move_to_spinbox">
+           <property name="minimum">
+            <number>-999999999</number>
+           </property>
            <property name="maximum">
             <number>999999999</number>
            </property>
@@ -143,11 +123,29 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="go_layout">
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QPushButton" name="move_button">
+           <property name="text">
+            <string>Move</string>
+           </property>
+          </widget>
+         </item>
          <item>
           <widget class="QPushButton" name="go_to_button">
            <property name="text">
             <string>Go To</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QPushButton" name="set_zero_button">
+           <property name="text">
+            <string>Set as Zero</string>
            </property>
           </widget>
          </item>
@@ -193,6 +191,15 @@
            <property name="prefix">
             <string/>
            </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>99999999</number>
+           </property>
+           <property name="value">
+            <number>100</number>
+           </property>
           </widget>
          </item>
         </layout>
@@ -207,7 +214,14 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="scan_steps_spinbox"/>
+          <widget class="QSpinBox" name="scan_steps_spinbox">
+           <property name="maximum">
+            <number>999999999</number>
+           </property>
+           <property name="value">
+            <number>100</number>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -223,7 +237,18 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="stop_button_2">
+        <widget class="QPushButton" name="stop_scan_button">
+         <property name="styleSheet">
+          <string notr="true">  color: rgb(255, 0, 4);
+  background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, 
+  stop:0 rgba(255, 0, 0, 255),
+  stop:0.166 rgba(255, 255, 0, 255),
+  stop:0.333 rgba(0, 255, 0, 255),
+  stop:0.5 rgba(0, 255, 255, 255),
+  stop:0.666 rgba(0, 0, 255, 255),
+  stop:0.833 rgba(255, 0, 255, 255),
+  stop:1 rgba(255, 0, 0, 255));</string>
+         </property>
          <property name="text">
           <string>Stop</string>
          </property>
@@ -250,12 +275,20 @@
            <property name="text">
             <string/>
            </property>
+           <property name="icon">
+            <iconset resource="../../../../artwork/qudi_icons.qrc">
+             <normaloff>:/icons/icons/save.png</normaloff>:/icons/icons/save.png</iconset>
+           </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="delete_button">
            <property name="text">
             <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../../../../artwork/qudi_icons.qrc">
+             <normaloff>:/icons/icons/delete.png</normaloff>:/icons/icons/delete.png</iconset>
            </property>
           </widget>
          </item>
@@ -268,6 +301,10 @@
            <property name="text">
             <string/>
            </property>
+           <property name="icon">
+            <iconset resource="../../../../artwork/qudi_icons.qrc">
+             <normaloff>:/icons/icons/load.png</normaloff>:/icons/icons/load.png</iconset>
+           </property>
           </widget>
          </item>
          <item>
@@ -275,12 +312,20 @@
            <property name="text">
             <string/>
            </property>
+           <property name="icon">
+            <iconset resource="../../../../artwork/qudi_icons.qrc">
+             <normaloff>:/icons/icons/previous.png</normaloff>:/icons/icons/previous.png</iconset>
+           </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="next_button">
            <property name="text">
             <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../../../../artwork/qudi_icons.qrc">
+             <normaloff>:/icons/icons/next.png</normaloff>:/icons/icons/next.png</iconset>
            </property>
           </widget>
          </item>
@@ -300,6 +345,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../../../../artwork/qudi_icons.qrc"/>
+ </resources>
  <connections/>
 </ui>
