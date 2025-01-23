@@ -38,6 +38,7 @@ The module will install the python libraries it requires when installing. These 
 - `pyqtgraph`
 - `seabreeze`
 - `h5py`
+- `pybhspc`
 
 It has to be noted that in order for `nidaqmx` to work, the National Instruments dll files have to be installed on your computer.
 
@@ -55,17 +56,68 @@ The project is structured as a [qudi](https://github.com/Ulm-IQO/qudi-core) modu
 
 The file structure of the project is:
 
-    - artwork
-        - icons
-        - styles
-    - docs
-    - src
-        - qudi
-            - gui
-            - logic
-            - interface
-            - hardware
+    - artwork/
+        - icons/
+        - styles/
+    - docs/
+    - src/
+        - qudi/
+            - gui/
+            - logic/
+            - interface/
+            - hardware/
 
-The `artwork` directory just contains icons used for the gui and styles to theme it. The code that actually contains the modules is contained inside the `qudi` subdirectories.
+The `artwork` directory just contains icons used for the gui and styles to theme it. The code that actually contains the modules is contained inside the `qudi` subdirectories. 
 
+In order to comunicate between the different modules, they can be used with a [qudi](https://github.com/Ulm-IQO/qudi-core) `Connector`, this estrablishes a connection between the modules while keeping the `gui` and `logic` in separate threads of execution. All the connections between modules has to be declared in a [qudi](https://github.com/Ulm-IQO/qudi-core) configuration file. This config file can be stored in a directory named `qudi` usually located on the user folder of your OS, this directory is created during the [qudi](https://github.com/Ulm-IQO/qudi-core) installation.
+
+
+### Current Modules
+
+For the current version of `Qoptics_exp` the modules currently being developed include:
+
+#### Experiment Modules
+
+- Confocal
+- TimeTrace
+- Spectrometer
+- TCSPC
+- ODMR
+- Magnetic Field
+- Polarization
+
+#### Gui Modules
+
+- `confocal_gui`
+- `tracking_gui`
+- `mfield_exp_gui`
+- `odmr_gui`
+- `polarization_gui`
+- `spectrometer_gui`
+- `tcspc_gui`
+- `timetrace_gui`
+  
+#### Logic Modules
+
+- `confocal_logic`
+- `tracking_logic`
+- `polarization_logic`
+- `spectrometer_logic`
+- `tcspc_logic`
+- `timetrace_logic`
+- `laser_controller_logic`
+- `mfield_exp_logic`
+- `odmr_logic`
+
+
+#### Hardware Modules
+
+- `apd_hardware`
+- `galvo_hardware`
+- `piezo_hardware`
+- `spectrometer_hardware`
+- `polarizer_motor_hardware`
+- `bh_laser_hardware`
+- `magnet_hardware`
+- `SG384_hardware`
 
