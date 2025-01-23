@@ -91,6 +91,19 @@ class MFieldExpGui(GuiBase):
             self._mfield_exp_logic().stop_acquisition, Qt.QueuedConnection
         )
 
+        self._mw.refresh_button.clicked.connect(
+            self._magnet_hardware().get_com_ports, Qt.QueuedConnection
+        )
+        self._magnet_hardware().com_ports_signal.connect(
+            self._mw.update_com_ports_list, Qt.QueuedConnection
+        )
+        self._mw.disconnect_button.clicked.connect(
+            self._magnet_hardware().disconnect_arduino_controller, Qt.QueuedConnection
+        )
+        self._mw.connect_signal.connect(
+            self._magnet_hardware().initialise_arduino_controller, Qt.QueuedConnection
+        )
+
         self._mw.previous_button.clicked.emit()
         # Show the main window and raise it above all others
         self.show()

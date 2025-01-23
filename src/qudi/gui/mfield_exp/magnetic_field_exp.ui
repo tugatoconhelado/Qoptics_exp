@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>799</width>
-    <height>735</height>
+    <width>864</width>
+    <height>607</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>799</width>
+     <width>864</width>
      <height>21</height>
     </rect>
    </property>
@@ -42,6 +42,34 @@
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <layout class="QHBoxLayout" name="connection_layout" stretch="2,1,1,1">
+         <item>
+          <widget class="QComboBox" name="com_ports_combobox"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="connect_button">
+           <property name="text">
+            <string>Connect</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="disconnect_button">
+           <property name="text">
+            <string>Disconnect</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="refresh_button">
+           <property name="text">
+            <string>Refresh</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
        <item>
         <layout class="QHBoxLayout" name="direction_layout">
          <item>
@@ -173,7 +201,7 @@
    <widget class="QWidget" name="dockWidgetContents_2">
     <layout class="QVBoxLayout" name="verticalLayout" stretch="2,2,1,4">
      <item>
-      <layout class="QHBoxLayout" name="scan_cfg_layout" stretch="1,1">
+      <layout class="QHBoxLayout" name="scan_cfg_layout" stretch="1,1,1">
        <item>
         <layout class="QHBoxLayout" name="scan_range_layout" stretch="1,2">
          <item>
@@ -209,7 +237,7 @@
          <item>
           <widget class="QLabel" name="scan_steps_label">
            <property name="text">
-            <string>Scan steps</string>
+            <string>Points</string>
            </property>
           </widget>
          </item>
@@ -222,6 +250,20 @@
             <number>100</number>
            </property>
           </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="track_every_layout" stretch="1,1">
+         <item>
+          <widget class="QLabel" name="track_every_label">
+           <property name="text">
+            <string>Track every</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="track_every_spinbox"/>
          </item>
         </layout>
        </item>

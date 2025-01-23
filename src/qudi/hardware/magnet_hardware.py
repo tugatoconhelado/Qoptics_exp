@@ -10,37 +10,50 @@ from qudi.core.configoption import ConfigOption
 from qudi.util.mutex import Mutex
 from qudi.core.module import Base
 import serial
+import serial.tools.list_ports
 
 
 class MagnetHardware(Base):
 
     position_changed = Signal(int)
+    com_ports_signal = Signal(list)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__current_position = 0
         self.continue_moving = True
+        self.controller = None
 
     def on_activate(self):
-        self.initialise_arduino_controller()
+        pass
     
     def on_deactivate(self):
         self.disconnect_arduino_controller()
 
-    def initialise_arduino_controller(self):
+    @Slot(str)
+    def initialise_arduino_controller(self, com_port: str):
 
         try:
-            self.controller = serial.Serial('COM3', 9600)
-            print('Arduino controller connected.')
+            self.controller = serial.Serial(com_port, 9600)
+            self.log.info(f'Arduino controller connected in port {com_port}')
         except Exception as e:
             print(e)
     
+    @Slot()
     def disconnect_arduino_controller(self):
-        try:
-            self.controller.close()
-            print('Arduino controller disconnected.')
-        except Exception as e:
-            print(e)
+        if self.controller is not None:
+            try:
+                self.controller.close()
+                self.log.info('Arduino controller disconnected.')
+            except Exception as e:
+                print(e)
+
+    @Slot()
+    def get_com_ports(self):
+
+        ports = serial.tools.list_ports.comports()
+        self.com_ports_signal.emit(ports)
+        return ports
 
     @property
     def current_position(self):

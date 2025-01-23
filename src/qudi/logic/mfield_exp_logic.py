@@ -74,8 +74,8 @@ class MFieldExpLogic(LogicBase):
         elif direction == 'Forward' or direction == 'Backward':
             self._magnet_hardware().move_by_steps(position, direction)
     
-    @Slot(int, int)
-    def start_mag_field_scan(self, scan_range, steps):
+    @Slot(int, int, int)
+    def start_mag_field_scan(self, scan_range: int, steps: int, track_every: int):
         
         self.measure = True
         step_size = scan_range / steps
@@ -98,7 +98,7 @@ class MFieldExpLogic(LogicBase):
 
                 self.data_signal.emit(self.data.magnet_steps, self.data.counts)
 
-                if i % 5 == 0:
+                if i % track_every == 0:
                     self._tracking_logic().max_xyz()
             elif self.measure is False:
                 break

@@ -32,7 +32,6 @@ class TCSPCHardware(Base):
         pass
 
     def on_deactivate(self) -> None:
-        self.stop_measurement(self.module_no)
         spcm.close()
 
     def initialise_tcspc(self, simulation=False):
@@ -136,18 +135,6 @@ class TCSPCHardware(Base):
 
         rates = spcm.read_rates(module_no)
         return rates
-    
-    def pause_measurement(self, module_no):
-
-        pass
-        #status, mod_no = self._tcspc_wrapper.SPC_pause_measurement(module_no)
-        #return status
-
-    def restart_measurement(self, module_no):
-
-        pass
-        #status, mod_no = self._tcspc_wrapper.SPC_restart_measurement(module_no)
-        #return status
 
     def stop_measurement(self, module_no):
 
