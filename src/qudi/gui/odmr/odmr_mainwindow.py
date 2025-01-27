@@ -1,5 +1,5 @@
 from PySide2.QtWidgets import QDialog, QWidget, QMainWindow, QApplication, QProgressBar
-from PySide2.QtCore import Slot, Signal, QDir, Qt, QTimer
+from PySide2.QtCore import Slot, Signal, QDir, Qt, QTimer, QRectF, QSizeF, QPointF
 from PySide2.QtGui import QFont
 from qudi.util.uic import loadUi
 from qudi.gui.confocal.tracking_widget import TrackingWidget
@@ -11,6 +11,9 @@ import pyqtgraph as pg
 import sys
 import os
 
+
+def double_lorentzian(x, a1, x01, w1, a2, x02, w2):
+    return - a1 * w1**2 / (w1**2 + (x - x01)**2) - a2 * w2**2 / (w2**2 + (x - x02)**2)
 
 class ODMRMainWindow(QMainWindow):
 
@@ -28,9 +31,10 @@ class ODMRMainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         loadUi(
-            os.path.join(os.path.dirname(__file__), 'newodmr.ui'),
+            os.path.join(os.path.dirname(__file__), 'odmr.ui'),
             self
         )
+        self.setStyleSheet(open('/Users/nicky/Scripts/Qoptics_exp/artwork/styles/dark_purple.qss').read())
 
         self.signal_generator_connection = SignalGeneratorConnection()
 
@@ -71,7 +75,6 @@ class ODMRMainWindow(QMainWindow):
 
     @Slot()
     def _on_freq_changed(self):
-        print(self.freq_spinbox.value())
         self.freq_signal.emit(float(self.freq_spinbox.value()))
 
     @Slot()
@@ -100,7 +103,6 @@ class ODMRMainWindow(QMainWindow):
 
     @Slot(int)
     def _on_modulation_type_changed(self, index):
-        print(index)
         self.modulation_type_signal.emit(index)
 
     @Slot(int)
@@ -113,9 +115,38 @@ class ODMRMainWindow(QMainWindow):
 
         self.odmr_plot.setLabel('bottom', 'Frequency (GHz)')
         self.odmr_plot.setLabel('left', 'Intensity (A.U.)')
+    
+        self.rect = QRectF(0, 0, 1, 3)
+        self.image_item = pg.ImageItem(axisOrder='row-major')
+        ex_data = double_lorentzian(
+            np.linspace(0, 10, 1000),
+            1, 2, 0.1, 1, 5, 0.1
+        )
+        ex_data = np.array([ex_data for _ in range(10)])
+        self.image_item.setImage(ex_data +  np.random.rand(10, 1000))
+        self.image_item.setRect(self.rect)
+        self.odmr_scans_plot.addItem(self.image_item)
+        self.colorbar = self.odmr_scans_plot.addColorBar(
+            self.image_item, colorMap=pg.colormap.getFromMatplotlib('rocket')
+        )
 
-    def update_odmr_plot(self, x, y):
+        self.odmr_scans_plot.setLabel('bottom', 'Frequency (GHz)')
+        self.set_odmr_scans_size(5, 3, 10)
+
+    @Slot(np.ndarray, np.ndarray)
+    def update_odmr_plot(self, x: np.ndarray, y: np.ndarray):
         self.odmr_dataline.setData(x, y)
+
+    def set_odmr_scans_size(self, freq_center: float, freq_range:float, number_points: int):
+
+        self.rect.setSize(QSizeF(freq_range, number_points))
+        self.rect.moveCenter(QPointF(freq_center, number_points / 2))
+        self.image_item.setRect(self.rect)
+
+    def update_odmr_scans(self, scans):
+        scans = np.array(scans)
+        self.image_item.setImage(np.flip(scans, 0))
+        self.colorbar.setLevels((np.min(scans), np.max(scans)))
 
 
 class SignalGeneratorConnection(QWidget):
@@ -125,14 +156,13 @@ class SignalGeneratorConnection(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         loadUi(
-            r'C:\EXP\python\Qoptics_exp\src\qudi\gui\odmr\sg_connect.ui',
+            os.path.join(os.path.dirname(__file__), 'sg_connect.ui'),
             self
         )
 
         self.connect_button.clicked.connect(self._on_connect_button_clicked)
 
     def _on_connect_button_clicked(self):
-        print(self.devices_combobox.currentText())
         self.connect_signal.emit(self.devices_combobox.currentText())
 
     @Slot(list)

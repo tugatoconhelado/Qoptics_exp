@@ -385,3 +385,27 @@ class APDHardware(Base):
         counts = counts * frequency
 
         return counts
+    
+    def get_current_counts(self):
+        frequency = 1000
+        samples = int(0.1 * frequency)
+        clock, reader = self.set_apd(
+            frequency=frequency,
+            samples=samples,
+            continuous=True
+        )
+        clock.start()
+        reader.start()
+        counts = self.get_fluorescence(
+            samples=samples,
+            frequency=frequency,
+            time_out=1
+        )
+
+        counts = np.diff(counts)
+        mean_counts = np.mean(counts)
+        counts_std = np.std(counts)
+
+        self._apd_hardware().stop()
+
+        return mean_counts

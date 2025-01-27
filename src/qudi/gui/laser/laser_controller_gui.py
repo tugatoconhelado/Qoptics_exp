@@ -37,20 +37,20 @@ class LaserControllerGui(GuiBase):
         # connect all GUI internal signals
 
         # Connect all signals to and from the logic. Make sure the connections are QueuedConnection.
-        self._mw.laser_frequency_signal.connect(
+        self._mw.bh_laser_widget.laser_frequency_signal.connect(
             self._laser_controller_logic().set_frequency,
             QtCore.Qt.QueuedConnection
         )
-        self._mw.laser_power_signal.connect(
+        self._mw.bh_laser_widget.laser_power_signal.connect(
             self._laser_controller_logic().set_power,
             QtCore.Qt.QueuedConnection
         )
         self._bh_laser_hardware().frequency_signal.connect(
-            self._mw.update_frequency_status,
+            self._mw.bh_laser_widget.update_frequency_status,
             QtCore.Qt.QueuedConnection
         )
         self._bh_laser_hardware().power_signal.connect(
-            self._mw.update_power_status,
+            self._mw.bh_laser_widget.update_power_status,
             QtCore.Qt.QueuedConnection
         )
 

@@ -16,7 +16,7 @@ class ConfocalWidget(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         loadUi(
-            os.path.join(os.path.dirname(__file__), 'confocal_scan.ui'),
+            os.path.join(os.path.dirname(__file__), 'newconfocal_widget.ui'),
             self
         )
         self.configure_plots()
@@ -235,14 +235,15 @@ class HeatmapWidget(pg.GraphicsLayoutWidget):
 
     def mouse_pressed(self, event):
         if self.mouse_enabled:
-            pos = event.scenePos()
-            mapped_pos = self.image_item.getViewBox().mapSceneToView(pos)
-            x = float(mapped_pos.x())
-            y = float(mapped_pos.y())
-            self.selected_point = (x, y)
-            self.move_pos_indicator(self.selected_point)
-            self.heatmap.update()
-            self.xy_pos_signal.emit(self.selected_point)
+            if event.button() == 1: # Only left mouse button clicks accepted
+                pos = event.scenePos()
+                mapped_pos = self.image_item.getViewBox().mapSceneToView(pos)
+                x = float(mapped_pos.x())
+                y = float(mapped_pos.y())
+                self.selected_point = (x, y)
+                self.move_pos_indicator(self.selected_point)
+                self.heatmap.update()
+                self.xy_pos_signal.emit(self.selected_point)
 
     def set_image_size(self, scan_size: tuple, offset: tuple, pixels: tuple):
 

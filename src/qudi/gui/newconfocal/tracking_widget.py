@@ -19,7 +19,7 @@ class TrackingWidget(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         loadUi(
-            os.path.join(os.path.dirname(__file__), 'tracking.ui'),
+            os.path.join(os.path.dirname(__file__), 'newtracking.ui'),
             self
         )
 

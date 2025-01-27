@@ -45,7 +45,7 @@ QLineEdit {
   color: #fff;
   border-radius: 8px;
   border: 1px solid #e0e4e7;
-  padding: 5px 5px;
+  padding: 3px 3px;
 }
 
 QLineEdit:focus {
@@ -65,9 +65,9 @@ QPushButton {
   font-weight: 600;
   border-radius: 8px;
   border: 1px solid #770ecc;
-  padding: 5px 5px;
-  margin-top: 5px;
-  margin-right: 5px;
+  padding: 3px 3px;
+  margin-top: 3px;
+  margin-right: 3px;
   outline: 0px;
 }
 
@@ -91,6 +91,10 @@ QPushButton#stop_button{
   stop:0.666 rgba(0, 0, 255, 255),
   stop:0.833 rgba(255, 0, 255, 255),
   stop:1 rgba(255, 0, 0, 255));
+}
+QPushButton#stop_button:pressed{
+  color: rgb(255, 0, 4);
+  background-color: #4a086e;
 }
 
 QCheckBox
@@ -228,26 +232,30 @@ QAbstractSpinBox
 {
   border-radius: 8px;
   border: 1px solid #e0e4e7;
-  padding: 5px 5px;
-  padding-right: 18px;
+  padding: 3px 3px;
+  padding-right: 1px;
   color: #fff;
+  margin-right: -1px;
 }
 
 QAbstractSpinBox::hover, QAbstractSpinBox::focus
 {
   border: 1px solid #700aa6;
 }
-
+QAbstractSpinBox::up-button {
+    subcontrol-position: top right;
+}
+QAbstractSpinBox::down-button {
+    subcontrol-position: bottom right;
+}
 QAbstractSpinBox::up-button, QAbstractSpinBox::down-button
 {
     subcontrol-origin: border;
-    width: 12px;
-    height: 4px;
+    width: 18px;
+    height: 11px;
     border-radius: 4px;
     background: #770ecc;
     border: 1px solid #770ecc;
-    padding: 5px 5px;
-    outline: 5px;
 }
 
 QAbstractSpinBox::up-button:hover, QAbstractSpinBox::down-button:hover
@@ -280,7 +288,7 @@ QComboBox {
     background-color: #000000;
     border-radius: 8px;
     border: 1px solid #e0e4e7;
-    padding: 5px 5px;
+    padding: 3px 3px;
     selection-background-color: #770ecc;
     selection-color: #ffffff;
     color: #ffffff;
@@ -526,4 +534,36 @@ QSplitter::handle:horizontal {
 
 QSplitter::handle:vertical {
     height: 1px;
+}
+
+
+QDockWidget {
+    border: 1px solid lightgray;
+    titlebar-close-icon: url(close.png);
+    titlebar-normal-icon: url(undock.png);
+    font-size: 15pt;
+}
+
+QDockWidget::title {
+    text-align: left; /* align the text to the left */
+    background:rgb(51, 10, 91);
+    padding: 5px 1px;
+}
+
+QDockWidget::close-button, QDockWidget::float-button {
+    border: 1px solid transparent;
+    background: darkgray;
+    padding: 0px;
+}
+
+QDockWidget::close-button:hover, QDockWidget::float-button:hover {
+    background: gray;
+}
+
+QDockWidget::close-button:pressed, QDockWidget::float-button:pressed {
+    padding: 1px -1px -1px 1px;
+}
+
+QDial {
+    background:rgb(62, 8, 78);
 }

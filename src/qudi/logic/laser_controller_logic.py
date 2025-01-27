@@ -46,9 +46,7 @@ class LaserControllerLogic(LogicBase):
 
     def on_activate(self) -> None:
         
-        self._bh_laser_hardware().frequency = 0
-        self._bh_laser_hardware().power = 1
-        self._bh_laser_hardware().on_off_status = True
+        pass
 
     def on_deactivate(self) -> None:
         # Stop timer and delete

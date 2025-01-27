@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>913</width>
+    <height>479</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,5">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QPushButton" name="image_button">
+       <property name="text">
+        <string>Image</string>
+       </property>
+       <property name="shortcut">
+        <string>Alt+I</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="set_scan_button">
+       <property name="text">
+        <string>Set scan</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="stop_button">
+       <property name="styleSheet">
+        <string notr="true">background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(255, 0, 0, 255), stop:0.166 rgba(255, 255, 0, 255), stop:0.333 rgba(0, 255, 0, 255), stop:0.5 rgba(0, 255, 255, 255), stop:0.666 rgba(0, 0, 255, 255), stop:0.833 rgba(255, 0, 255, 255), stop:1 rgba(255, 0, 0, 255));</string>
+       </property>
+       <property name="text">
+        <string>Stop</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="filename_label">
+       <property name="text">
+        <string>IMAGE NAME</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="save_layout">
+       <item>
+        <widget class="QPushButton" name="save_button">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../artwork/qudi_icons.qrc">
+           <normaloff>:/icons/icons/save.png</normaloff>:/icons/icons/save.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="delete_button">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../artwork/qudi_icons.qrc">
+           <normaloff>:/icons/icons/delete.png</normaloff>:/icons/icons/delete.png</iconset>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="load_layout">
+       <item>
+        <widget class="QPushButton" name="load_button">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../artwork/qudi_icons.qrc">
+           <normaloff>:/icons/icons/load.png</normaloff>:/icons/icons/load.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="previous_button">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../artwork/qudi_icons.qrc">
+           <normaloff>:/icons/icons/previous.png</normaloff>:/icons/icons/previous.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="next_button">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../artwork/qudi_icons.qrc">
+           <normaloff>:/icons/icons/next.png</normaloff>:/icons/icons/next.png</iconset>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="img_layout" stretch="1,1">
+     <item>
+      <layout class="QVBoxLayout" name="img_fw_layout"/>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="img_bw_layout"/>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="../../../../artwork/qudi_icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>
