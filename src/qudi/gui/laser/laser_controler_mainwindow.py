@@ -16,7 +16,6 @@ class LaserControllerMainWindow(QMainWindow):
             os.path.join(os.path.dirname(__file__), 'laser_controller.ui'),
             self
         )   
-        self.setStyleSheet(open('/Users/nicky/Scripts/Qoptics_exp/artwork/styles/dark_purple.qss').read())
 
         self.bh_laser_widget = BHLaserWidget()
         self.bh_laser_dockwidget.setWidget(self.bh_laser_widget)

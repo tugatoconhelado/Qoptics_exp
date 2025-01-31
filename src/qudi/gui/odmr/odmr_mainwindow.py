@@ -34,7 +34,6 @@ class ODMRMainWindow(QMainWindow):
             os.path.join(os.path.dirname(__file__), 'odmr.ui'),
             self
         )
-        self.setStyleSheet(open('/Users/nicky/Scripts/Qoptics_exp/artwork/styles/dark_purple.qss').read())
 
         self.signal_generator_connection = SignalGeneratorConnection()
 

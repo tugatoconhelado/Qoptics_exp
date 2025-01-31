@@ -48,7 +48,8 @@ with open('README.md', 'r') as file:
 #    yet taken. Since it is a qudi addon package, it's a good idea to prefix it with "qudi-".
 # 2. List data files to be distributed with the package. Do NOT include for example "tests" and
 #    "docs" directories.
-# 3. Add a short(!) description of the package
+# 3. Add a short(!) description of the package+
+
 # 4. Add your projects homepage URL
 # 5. Add keywords/tags for your package to be found more easily
 # 6. Make sure your license tag matches the LICENSE (and maybe LICENSE.LESSER) file distributed
@@ -78,3 +79,6 @@ setup(
     python_requires='>=3.8, <3.11',  # Specify compatible Python versions
     zip_safe=False
 )
+'''
+Oliver estuvo aquí lo amamos mucho.
+'''
