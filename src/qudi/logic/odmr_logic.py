@@ -32,6 +32,7 @@ class ODMRData:
 class ODMRLogic(LogicBase):
 
     odmr_data_signal = Signal(np.ndarray, np.ndarray)
+    odmr_full_data_signal = Signal(np.ndarray, np.ndarray)
 
     # Declare connectors to other logic modules or hardware modules to interact with
     _signal_generator_hardware = Connector(name='SG384_hardware',
@@ -88,17 +89,20 @@ class ODMRLogic(LogicBase):
         number_points = self.data.parameters.frequency_points
         sweep_time = 1 / modulation_rate
         dt = sweep_time / number_points
+        sample_rate = int(1 / dt)
         timeout = sweep_time
 
         self.clock_task = self.set_clock(
-            pulse_width= dt,
+            frequency=sample_rate,
             number_samples= number_points
         )
         self.fluorescence_task = self.set_counter_fluorescence(
-            number_samples=number_points
+            number_samples=number_points,
+            sample_rate=sample_rate
         )
         self.modulation_function_task = self.set_signal_generator_ramp_reader(
-            number_samples=number_points
+            number_samples=number_points,
+            sample_rate=sample_rate
         )
 
         self.clock_task.start()
@@ -125,15 +129,20 @@ class ODMRLogic(LogicBase):
             )
 
             fluorescence = np.array(readed_fluorescence)
+            fluorescence = fluorescence * sample_rate  # Convert to counts per sec
+            readed_fluorescence = fluorescence.copy()
+
             generator_ramp = np.array(generator_ramp)
 
             if iteration == 0:
                 level_fluorescence = readed_fluorescence[0]
                 fluorescence = np.diff(fluorescence)
-                fluorescence = np.append(np.array(readed_fluorescence[1] - level_fluorescence), fluorescence)
-            fluorescence = np.diff(fluorescence)
-            fluorescence = np.append(np.array(readed_fluorescence[0] - level_fluorescence), fluorescence)
-            level_fluorescence = readed_fluorescence[-1]
+                fluorescence = np.append(fluorescence[0], fluorescence)
+                level_fluorescence = readed_fluorescence[-1]
+            else:
+                fluorescence = np.diff(fluorescence)
+                fluorescence = np.append(np.array(readed_fluorescence[0] - level_fluorescence), fluorescence)
+                level_fluorescence = readed_fluorescence[-1]
 
             fluorescence = fluorescence[generator_ramp.argsort()]
             generator_ramp = generator_ramp[generator_ramp.argsort()]
@@ -147,6 +156,10 @@ class ODMRLogic(LogicBase):
                 self.all_fluorescence = np.array([fluorescence])
             else:
                 self.all_fluorescence = np.append(self.all_fluorescence, [fluorescence], axis=0)
+            self.odmr_full_data_signal.emit(
+                self.data.frequency,
+                self.all_fluorescence
+            )
             averaged_fluorescence = np.average(self.all_fluorescence, axis=0)
             self.data.fluorescence = averaged_fluorescence
 
@@ -169,17 +182,17 @@ class ODMRLogic(LogicBase):
             task.close()
         self.tasks = []
 
-    def set_clock(self, pulse_width, number_samples):
+    def set_clock(self, frequency, number_samples):
 
         task = nidaqmx.Task()
-        task.co_channels.add_co_pulse_chan_time(
+        task.co_channels.add_co_pulse_chan_freq(
             counter='Dev1/ctr1',
             name_to_assign_to_channel='Clock task',
-            units=nidaqmx.constants.TimeUnits.SECONDS,
-            idle_state=nidaqmx.constants.Level.HIGH,
-            initial_delay=pulse_width,
-            low_time=pulse_width,
-            high_time=pulse_width
+            units=nidaqmx.constants.FrequencyUnits.HZ,
+            idle_state=nidaqmx.constants.Level.LOW,
+            initial_delay=0.0,
+            freq=frequency,
+            duty_cycle=0.5
         )
         task.timing.cfg_implicit_timing(
             sample_mode=nidaqmx.constants.AcquisitionType.CONTINUOUS,
@@ -188,27 +201,27 @@ class ODMRLogic(LogicBase):
         self.tasks.append(task)
         return task
 
-    def set_counter_fluorescence(self, number_samples):
+    def set_counter_fluorescence(self, number_samples, sample_rate):
 
         task = nidaqmx.Task()
         task.ci_channels.add_ci_count_edges_chan(
             counter='Dev1/ctr0',
             name_to_assign_to_channel='Fluorescence counter task',
-            edge=nidaqmx.constants.Edge.FALLING,
+            edge=nidaqmx.constants.Edge.RISING,
             initial_count=0,
             count_direction=nidaqmx.constants.CountDirection.COUNT_UP
         )
         task.timing.cfg_samp_clk_timing(
-            rate=1000,
+            rate=sample_rate,
             source='/Dev1/PFI13',
-            active_edge=nidaqmx.constants.Edge.FALLING,
+            active_edge=nidaqmx.constants.Edge.RISING,
             sample_mode=nidaqmx.constants.AcquisitionType.CONTINUOUS,
             samps_per_chan=number_samples,
         )
         self.tasks.append(task)
         return task
 
-    def set_signal_generator_ramp_reader(self, number_samples):
+    def set_signal_generator_ramp_reader(self, number_samples, sample_rate):
 
         task = nidaqmx.Task()
         task.ai_channels.add_ai_voltage_chan(
@@ -221,9 +234,9 @@ class ODMRLogic(LogicBase):
             custom_scale_name=''
         )
         task.timing.cfg_samp_clk_timing(
-            rate=1000,
+            rate=sample_rate,
             source='/Dev1/PFI13',
-            active_edge=nidaqmx.constants.Edge.FALLING,
+            active_edge=nidaqmx.constants.Edge.RISING,
             sample_mode=nidaqmx.constants.AcquisitionType.CONTINUOUS,
             samps_per_chan=number_samples
         )

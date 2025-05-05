@@ -176,7 +176,7 @@ class TCSPCLogic(LogicBase):
 
         self.log.info('Measurement started')
 
-        self._laser_controller_logic()._bh_laser_hardware().frequency = 20
+        #self._laser_controller_logic()._bh_laser_hardware().frequency = 20
         self.time_bins = np.arange(4096)
         self.data.histogram = np.zeros(4096 - 1, dtype=np.uint32)
         tac_range = self._tcspc_hardware().get_SPC_param('tac_range')

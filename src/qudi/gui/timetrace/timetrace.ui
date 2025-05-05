@@ -98,7 +98,7 @@
               <string> sec</string>
              </property>
              <property name="decimals">
-              <number>2</number>
+              <number>9</number>
              </property>
              <property name="maximum">
               <double>1000000000000000019884624838656.000000000000000</double>
@@ -159,7 +159,7 @@
               <string> sec</string>
              </property>
              <property name="decimals">
-              <number>1</number>
+              <number>6</number>
              </property>
              <property name="maximum">
               <double>1000000000000000000000.000000000000000</double>
