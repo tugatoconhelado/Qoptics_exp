@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>589</height>
+    <width>815</width>
+    <height>621</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>815</width>
      <height>21</height>
     </rect>
    </property>
@@ -67,11 +67,6 @@
          </item>
          <item>
           <widget class="QComboBox" name="channel_identifier_combobox">
-           <item>
-            <property name="text">
-             <string>N</string>
-            </property>
-           </item>
            <item>
             <property name="text">
              <string>PB0</string>
@@ -280,7 +275,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QDoubleSpinBox" name="pulse_widthspinbox">
+          <widget class="QDoubleSpinBox" name="pulse_width_spinbox">
            <property name="minimum">
             <double>2.000000000000000</double>
            </property>
@@ -302,11 +297,6 @@
          </item>
          <item>
           <widget class="QComboBox" name="pulse_channel_combobox">
-           <item>
-            <property name="text">
-             <string>N</string>
-            </property>
-           </item>
            <item>
             <property name="text">
              <string>PB0</string>
@@ -422,7 +412,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="Function_Start">
+          <widget class="QLineEdit" name="start_function_line_edit">
            <property name="maximumSize">
             <size>
              <width>71</width>
@@ -448,7 +438,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="Function_Width">
+          <widget class="QLineEdit" name="width_function_line_edit">
            <property name="maximumSize">
             <size>
              <width>71</width>
@@ -553,7 +543,7 @@
    <widget class="QWidget" name="dockWidgetContents_3">
     <layout class="QVBoxLayout" name="verticalLayout_5">
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,1,1,1,5,0,0">
+      <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,1,1,1,0,5,0,0">
        <item>
         <widget class="QLabel" name="loop_label">
          <property name="text">
@@ -576,6 +566,25 @@
          <property name="text">
           <string>Stop</string>
          </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="type_variation_combobox">
+         <item>
+          <property name="text">
+           <string>Forma A: Loop x amount each variation independently</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Forma B: Loop x amount the varaitions consecutively</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Forma C: Loop x amount of the variations randomly</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item>
@@ -647,7 +656,7 @@
             <number>1000000</number>
            </property>
            <property name="value">
-            <number>99</number>
+            <number>100</number>
            </property>
           </widget>
          </item>
