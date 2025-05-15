@@ -56,6 +56,7 @@ class Frame(QObject):
         self.sequences = sequences
         self.variation = variation
         self.plot_sequences = []
+        self.max_end = max_end
 
     def display_frame(self):
         """
@@ -72,6 +73,7 @@ class Frame(QObject):
             for pulse in seq:
                 if pulse.end_tail > global_end:
                     global_end = pulse.end_tail
+        global_end = max(global_end, self.max_end)  # Ensure global_end is at least max_end
         for i, seq in enumerate(self.sequences):
             color = self.channel_tags_colors[i][1]
             if color == "red":

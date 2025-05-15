@@ -24,11 +24,11 @@ class PulsedESRGui(GuiBase):
     add_channel_to_logic_signal = Signal(int, list, str, int)
     prepare_frame_signal = Signal(int)
     add_pulse_to_logic_signal = Signal(float, float, str, str, list, int)
-    run_exp_to_logic_signal = Signal(int, int)
+    run_exp_to_logic_signal = Signal(int, int, bool)
     stop_exp_to_logic_signal = Signal()
     frame_to_logic_signal = Signal(int)
     simulation_to_logic = Signal(int, int, int)
-    clear_logic_to_signal = Signal()
+    clear_channels_signal = Signal()
 
     _pulsed_esr_logic = Connector(name="pulsed_esr_logic", interface="PulsedESRLogic")
 
@@ -95,6 +95,9 @@ class PulsedESRGui(GuiBase):
         ###### Clear Gui #######
         # from gui window to gui slots
         self._mw.clear_channels_button.clicked.connect(self.clear_gui)
+        self.clear_channels_signal.connect(
+            self._pulsed_esr_logic().clear_channels
+        )
 
         self.show()
 
@@ -168,8 +171,8 @@ class PulsedESRGui(GuiBase):
     def run_experiment_gui(self):
         value_loop = self._mw.loop_sequence_spinbox.value()
         Type = self._mw.type_variation_combobox.currentIndex()
-        # self._pulsed_esr_logic().Run_experiment(value_loop,Type)
-        self.run_exp_to_logic_signal.emit(value_loop, Type)
+        branch_flag = self._mw.branch_checkbox.isChecked()
+        self.run_exp_to_logic_signal.emit(value_loop, Type, branch_flag)
 
     def stop_experiment_gui(self):
         # self._pulsed_esr_logic().Stop_Experiment()
@@ -190,7 +193,7 @@ class PulsedESRGui(GuiBase):
     def start_simulation(self):
         initial_frame = self._mw.iteration_frame_spinbox.value()
         print(f"initial frame:{initial_frame}")
-        ms = self._mw.ms.value()
+        ms = self._mw.ms_per_iteration_spinbox.value()
         print(f"ms:{ms}")
         value_loop = self._mw.loop_sequence_spinbox.value()
         print(f"value_loop: {value_loop}")
@@ -210,15 +213,15 @@ class PulsedESRGui(GuiBase):
         self.frame_to_logic_signal.emit(Frame_i)
 
     def add_iteration_text(self, text):
-        self._mw.current_iteration.setText(text)
+        self._mw.current_iteration_label.setText(text)
 
     def clear_gui(self):
+
         self._mw.channel_list_listwidget.clear()
         self._mw.sequence_diagram_plot.clear()
-        self._mw.Duration_Loop.setText("Duration: ( )")
-        self._mw.current_iteration.setText("current iteration: ( )")
-        # self._pulsed_esr_logic().Clearing_Gui()
-        self.clear_logic_to_signal.emit()
+        self._mw.loop_duration_label.setText("Duration: ( )")
+        self._mw.current_iteration_label.setText("current iteration: ( )")
+        self.clear_channels_signal.emit()
 
     @Slot(str)
     def show_error_message(self, error_str):
@@ -226,7 +229,7 @@ class PulsedESRGui(GuiBase):
         This function is called when an error occurs.
         It shows an error message to the user.
         """
-        dlg = QMessageBox(self)
+        dlg = QMessageBox(self._mw)
         dlg.setWindowTitle("Error!")
         dlg.setText(error_str)
         dlg.setStandardButtons(QMessageBox.Ok)
