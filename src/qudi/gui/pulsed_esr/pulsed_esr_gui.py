@@ -24,7 +24,7 @@ class PulsedESRGui(GuiBase):
     add_channel_to_logic_signal = Signal(int, list, str, int)
     prepare_frame_signal = Signal(int)
     add_pulse_to_logic_signal = Signal(float, float, str, str, list, int)
-    run_exp_to_logic_signal = Signal(int, int, bool)
+    run_exp_to_logic_signal = Signal(int, int)
     stop_exp_to_logic_signal = Signal()
     frame_to_logic_signal = Signal(int)
     simulation_to_logic = Signal(int, int, int)
@@ -97,6 +97,16 @@ class PulsedESRGui(GuiBase):
         self._mw.clear_channels_button.clicked.connect(self.clear_gui)
         self.clear_channels_signal.connect(
             self._pulsed_esr_logic().clear_channels
+        )
+
+        ###### Switch outputs #######
+        self._mw.pb_output_status_signal.connect(
+            self._pulsed_esr_logic().switch_pb_outputs,
+            Qt.QueuedConnection,
+        )
+        self._mw.pb_output_stop_signal.connect(
+            self._pulsed_esr_logic().stop_pb_outputs,
+            Qt.QueuedConnection
         )
 
         self.show()
@@ -172,7 +182,7 @@ class PulsedESRGui(GuiBase):
         value_loop = self._mw.loop_sequence_spinbox.value()
         Type = self._mw.type_variation_combobox.currentIndex()
         branch_flag = self._mw.branch_checkbox.isChecked()
-        self.run_exp_to_logic_signal.emit(value_loop, Type, branch_flag)
+        self.run_exp_to_logic_signal.emit(value_loop, Type)
 
     def stop_experiment_gui(self):
         # self._pulsed_esr_logic().Stop_Experiment()

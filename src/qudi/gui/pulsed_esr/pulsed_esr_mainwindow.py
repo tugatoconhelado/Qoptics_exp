@@ -14,12 +14,16 @@ class PulsedESRMainWindow(QMainWindow):
     """
 
     start_experiment_signal = Signal(int, float, float)
+    pb_output_status_signal = Signal(tuple)
+    pb_output_stop_signal = Signal()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         loadUi(os.path.join(os.path.dirname(__file__), "pulsed_esr2.ui"), self)
 
         self.iteration_start_spinbox.valueChanged.connect(self._set_max_iteration_end)
+        self.stop_output_button.clicked.connect(self.pb_output_stop_signal.emit)
+        self.run_output_button.clicked.connect(self._get_output_state)
 
     def _set_max_iteration_end(self):
         """
@@ -39,6 +43,24 @@ class PulsedESRMainWindow(QMainWindow):
         for sequence_frame in sequence_for_graph:
             self.sequence_diagram_plot.addItem(sequence_frame)
 
+    def _get_output_state(self):
+        """
+        This function is called when the user clicks the "Run" button.
+        It gets the state of the PB outputs checkboxes and sends the
+        signal to the logic to turn on/off the outputs.
+        """
+        status = (
+            int(self.pb0_checkbox.isChecked()),
+            int(self.pb1_checkbox.isChecked()),
+            int(self.pb2_checkbox.isChecked()),
+            int(self.pb3_checkbox.isChecked()),
+            int(self.pb4_checkbox.isChecked()),
+            int(self.pb5_checkbox.isChecked()),
+        )
+        self.pb_output_status_signal.emit(status)
+        return status
+
+        
 
 class Frame(QObject):
     """
