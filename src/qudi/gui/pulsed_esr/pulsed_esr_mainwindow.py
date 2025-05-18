@@ -16,6 +16,7 @@ class PulsedESRMainWindow(QMainWindow):
     start_experiment_signal = Signal(int, float, float)
     pb_output_status_signal = Signal(tuple)
     pb_output_stop_signal = Signal()
+    clear_channels_signal = Signal()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -24,6 +25,18 @@ class PulsedESRMainWindow(QMainWindow):
         self.iteration_start_spinbox.valueChanged.connect(self._set_max_iteration_end)
         self.stop_output_button.clicked.connect(self.pb_output_stop_signal.emit)
         self.run_output_button.clicked.connect(self._get_output_state)
+        self.clear_channels_button.clicked.connect(self._clear_gui)
+
+    @Slot()
+    def _clear_gui(self):
+
+        self.channels_tablewidget.clearContents()
+        self.channels_tablewidget.setRowCount(0)
+
+        self.sequence_diagram_plot.clear()
+        self.loop_duration_label.setText("Duration: ( )")
+        self.current_iteration_label.setText("current iteration: ( )")
+        self.clear_channels_signal.emit()
 
     def _set_max_iteration_end(self):
         """
@@ -31,8 +44,8 @@ class PulsedESRMainWindow(QMainWindow):
         It sets the maximum end time of the iteration.
         """
 
-        self._mw.iteration_end_spinbox.setMinimum(
-            self._mw.iteration_start_spinbox.value() + 1
+        self.iteration_end_spinbox.setMinimum(
+            self.iteration_start_spinbox.value() + 1
         )
 
     def create_frame(self, tags_colors, sequences_all_channels, frame_i, max_end_time):
@@ -43,6 +56,7 @@ class PulsedESRMainWindow(QMainWindow):
         for sequence_frame in sequence_for_graph:
             self.sequence_diagram_plot.addItem(sequence_frame)
 
+    @Slot()
     def _get_output_state(self):
         """
         This function is called when the user clicks the "Run" button.

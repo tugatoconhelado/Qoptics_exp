@@ -4,7 +4,7 @@ __all__ = ["TimeTraceGui"]
 
 import os
 from PySide2 import QtCore
-from PySide2.QtWidgets import QDialog, QWidget, QFileDialog, QMessageBox
+from PySide2.QtWidgets import QDialog, QWidget, QFileDialog, QMessageBox, QTableWidgetItem
 from PySide2.QtCore import Slot, Qt, Signal
 
 from qudi.core.module import GuiBase
@@ -49,6 +49,9 @@ class PulsedESRGui(GuiBase):
         # from gui window to gui slots
         self._mw.add_channel_button.clicked.connect(self.add_channel_gui)
         self._pulsed_esr_logic().adding_flag_to_list.connect(self.update_list_channels)
+        self._pulsed_esr_logic().adding_channel_to_list.connect(
+            self.update_channels_table, Qt.QueuedConnection
+        )
         # from gui slots to logic
         self.add_channel_to_logic_signal.connect(self._pulsed_esr_logic().add_channel)
 
@@ -56,7 +59,6 @@ class PulsedESRGui(GuiBase):
         # from gui window to gui slots
         self._pulsed_esr_logic().error_str_signal.connect(self.show_error_message)
         self._mw.add_pulse_button.clicked.connect(self.add_pulse_gui)
-        self._mw.iteration_start_spinbox.valueChanged.connect(self.set_max)
         # from gui slots to logic
         self.add_pulse_to_logic_signal.connect(
             self._pulsed_esr_logic().add_pulse_to_channel
@@ -89,16 +91,15 @@ class PulsedESRGui(GuiBase):
         self._mw.run_sequence_button.clicked.connect(self.run_experiment_gui)
         self._mw.stop_sequence_button.clicked.connect(self.stop_experiment_gui)
         # from gui slots to logic
-        self.run_exp_to_logic_signal.connect(self._pulsed_esr_logic().Run_experiment)
+        self.run_exp_to_logic_signal.connect(self._pulsed_esr_logic().run_experiment)
         self.stop_exp_to_logic_signal.connect(self._pulsed_esr_logic().Stop_Experiment)
 
         ###### Clear Gui #######
         # from gui window to gui slots
-        self._mw.clear_channels_button.clicked.connect(self.clear_gui)
-        self.clear_channels_signal.connect(
+        
+        self._mw.clear_channels_signal.connect(
             self._pulsed_esr_logic().clear_channels
         )
-
         ###### Switch outputs #######
         self._mw.pb_output_status_signal.connect(
             self._pulsed_esr_logic().switch_pb_outputs,
@@ -142,8 +143,26 @@ class PulsedESRGui(GuiBase):
         This function is called when a channel is added to the list.
         It updates the list of channels in the GUI.
         """
-        # print(f"Adding channel: {flag_str}")
-        self._mw.channel_list_listwidget.addItem(flag_str)
+        print(f"Adding channel: {flag_str}")
+
+    @Slot(int, int, int, str)
+    def update_channels_table(self, channel, delay_on, delay_off, type):
+
+        i = self._mw.channels_tablewidget.rowCount()
+        self._mw.channels_tablewidget.insertRow(i)
+
+        self._mw.channels_tablewidget.setItem(
+            i, 0, QTableWidgetItem("PB" + str(channel))
+        )
+        self._mw.channels_tablewidget.setItem(
+            i, 1, QTableWidgetItem(str(delay_on))
+        )
+        self._mw.channels_tablewidget.setItem(
+            i, 2, QTableWidgetItem(str(delay_off))
+        )
+        self._mw.channels_tablewidget.setItem(
+            i, 3, QTableWidgetItem(type)
+        )
 
     def add_pulse_gui(self):
         """
@@ -173,10 +192,6 @@ class PulsedESRGui(GuiBase):
             channel_tag,
         )
 
-    def set_max(self):
-        self._mw.iteration_end_spinbox.setMinimum(
-            self._mw.iteration_start_spinbox.value() + 1
-        )
 
     def run_experiment_gui(self):
         value_loop = self._mw.loop_sequence_spinbox.value()
@@ -225,13 +240,6 @@ class PulsedESRGui(GuiBase):
     def add_iteration_text(self, text):
         self._mw.current_iteration_label.setText(text)
 
-    def clear_gui(self):
-
-        self._mw.channel_list_listwidget.clear()
-        self._mw.sequence_diagram_plot.clear()
-        self._mw.loop_duration_label.setText("Duration: ( )")
-        self._mw.current_iteration_label.setText("current iteration: ( )")
-        self.clear_channels_signal.emit()
 
     @Slot(str)
     def show_error_message(self, error_str):
