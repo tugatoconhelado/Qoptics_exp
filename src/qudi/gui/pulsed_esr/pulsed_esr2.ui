@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>952</width>
-    <height>723</height>
+    <height>815</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -271,6 +271,28 @@
          </item>
         </layout>
        </item>
+       <item>
+        <layout class="QVBoxLayout" name="file_layout">
+         <item>
+          <layout class="QHBoxLayout" name="save_layout">
+           <item>
+            <widget class="QPushButton" name="save_sequence_button">
+             <property name="text">
+              <string>Save Sequence</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="load_sequence_button">
+             <property name="text">
+              <string>Load Sequence</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
       </layout>
      </item>
     </layout>
@@ -281,10 +303,10 @@
     <string>Pulses</string>
    </property>
    <attribute name="dockWidgetArea">
-    <number>1</number>
+    <number>8</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_2">
-    <layout class="QVBoxLayout" name="verticalLayout_4">
+    <layout class="QHBoxLayout" name="horizontalLayout_20" stretch="1,3">
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
@@ -297,7 +319,10 @@
           </widget>
          </item>
          <item>
-          <widget class="QDoubleSpinBox" name="start_time_spinbox">
+          <widget class="ScienDSpinBox" name="start_time_spinbox">
+           <property name="suffix">
+            <string>s</string>
+           </property>
            <property name="maximum">
             <double>1000000.000000000000000</double>
            </property>
@@ -306,14 +331,17 @@
          <item>
           <widget class="QLabel" name="pulse_width_label">
            <property name="text">
-            <string>Pulse Width</string>
+            <string>Width</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QDoubleSpinBox" name="pulse_width_spinbox">
+          <widget class="ScienDSpinBox" name="pulse_width_spinbox">
+           <property name="suffix">
+            <string>s</string>
+           </property>
            <property name="minimum">
-            <double>2.000000000000000</double>
+            <double>0.000000000000000</double>
            </property>
            <property name="maximum">
             <double>1000000.000000000000000</double>
@@ -565,6 +593,45 @@
         </layout>
        </item>
       </layout>
+     </item>
+     <item>
+      <widget class="QTableWidget" name="pulses_tablewidget">
+       <column>
+        <property name="text">
+         <string>Channel</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Start Time</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Width</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>f(S,i)</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>f(W,i)</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Iterate From</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Iterate To</string>
+        </property>
+       </column>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -830,7 +897,14 @@
    <header>pyqtgraph</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>ScienDSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>qudi.util.widgets.scientific_spinbox</header>
+  </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../../../../artwork/qudi_icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

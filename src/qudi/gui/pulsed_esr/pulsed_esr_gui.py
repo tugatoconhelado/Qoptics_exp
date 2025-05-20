@@ -48,7 +48,6 @@ class PulsedESRGui(GuiBase):
         ##### ADDING CHANNELS #####
         # from gui window to gui slots
         self._mw.add_channel_button.clicked.connect(self.add_channel_gui)
-        self._pulsed_esr_logic().adding_flag_to_list.connect(self.update_list_channels)
         self._pulsed_esr_logic().adding_channel_to_list.connect(
             self.update_channels_table, Qt.QueuedConnection
         )
@@ -62,6 +61,9 @@ class PulsedESRGui(GuiBase):
         # from gui slots to logic
         self.add_pulse_to_logic_signal.connect(
             self._pulsed_esr_logic().add_pulse_to_channel
+        )
+        self._pulsed_esr_logic().added_pulse_signal.connect(
+            self._mw.update_pulse_list, Qt.QueuedConnection
         )
 
         ######## Selecting Frame for Display #######
@@ -110,6 +112,16 @@ class PulsedESRGui(GuiBase):
             Qt.QueuedConnection
         )
 
+
+        self._mw.save_file_signal.connect(
+            self._pulsed_esr_logic().save_file,
+            Qt.QueuedConnection
+        )
+        self._mw.load_file_signal.connect(
+            self._pulsed_esr_logic().load_file,
+            Qt.QueuedConnection
+        )
+
         self.show()
 
     def on_deactivate(self) -> None:
@@ -132,7 +144,7 @@ class PulsedESRGui(GuiBase):
         )  # we get the label of the channel from the gui
         channel_label = channel_label.lower()  # we leave it undercase
         channel_count = self._mw.channel_identifier_combobox.count()
-        # self._pulsed_esr_logic().add_channel(channel_tag,delay,channel_label,channel_count)
+        
         self.add_channel_to_logic_signal.emit(
             channel_tag, delay, channel_label, channel_count
         )
@@ -169,8 +181,10 @@ class PulsedESRGui(GuiBase):
         This function is called when the user clicks the "Add Pulse" button.
         It checks if the pulse is valid and adds it to the list.
         """
-        start_time = self._mw.start_time_spinbox.value()
-        width = self._mw.pulse_width_spinbox.value()
+        start_time = self._mw.start_time_spinbox.value() * 1e9
+        width = self._mw.pulse_width_spinbox.value() * 1e9
+        print(f"start time: {start_time}")
+        print(f"width: {width}")
         channel_tag = (
             self._mw.pulse_channel_combobox.currentIndex()
         )  # we get the channel from the gui

@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QDialog, QWidget, QMainWindow, QApplication
+from PySide2.QtWidgets import QDialog, QWidget, QMainWindow, QApplication, QTableWidgetItem, QFileDialog
 from PySide2.QtCore import Slot, Signal, QDir, QObject
 from PySide2.QtGui import QFont
 from qudi.util.uic import loadUi
@@ -17,6 +17,8 @@ class PulsedESRMainWindow(QMainWindow):
     pb_output_status_signal = Signal(tuple)
     pb_output_stop_signal = Signal()
     clear_channels_signal = Signal()
+    load_file_signal = Signal(str)
+    save_file_signal = Signal(str)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -26,12 +28,20 @@ class PulsedESRMainWindow(QMainWindow):
         self.stop_output_button.clicked.connect(self.pb_output_stop_signal.emit)
         self.run_output_button.clicked.connect(self._get_output_state)
         self.clear_channels_button.clicked.connect(self._clear_gui)
+        self.load_sequence_button.clicked.connect(self._load_sequence)
+        self.save_sequence_button.clicked.connect(self._save_sequence)
+
+        self.pulse_width_spinbox.setValue(20e-9)
+        self.start_time_spinbox.setValue(10e-9)
 
     @Slot()
     def _clear_gui(self):
 
         self.channels_tablewidget.clearContents()
         self.channels_tablewidget.setRowCount(0)
+
+        self.pulses_tablewidget.clearContents()
+        self.pulses_tablewidget.setRowCount(0)
 
         self.sequence_diagram_plot.clear()
         self.loop_duration_label.setText("Duration: ( )")
@@ -74,7 +84,72 @@ class PulsedESRMainWindow(QMainWindow):
         self.pb_output_status_signal.emit(status)
         return status
 
+    @Slot(int, float, float, str, str, int, int)
+    def update_pulse_list(self, channel, start, width, function_start, function_width, i_start, i_end):
+
+        i = self.pulses_tablewidget.rowCount()
+        self.pulses_tablewidget.insertRow(i)
+
+        self.pulses_tablewidget.setItem(
+            i, 0, QTableWidgetItem("PB" + str(channel))
+        )
+        self.pulses_tablewidget.setItem(
+            i, 1, QTableWidgetItem(str(start))
+        )
+        self.pulses_tablewidget.setItem(
+            i, 2, QTableWidgetItem(str(width))
+        )
+        self.pulses_tablewidget.setItem(
+            i, 3, QTableWidgetItem(str(function_start))
+        )
+        self.pulses_tablewidget.setItem(
+            i, 4, QTableWidgetItem(str(function_width))
+        )
+        self.pulses_tablewidget.setItem(
+            i, 5, QTableWidgetItem(str(i_start))
+        )
+        self.pulses_tablewidget.setItem(
+            i, 6, QTableWidgetItem(str(i_end))
+        )
+
+    def _load_sequence(self):
+
+        file_dir = os.path.join(os.sep, "c:" + os.sep, "EXP", "testdata", "sequences")
+        dialog = QFileDialog(self)
+        directory = file_dir
+        dialog.setDirectory(directory)
+        dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        dialog.setNameFilter('JSON files (*.json)')
+        dialog.setViewMode(QFileDialog.ViewMode.Detail)
+        if dialog.exec_():
+            file_path = dialog.selectedFiles()[0]
+            file_type = dialog.selectedNameFilter()
+        else:
+            return ''
         
+        self.load_file_signal.emit(file_path)
+        return os.path.abspath(file_path)
+    
+    def _save_sequence(self):
+        """
+        This function is called when the user clicks the "Save" button.
+        It saves the current sequence to a file.
+        """
+        file_dir = os.path.join(os.sep, "c:" + os.sep, "EXP", "testdata", "sequences")
+        dialog = QFileDialog(self)
+        directory = file_dir
+        dialog.setDirectory(directory)
+        dialog.setFileMode(QFileDialog.FileMode.AnyFile)
+        dialog.setNameFilter('JSON files (*.json)')
+        dialog.setViewMode(QFileDialog.ViewMode.List)
+        dialog.setDefaultSuffix('.json')
+        if dialog.exec_():
+            file_path = dialog.selectedFiles()[0]
+            file_type = dialog.selectedNameFilter()
+        else:
+            return ''
+        self.save_file_signal.emit(file_path)
+        return os.path.abspath(file_path)
 
 class Frame(QObject):
     """

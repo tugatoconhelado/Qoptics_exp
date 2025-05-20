@@ -14,9 +14,28 @@ import datetime
 from qudi.hardware import spinapi
 import nidaqmx
 import time
+import json
 
 import dataclasses
 
+@dataclasses.dataclass
+class PulseData:
+
+    iteration_range: list
+    channel_tag: int = 0
+    start_time: int = 1000
+    width: float = 0.1
+    function_start: str = ""
+    function_width: str = ""
+    
+
+@dataclasses.dataclass
+class ChannelData:
+
+    delay: list
+    tag: int = 0
+    channel_type: str = ""
+    
 
 class PulsedESRLogic(LogicBase):
     """This is a simple template logic measurement module for qudi.
@@ -31,7 +50,7 @@ class PulsedESRLogic(LogicBase):
             template_hardware: dummy_hardware
     """
 
-    adding_flag_to_list = Signal(str)
+    status_msg = Signal(str)
     adding_channel_to_list = Signal(
         int, int, int, str
     ) 
@@ -40,7 +59,7 @@ class PulsedESRLogic(LogicBase):
     )  # this signal is used to send the data to the GUI
     next_frame_signal = Signal(int)
     add_iteration_txt = Signal(str)
-    added_pulse_signal = Signal()
+    added_pulse_signal = Signal(int, float, float, str, str, int, int)
     error_str_signal = Signal(str)
 
     # Declare static parameters that can/must be declared in the qudi configuration
@@ -81,6 +100,8 @@ class PulsedESRLogic(LogicBase):
         self.counter_pin = "ctr0"  # ctr= counter basicamente una parte de la nih que cuenta o emite cuentas. El gate le dice en que intervalo contar
         self.gate_pin = "PFI9"
         self.max_variations = 0
+        self.added_pulses_to_save = []  # list of the pulses that are added to the database
+        self.added_channels_to_save = []  # list of the channels that are added to the database
 
     def on_activate(self):
         pass
@@ -88,9 +109,10 @@ class PulsedESRLogic(LogicBase):
     def on_deactivate(self):
         pass
 
+    @Slot(int, list, str, int)
     def add_channel(
         self, channel_tag, channel_delay, channel_label, channel_count
-    ):  # Only function is to add the channel to the database if the conditions are met, it communicates with the GUI
+    ):
         """
         Adds a channel to the database.
         """
@@ -98,9 +120,7 @@ class PulsedESRLogic(LogicBase):
         channel_tag = int(channel_tag)
         flag = [channel_tag, channel_delay, channel_label]
 
-        if (
-            channel_tag not in self.added_channel_tags
-        ):  # Check if channel is already added, #flag[0]
+        if channel_tag not in self.added_channel_tags:
             # This is for the Graphs in the Sequence Plot
             if channel_label in [
                 "green",
@@ -112,33 +132,55 @@ class PulsedESRLogic(LogicBase):
                 "pink",
                 "orange",
             ]:
-                flag_str = f"channel: {flag[0]}, delay_on: {abs(flag[1][0])}, delay_off: {abs(flag[1][1])}, {flag[2]}"  # Convert list to string
-                self.adding_flag_to_list.emit(flag_str)  # emit the signal to the GUI
+                flag_str = f"channel: {flag[0]}, delay_on: {abs(flag[1][0])}, delay_off: {abs(flag[1][1])}, {flag[2]}"
+                status_str = "Adding " + flag_str
+                self.status_msg.emit(status_str)
+
                 self.adding_channel_to_list.emit(
                     channel_tag, channel_delay[0], channel_delay[1], channel_label
                 )
                 channel_binary = self.convert_to_binary(
                     channel_tag, channel_count
-                )  # channel count is the amount of ports in the ni
+) 
                 self.added_channel_tags.append(flag[0])  # add channel to the set
                 channel = Channel(
                     channel_tag, channel_binary, channel_label, channel_delay
                 )
                 self.channels.append(channel)
+                self.added_channels_to_save.append(
+                    ChannelData(
+                        tag=channel_tag, channel_type=channel_label, delay=channel_delay
+                )
+                )
                 self.channels = sorted(
                     self.channels, key=lambda ch: ch.tag
-                )  # we order the self.channels list by their tag value
+                )
                 print(f"channel color: {channel.label}")
 
             else:
-                # print('Emitted')
                 self.error_str_signal.emit(
                     f"Label {channel_label} not recognized. Please use one of the following: green, yellow, red, apd, microwave"
                 )
         else:
             self.error_str_signal.emit(f"Channel {channel_tag} already added")
-
         return flag
+
+    @Slot(int, tuple, str)
+    def modify_channel(self, tag, delay, label):
+        """
+        Modify the channel in the database.
+        """
+        # Logic to modify a channel in the database
+        found = False
+        for channel in self.channels:
+            if channel.tag == tag:
+                channel.label = label
+                channel.delay = delay
+                found = True
+                print(f"Channel PB{tag} modified to {channel}")
+                break
+        if not found:
+            self.error_str_signal.emit(f"Channel {tag} not found")
 
     def convert_to_binary(self, channel_tag, channel_count):
         """We need to conver the channel tag index into a binary number for the pulse blaster
@@ -190,7 +232,7 @@ class PulsedESRLogic(LogicBase):
         elif channel_tag in self.added_channel_tags:
             for channel in self.channels:
                 if channel.tag == channel_tag:
-                    max_end_time_added_sequence = channel.a_sequence(
+                    max_end_time_added_sequence, added_pulse = channel.a_sequence(
                         start_time,
                         width,
                         function_width,
@@ -203,6 +245,28 @@ class PulsedESRLogic(LogicBase):
                     break
             if max_end_time_added_sequence > self.Max_end_time:
                 self.Max_end_time = max_end_time_added_sequence
+            print(f"added_pulse: {added_pulse}")
+            if added_pulse is True:
+                self.added_pulse_signal.emit(
+                    channel_tag,
+                    start_time,
+                    width,
+                    function_width,
+                    function_start,
+                    iteration_range[0],
+                    iteration_range[1],
+                )
+                print(f"Added pulse to channel {channel_tag}")
+                self.added_pulses_to_save.append(
+                    PulseData(
+                        channel_tag=channel_tag,
+                        start_time=start_time,
+                        width=width,
+                        function_start=function_start,
+                        function_width=function_width,
+                        iteration_range=iteration_range,
+                    )
+                )
         print(f"self.Max_end_time:{self.Max_end_time}")
 
     @Slot(int, int)
@@ -214,12 +278,12 @@ class PulsedESRLogic(LogicBase):
         list_type_cero = []
         max_end_times_vars = []  # max end times per variation
         for i in range(1, self.max_variations + 1):
-            print(f"Creating exp:{i}")
+            #print(f"Creating exp:{i}")
             Exp_i_pb = []
             max_end = 0
             for channel in self.channels:
-                print("Inside the channel loop")
-                print(f'i= {i}')
+                #print("Inside the channel loop")
+                #print(f'i= {i}')
                 result = channel.a_experiment(i) # Returns [pulse, end_time]
                 list_channel_sequence = result[0]
                 if list_channel_sequence != None:
@@ -276,12 +340,12 @@ class PulsedESRLogic(LogicBase):
         However to the pulse blaster can only have about 40k instructions and the loop can only iterate a
          maximum of 1 million times. so to get around this  we divide the value_loop by 10k iterations of the experiment
         """
-        print("sending to pulse blaster")
-        print(f"len(Flat_exp):{len(Flat_exp)}")
-        print(f"divided_value:{divided_value}")
-        print(f"max_end_times_vars:{max_end_times_vars}")
-        print(f"flat_exp:{Flat_exp}")
-        print(f"value_loop:{value_loop}")
+        #print("sending to pulse blaster")
+        #print(f"len(Flat_exp):{len(Flat_exp)}")
+        #print(f"divided_value:{divided_value}")
+        #print(f"max_end_times_vars:{max_end_times_vars}")
+        #print(f"flat_exp:{Flat_exp}")
+        #print(f"value_loop:{value_loop}")
         #print(f"counter:{counter}")
 
         spinapi.pb_close()
@@ -296,14 +360,14 @@ class PulsedESRLogic(LogicBase):
         for d in range(0, len(divided_value)):
             # In case the x amount of loops is greater than 10k
             # the x is divided in steps of 10k
-            print(f'Starting loop x={d}')
+            #print(f'Starting loop x={d}')
             value_loop = divided_value[d]
-            print(f'value_loop={value_loop}')
+            #print(f'value_loop={value_loop}')
             for j in range(0, self.max_variations):
                 """
                 For each iteration j (a variation) , we will send one set of instructions to the pulse blaster
                 """
-                print(f"Starting the {j}th variation")
+                #print(f"Starting the {j}th variation")
                 self._pulse_blaster_hardware().program_looped_variation(
                     Flat_exp[j],
                     value_loop
@@ -311,7 +375,7 @@ class PulsedESRLogic(LogicBase):
                 self._pulse_blaster_hardware().start()
                 #start_time = time.perf_counter()
                 time_wait = time_wait = max_end_times_vars[j] * value_loop * 1000
-                print(f"time_wait:{time_wait}")
+                #print(f"time_wait:{time_wait}")
                 self.busy_wait_us(
                     time_wait
                 )  # Intended wait: minimum wait time until the next variation
@@ -334,15 +398,15 @@ class PulsedESRLogic(LogicBase):
 
             # In case the x amount of loops is greater than 10k
             # the x is divided in steps of 10k
-            print(f'Starting loop x={d}')
+            #print(f'Starting loop x={d}')
             value_loop = divided_value[d]
-            print(f'value_loop={value_loop}')
+            #print(f'value_loop={value_loop}')
             for loop in range(0, value_loop):
                 for j in range(0, self.max_variations):
                     """
                     For each iteration j (a variation) , we will send one set of instructions to the pulse blaster
                     """
-                    print(f"Starting the {j}th variation")
+                    #print(f"Starting the {j}th variation")
                     self._pulse_blaster_hardware().program_looped_variation(
                         Flat_exp[j],
                         1
@@ -350,7 +414,7 @@ class PulsedESRLogic(LogicBase):
                     self._pulse_blaster_hardware().start()
                     start = time.perf_counter()
                     time_wait = time_wait = max_end_times_vars[j] * 1000
-                    print(f"time_wait:{time_wait}")
+                    #print(f"time_wait:{time_wait}")
                     self.busy_wait_us(
                         time_wait
                     )  # Intended wait: minimum wait time until the next variation
@@ -369,12 +433,12 @@ class PulsedESRLogic(LogicBase):
         However to the pulse blaster can only have about 40k instructions and the loop can only iterate a
          maximum of 1 million times. so to get around this  we divide the value_loop by 10k iterations of the experiment
         """
-        print("sending to pulse blaster")
-        print(f"len(Flat_exp):{len(Flat_exp)}")
-        print(f"divided_value:{divided_value}")
-        print(f"max_end_times_vars:{max_end_times_vars}")
-        print(f"flat_exp:{Flat_exp}")
-        print(f"value_loop:{value_loop}")
+        #print("sending to pulse blaster")
+        #print(f"len(Flat_exp):{len(Flat_exp)}")
+        #print(f"divided_value:{divided_value}")
+        #print(f"max_end_times_vars:{max_end_times_vars}")
+        #print(f"flat_exp:{Flat_exp}")
+        #print(f"value_loop:{value_loop}")
         #print(f"counter:{counter}")
 
         spinapi.pb_close()
@@ -389,15 +453,15 @@ class PulsedESRLogic(LogicBase):
         for d in range(0, len(divided_value)):
             # In case the x amount of loops is greater than 10k
             # the x is divided in steps of 10k
-            print(f'Starting loop x={d}')
+            #print(f'Starting loop x={d}')
             value_loop = divided_value[d]
-            print(f'value_loop={value_loop}')
+            #print(f'value_loop={value_loop}')
             for j in range(0, self.max_variations):
                 """
                 For each iteration j (a variation) , we will send one set of isntrutions to the pulse blaster
                 However
                 """
-                print(f"Starting the {j}th variation")
+                #print(f"Starting the {j}th variation")
                 spinapi.pb_start_programming(spinapi.PULSE_PROGRAM)
 
                 # generates a loop of instruction here only one iteration
@@ -410,12 +474,12 @@ class PulsedESRLogic(LogicBase):
                     (Flat_exp[j][0].end_tail - Flat_exp[j][0].start_tail) * spinapi.us,
                 )
 
-                print(
-                    f"spinapi.pb_inst_pbonly({sum(Flat_exp[j][0].channel_binary[0])},spinapi.Inst.LOOP,{value_loop},({Flat_exp[j][0].end_tail-Flat_exp[j][0].start_tail})*spinapi.us)"
-                )
+                #print(
+                #    f"spinapi.pb_inst_pbonly({sum(Flat_exp[j][0].channel_binary[0])},spinapi.Inst.LOOP,{value_loop},({Flat_exp[j][0].end_tail-Flat_exp[j][0].start_tail})*spinapi.us)"
+                #)
                 for i in range(1, len(Flat_exp[j])):  
                     # we start from one because we already did the 0 index
-                    print(f'i = {i}')
+                    #print(f'i = {i}')
                     if i != len(Flat_exp[j]) - 1:
                         print(
                             f"spinapi.pb_inst_pbonly({sum(list(Flat_exp[j][i].channel_binary[0]))},spinapi.Inst.CONTINUE,0,({Flat_exp[j][i].end_tail-Flat_exp[j][i].start_tail})*spinapi.us)"
@@ -428,9 +492,9 @@ class PulsedESRLogic(LogicBase):
                             * spinapi.us,
                         )
                     else:
-                        print(
-                            f"spinapi.pb_inst_pbonly({sum(list(Flat_exp[j][i].channel_binary[0]))},spinapi.Inst.CONTINUE,0,({Flat_exp[j][i].end_tail-Flat_exp[j][i].start_tail})*spinapi.us)"
-                        )
+                        #print(
+                        #    f"spinapi.pb_inst_pbonly({sum(list(Flat_exp[j][i].channel_binary[0]))},spinapi.Inst.CONTINUE,0,({Flat_exp[j][i].end_tail-Flat_exp[j][i].start_tail})*spinapi.us)"
+                        #)
                         spinapi.pb_inst_pbonly(
                             int(sum(Flat_exp[j][i].channel_binary[0])),
                             spinapi.Inst.CONTINUE,
@@ -627,6 +691,8 @@ class PulsedESRLogic(LogicBase):
     def clear_channels(self):
 
         self.added_channel_tags = []
+        self.added_channels_to_save = []
+        self.added_pulses_to_save = []
         self.channels = []
         self.channel_labels = []
         self.Delays_channel = []
@@ -647,7 +713,7 @@ class PulsedESRLogic(LogicBase):
         self._pulse_blaster_hardware().program_switch_state(pb_status)
         self._pulse_blaster_hardware().stop_programming()
         self._pulse_blaster_hardware().start()
-        print(f'Switching pulse blaster outputs to {pb_status}')
+        #print(f'Switching pulse blaster outputs to {pb_status}')
 
     def stop_pb_outputs(self):
         """
@@ -657,11 +723,64 @@ class PulsedESRLogic(LogicBase):
         self._pulse_blaster_hardware().stop()
         print('Stopping pulse blaster outputs')
 
+    def load_file(self, file_path):
+        """
+        This function is used to load a file
+        """
+        print(f"Loading file: {file_path}")
+        # Logic to load the file
 
+        with open(file_path, "r") as json_file:
+            data = json.load(json_file)
+            for channel_data in data["channels"]:
+                channel = ChannelData(
+                    tag=channel_data["tag"],
+                    channel_type=channel_data["channel_type"],
+                    delay=channel_data["delay"],
+                )
+                self.add_channel(channel.tag, channel.delay, channel.channel_type, 21)
+            for pulse_data in data["pulses"]:
+                pulse = PulseData(
+                    channel_tag=pulse_data["channel_tag"],
+                    start_time=pulse_data["start_time"],
+                    width=pulse_data["width"],
+                    function_start=pulse_data["function_start"],
+                    function_width=pulse_data["function_width"],
+                    iteration_range=pulse_data["iteration_range"],
+                )
+                self.add_pulse_to_channel(
+                    pulse.start_time,
+                    pulse.width,
+                    pulse.function_width,
+                    pulse.function_start,
+                    pulse.iteration_range,
+                    pulse.channel_tag,
+                )
+
+    def save_file(self, file_path):
+        """
+        This function is used to save a file
+        """
+        print(f"Saving file: {file_path}")
+        data = {
+            "channels": [],
+            "pulses": []
+        }
+
+        # Logic to save the file
+        for channel in self.added_channels_to_save:
+            channel_data_dict = dataclasses.asdict(channel)
+            data["channels"].append(channel_data_dict)
+        for pulse in self.added_pulses_to_save:
+            pulse_data_dict = dataclasses.asdict(pulse)
+            data["pulses"].append(pulse_data_dict)
+        with open(file_path, "w") as json_file:
+            json.dump(data, json_file, indent=4)
+            
 
 class Channel(QObject):
 
-    def __init__(self, tag, binary, label, delay):
+    def __init__(self, tag: int, binary: int, label: str, delay: list | tuple):
         super().__init__()  # Call the base class's __init__ method
         # for each channel
         self.tag = tag  # the channel tag (ex: PB0, PB1, etc)
@@ -688,15 +807,15 @@ class Channel(QObject):
             self.error_adding_pulse_channel.emit(
                 f"Pulse delay_off={self.delay[1]}>{width}=width"
             )
-            return None
+            return None, None
 
         start_time_pb = start_time - self.delay[0]
 
         if start_time_pb < 0:
             self.error_adding_pulse_channel.emit(
-                f"Pulses starts with negative time{start_time_pb}"
+                f"Pulse starts with negative time{start_time_pb}"
             )
-            return None
+            return None, None
         ############################
 
         """ here we need to make for example if iter 
@@ -704,16 +823,17 @@ class Channel(QObject):
             the function for the new width
         """
 
-        for k in range(
-            iteration_range[0], iteration_range[1] + 1
-        ):  # we iterate through the iteration range, +1 for it to include the [50,55] last bracket term
-            print(f"iteration_channel_class: {k}")
+        for k in range(iteration_range[0], iteration_range[1] + 1):  
+            # we iterate through the iteration range, 
+            # +1 for it to include the [50,55] last bracket term
+
+            #print(f"iteration_channel_class: {k}")
 
             """ now we need to calculate the width of the pulse, by plugging the initial width and the current 
             iteration on the function."""
 
             # parameter to be replaced in the function
-            """generator expression: enumerate provides both the index and the element while iteratinf throught the list. next() efficiently 
+            """generator expression: enumerate provides both the index and the element while iterating throught the list. next() efficiently 
                 finds the first match without iterating through the entire list"""
             index = next(
                 (
@@ -723,46 +843,52 @@ class Channel(QObject):
                 ),
                 None,
             )
-            print(f"index:{index}")
+            #print(f"index:{index}")
 
             new_width = width
             new_start_time = start_time
-            if function_width != "":  # the pulse added varies in width (duration)
-                # vthe variables on the funct_str must be W and i
-                W = width
-                i = (
-                    k - iteration_range[0] + 1
-                )  # here we need to make for example if iter range [50,55] and i=50 we need x=1, the +1 is for it to start in 1 and not 0
-                new_width = eval(function_width)  # varied width
-                print(f"function width:{function_width}, new_width:{new_width}")
+            if function_width != "":  
+                # the pulse added varies in width (duration)
 
-                # print(f"varied_width: {new_width}")
-            if function_start != "":  # the pulse added varies in start_time
+                # the variables on the funct_str must be W and i
+                W = width
+
+                # here we need to make for example if iter range [50,55] and 
+                # i=50 we need x=1, the +1 is for it to start in 1 and not 0
+                i = k - iteration_range[0] + 1
+                new_width = eval(function_width)  # varied width
+                #print(f"function width:{function_width}, new_width:{new_width}")
+
+            if function_start != "":  
+                # the pulse added varies in start_time
                 S = start_time
                 i = k - iteration_range[0] + 1
-                new_start_time = eval(function_start)  # varied width
-                print(
-                    f"function start_time:{function_start}, new_start_time:{new_start_time}"
-                )
+                new_start_time = eval(function_start)  # varied start time
+                #print(
+                #    f"function start_time:{function_start}, new_start_time:{new_start_time}"
+                #)
 
             new_end_time = new_start_time + new_width
             if new_end_time > max_end_time:
-                max_end_time = new_end_time  # we do this to keep track of the biggest end time of the added pulse to then compare to the biggest end time of every iteration, this is gonna be eventually used for display
+                # we do this to keep track of the biggest end time 
+                # of the added pulse to then compare to the biggest
+                # end time of every iteration, this is gonna be 
+                # eventually used for display
+                max_end_time = new_end_time 
 
             if index == None:  # no sequences created
                 sequence_inst = Sequence(k, self.tag, self.binary)
-                print(f"first sequence on{k} created")
+                #print(f"first sequence on{k} created")
                 sequence_inst.add_pulse(
                     new_start_time, new_width, self.delay[0], self.delay[1]
                 )
                 self.Sequence_hub.append(sequence_inst)
-                # sequence_inst.error_adding_pulse.connect(self.error_adding_pulse_channel.emit)
 
                 # error: because when i=1 after i=0 a Sequence is created but it's on sequence_hub[0] thus sequence_hub[1] will be out of range
             elif (
                 self.Sequence_hub[index].iteration == k
             ):  # this means there is already a sequence for this iteration
-                print(f"sequence edited in {k}")
+                #print(f"sequence edited in {k}")
                 self.Sequence_hub[index].add_pulse(
                     new_start_time, new_width, self.delay[0], self.delay[1]
                 )  # we add the pulse to the sequence)
@@ -770,7 +896,7 @@ class Channel(QObject):
         self.Sequence_hub = sorted(
             self.Sequence_hub, key=lambda sequence: sequence.iteration
         )  # Sort (order) the  self.Sequence_hub list by the `iteration` attribute
-        return max_end_time
+        return max_end_time, True
 
     def a_experiment(self, i):
         """if we find a sequence for the iteration i we return the values if not we return None.
@@ -794,26 +920,33 @@ class Channel(QObject):
         return None
 
 
-class Sequence(
-    QObject
-):  # A sequence per iteration ( 1 frame), QObject allows signasl to work
+class Sequence(QObject):  
+
+
     def __init__(self, iteration, tag, binary):
-        super().__init__()  # Call the base class's __init__ method
+
+        super().__init__() 
         self.tag = tag  # the channel tag (ex: PB0, PB1, etc)
         self.binary = binary
-        self.iteration = iteration  # iteration of the sequence, meaning ex: the sequence appears in the 50th iteration of the experiment
-        self.pb_pulses = (
-            []
-        )  # this is the list of the instances of pulses of this particular sequence that will be sent to the pulse blaster (accounting for delays)
-        self.pulses = (
-            []
-        )  # this is the list of the instances of pulses shown in the simulation.
-        # elf.Channel_Pulse_iter=[] # this is the list of the pulses in the channel, it will be used to check for overlapping, WE MIGHT NOT NEED THIS
-        self.max_end_time_pb = 0  # this is the end time of the sequence, it will be used to check if the pulse blaster is ready to send the next sequence
+
+        # iteration of the sequence, meaning ex:the sequence 
+        # appears in the 50th iteration of the experiment
+        self.iteration = iteration  
+
+        # list of the instances of pulses of this particular sequence 
+        # that will be sent to the pulse blaster (accounting for delays)
+        self.pb_pulses = []
+        
+        # list of the instances of pulses shown in the simulation.
+        self.pulses = [] 
+
+        # end time of the sequence, will be used to check if
+        # the pulse blaster is ready to send the next sequence 
+        self.max_end_time_pb = 0  
         self.max_end_time = 0
 
-    ######   ••••••ADDING A PULSE •••••••
     def add_pulse(self, start_time, width, delay_on, delay_off):
+
         end_tail = start_time + width
         start_tail = start_time
         pulse = Pulse(start_tail, end_tail, self.binary)  # without delays
@@ -821,37 +954,37 @@ class Sequence(
         end_tail = start_time + width - delay_off
         start_tail = start_time - delay_on
         pulse_pb = Pulse(start_tail, end_tail, self.binary)  # with delays
-        if (
-            end_tail > self.max_end_time_pb
-        ):  # we upddate the max end time fo the sequence if necessary
+        
+        if end_tail > self.max_end_time_pb:  
+            # we upddate the max end time fo the sequence if necessary
             self.max_end_time_pb = end_tail
-        status = self.check_pulse_fusion(
-            pulse_pb, pulse
-        )  # check if the pulse doensnt overlap
-        print(f"Fusion?: {status[2]}, new pulse:{status[0]}")
+        
+        # check if the pulse doesn't overlap
+        status = self.check_pulse_fusion(pulse_pb, pulse)  
+        #print(f"Fusion?: {status[2]}, new pulse:{status[0]}")
+
         if status[2] == True:  # if there is no overlap with the fixed pulses
-            new_pulse_pb = Pulse(
-                status[0][0], status[0][1], self.binary
-            )  # we create a new pulse with the fused intervals
+            # we create a new pulse with the fused intervals
+            new_pulse_pb = Pulse(status[0][0], status[0][1], self.binary)  
             new_pulse = Pulse(status[1][0], status[1][1], self.binary)
             self.pb_pulses.append(new_pulse_pb)
             self.pulses.append(new_pulse)
-            print(
-                f"pb_pulses added: {new_pulse_pb.start_tail}, {new_pulse_pb.end_tail}"
-            )
+            #print(
+            #    f"pb_pulses added: {new_pulse_pb.start_tail}, {new_pulse_pb.end_tail}"
+            #)
         else:
             self.pb_pulses.append(pulse_pb)
             self.pulses.append(pulse)
-            print(f"pb_pulses added: {pulse_pb.start_tail} {pulse_pb.end_tail}")
+            #print(f"pb_pulses added: {pulse_pb.start_tail} {pulse_pb.end_tail}")
+        
         # now we need to sort the pb_pulses by the start tail
-        self.pb_pulses = sorted(
-            self.pb_pulses, key=lambda pb: pb.start_tail
-        )  # Sort (order) the  self.pb_pulses list by the `start_tail` attribute
+        self.pb_pulses = sorted(self.pb_pulses, key=lambda pb: pb.start_tail) 
         self.pulses = sorted(self.pulses, key=lambda pulse: pulse.start_tail)
-        for i in range(len(self.pb_pulses)):
-            print(
-                f"pb_pulses{i}: [{self.pb_pulses[i].start_tail}, {self.pb_pulses[i].end_tail}]"
-            )
+
+        #for i in range(len(self.pb_pulses)):
+            #print(
+            #    f"pb_pulses{i}: [{self.pb_pulses[i].start_tail}, {self.pb_pulses[i].end_tail}]"
+            #)
 
     def check_pulse_fusion(self, pulse_pb, pulse):
         """
@@ -865,63 +998,80 @@ class Sequence(
         start_tail = pulse.start_tail
         end_tail = pulse.end_tail
 
-        overlap_fixed_pulses = False  # we define this variable to let the system know when there is an overlap with the fixed pulses
-        # we define this variable to let the system know when there is an overlap with the fixed pulses
+        # variable to let the system know when there
+        # is an overlap with the fixed pulses
+        overlap_fixed_pulses = False  
+        
+        if len(self.pb_pulses) > 0:  
+            # if there are other pulses on the same channel
+            # we need to check for overlapping, and we also
+            # check if the list on the index has a sublist
 
-        if (
-            len(self.pb_pulses) > 0
-        ):  # if there are other puslse on the same channel we need to check for overlapping, and we also check if the list on the index has a sublist
-            global_fusion_pb = (
-                []
-            )  # we create a list to store the fused pulses, and then check which one is the biggest
+            # list to store the fused pulses, 
+            # and check which one is the biggest
+            global_fusion_pb = []  
             global_fusion = []
 
             indexes_delete = []  # indexes we will delete later
-            for j in range(
-                len(self.pb_pulses)
-            ):  # we iterate over the pb_pulses in the respective channel, to check for overlapping
-                Partially_Left = False
-                Partially_Right = False
-                Completely_Inside = False
-                Completely_Ontop = False
+
+            for j in range(len(self.pb_pulses)):  
+
+                # we iterate over the pb_pulses in the 
+                # respective channel, to check for overlapping
+                partially_left = False
+                partially_right = False
+                completely_inside = False
+                completely_on_top = False
+
                 # print(f"pb_pulses per iteration{j}: {self.pb_pulses[j].start_tail}, {self.pb_pulses[j].end_tail}")
-                Partially_Left = (
+
+                # if the the new pulse finishes after the start of the previous
+                # pulse and starts before the start of the previous pulse
+                partially_left = (
                     self.pb_pulses[j].start_tail <= end_tail_pb
                     and self.pb_pulses[j].start_tail > start_tail_pb
                     and self.pb_pulses[j].end_tail >= end_tail_pb
-                )  # if the the new pulse finishes after the start of the previous pulse and starts before the start of the previous pulse
-                Partially_Right = (
+                ) 
+
+                # if the new pulse finishes after the end of the previous 
+                # pulse and starts before the end of the previous pulse
+                partially_right = (
                     self.pb_pulses[j].end_tail >= start_tail_pb
                     and self.pb_pulses[j].start_tail < start_tail_pb
                     and self.pb_pulses[j].end_tail <= end_tail_pb
-                )  # if the new pulse finishes after the end of the previous pulse and starts before the end of the previous pulse
-                Completely_Inside = (
+                ) 
+
+                # if the new pulse starts after the start of the previous 
+                # pulse and finishes before the end of the previous pulse
+                completely_inside = (
                     self.pb_pulses[j].start_tail <= start_tail_pb
                     and self.pb_pulses[j].end_tail >= end_tail_pb
-                )  # if the new pulse starts after the start of the previous pulse and finishes before the end of the previous pulse
-                Completely_Ontop = (
+                )
+                # if the new pulse starts before the start of the previous
+                # pulse and finishes after the end of the previous pulse
+                # i.e. the new pulse contains the previous pulse
+                completely_on_top = (
                     self.pb_pulses[j].start_tail >= start_tail_pb
                     and self.pb_pulses[j].end_tail <= end_tail_pb
                 )
-                """ Our objetvies it to fuse the overlapping pulses, into one pulse"""
-                if Partially_Left == True:
-                    "we fuse the pulses together"
+
+                if partially_left == True:
                     fused_pulse_pb = [start_tail_pb, self.pb_pulses[j].end_tail]
                     fused_pulse = [start_tail, self.pulses[j].end_tail]
                     global_fusion_pb.append(fused_pulse_pb)
                     global_fusion.append(fused_pulse)
                     overlap_fixed_pulses = True
-                    print(f"Partially Left")
+                    #print(f"Partially Left")
 
-                elif Partially_Right == True:
+                elif partially_right == True:
                     fused_pulse_pb = [self.pb_pulses[j].start_tail, end_tail_pb]
                     fused_pulse = [self.pulses[j].start_tail, end_tail]
                     global_fusion_pb.append(fused_pulse_pb)
                     global_fusion.append(fused_pulse)
                     overlap_fixed_pulses = True
-                    print(f"Partially Right")
+                    #print(f"Partially Right")
 
-                elif Completely_Inside == True:
+                elif completely_inside == True:
                     fused_pulse_pb = [
                         self.pb_pulses[j].start_tail,
                         self.pb_pulses[j].end_tail,
@@ -930,21 +1080,21 @@ class Sequence(
                     global_fusion_pb.append(fused_pulse_pb)
                     global_fusion.append(fused_pulse)
                     overlap_fixed_pulses = True
-                    print(f"Completely Inside")
+                    #print(f"Completely Inside")
 
-                elif Completely_Ontop == True:
+                elif completely_on_top == True:
                     fused_pulse_pb = [start_tail_pb, end_tail_pb]
                     fused_pulse = [start_tail, end_tail]
                     global_fusion_pb.append(fused_pulse_pb)
                     global_fusion.append(fused_pulse)
                     overlap_fixed_pulses = True
-                    print(f"Completely Ontop")
+                    #print(f"Completely Ontop")
                     # now we delete the pulses that we fused, so they dont overlap with the new pulse
                 if (
-                    Partially_Left == True
-                    or Partially_Right
-                    or Completely_Inside == True
-                    or Completely_Ontop
+                    partially_left == True
+                    or partially_right
+                    or completely_inside == True
+                    or completely_on_top
                 ):
                     indexes_delete.append(j)
                     # print(f"index to delete{j}")
@@ -986,9 +1136,11 @@ class Sequence(
 
     def fuse_pulses(self, pulse_list):
         """
-        When 2 or more pulses overlap, we need to fuse them into one pulse, this is done by taking the start and end time
-          of the pulses and creating a new pulse with the start and end time of the overlapping pulses
-          however there might be multiple overlapping pulses, so we neeed to fuse them all together
+        When 2 or more pulses overlap, we need to fuse them into one pulse,
+        this is done by taking the start and end time of the pulses and 
+        creating a new pulse with the start and end time of the overlapping
+        pulses however there might be multiple overlapping pulses,
+        so we neeed to fuse them all together
         """
         min_value = min(pulse_list, key=lambda x: x[0])[0]
         max_value = max(pulse_list, key=lambda x: x[1])[1]
@@ -997,27 +1149,14 @@ class Sequence(
     def clear(self):
         self.pulse_list = []
 
-    def get_display_list(self):
-        """
-        Returns a list with the pulse information for display.
-
-        # Probably need some adjustments
-        """
-        display_list = []
-        """for pulse in self.pulse_list:
-            display_list.append((pulse.pulse_delay, pulse.pulse_width, pulse.pulse_channel_tag))"""
-        return display_list
-
-    ##### •••••• EXPERIMENT
-    def experiment(self):
-        pass
-
 
 class Pulse:
 
+
     def __init__(
         self, start_tail, end_tail, channel_binary
-    ):  # we dont need the delay, right??
+    ): 
+
         self.start_tail = start_tail
         self.end_tail = end_tail
         # self.channel_tag=[channel_tag] #we make it a list because later when creating the experiment, we might have 2 pulses from different channels that start at the same time.
@@ -1028,7 +1167,7 @@ class Pulse:
 
 class Experiment(QObject):
     """
-    This class will be focused on having the data sent to the spinapi and will have the necessarry methods to conver the channel tags from decimal to binary.
+    This class will be focused on having the data sent to the spinapi and will have the necessary methods to convert the channel tags from decimal to binary.
     """
 
     def __init__(self, Exp_i_pb, iteration):
@@ -1099,5 +1238,3 @@ class Experiment(QObject):
             last_time = time
 
         return
-
-
