@@ -24,8 +24,8 @@ class PulsedESRGui(GuiBase):
     add_channel_to_logic_signal = Signal(int, list, str, int)
     prepare_frame_signal = Signal(int)
     add_pulse_to_logic_signal = Signal(float, float, str, str, list, int)
-    run_exp_to_logic_signal = Signal(int, int)
-    stop_exp_to_logic_signal = Signal()
+    run_exp_signal = Signal(int, int, int)
+    stop_exp_signal = Signal()
     frame_to_logic_signal = Signal(int)
     simulation_to_logic = Signal(int, int, int)
     clear_channels_signal = Signal()
@@ -49,7 +49,7 @@ class PulsedESRGui(GuiBase):
         # from gui window to gui slots
         self._mw.add_channel_button.clicked.connect(self.add_channel_gui)
         self._pulsed_esr_logic().adding_channel_to_list.connect(
-            self.update_channels_table, Qt.QueuedConnection
+            self._mw.update_channels_table, Qt.QueuedConnection
         )
         # from gui slots to logic
         self.add_channel_to_logic_signal.connect(self._pulsed_esr_logic().add_channel)
@@ -63,7 +63,7 @@ class PulsedESRGui(GuiBase):
             self._pulsed_esr_logic().add_pulse_to_channel
         )
         self._pulsed_esr_logic().added_pulse_signal.connect(
-            self._mw.update_pulse_list, Qt.QueuedConnection
+            self._mw.update_pulse_table, Qt.QueuedConnection
         )
 
         ######## Selecting Frame for Display #######
@@ -83,9 +83,8 @@ class PulsedESRGui(GuiBase):
         self._pulsed_esr_logic().next_frame_signal.connect(
             self.prepare_next_frame_simulation
         )
-        self._pulsed_esr_logic().add_iteration_txt.connect(self.add_iteration_text)
+        self._pulsed_esr_logic().add_iteration_txt.connect(self._mw.add_iteration_text)
         # from gui slots to logic
-        self.frame_to_logic_signal.connect(self._pulsed_esr_logic().prepare_frame)
         self.simulation_to_logic.connect(self._pulsed_esr_logic().Run_Simulation)
 
         ####### RUn Experiment #######
@@ -93,8 +92,10 @@ class PulsedESRGui(GuiBase):
         self._mw.run_sequence_button.clicked.connect(self.run_experiment_gui)
         self._mw.stop_sequence_button.clicked.connect(self.stop_experiment_gui)
         # from gui slots to logic
-        self.run_exp_to_logic_signal.connect(self._pulsed_esr_logic().run_experiment)
-        self.stop_exp_to_logic_signal.connect(self._pulsed_esr_logic().Stop_Experiment)
+        self.run_exp_signal.connect(
+            self._pulsed_esr_logic().run_experiment, Qt.QueuedConnection)
+        self.stop_exp_signal.connect(
+            self._pulsed_esr_logic().stop_experiment, Qt.QueuedConnection)
 
         ###### Clear Gui #######
         # from gui window to gui slots
@@ -122,6 +123,19 @@ class PulsedESRGui(GuiBase):
             Qt.QueuedConnection
         )
 
+        self._mw.update_channels_signal.connect(
+            self._pulsed_esr_logic().modify_channels,
+            Qt.QueuedConnection
+        )
+        self._mw.update_pulses_signal.connect(
+            self._pulsed_esr_logic().modify_pulses,
+            Qt.QueuedConnection
+        )
+
+        self._pulsed_esr_logic().data_signal.connect(
+            self._mw.update_pulsed_exp_plot,
+            Qt.QueuedConnection
+        )
         self.show()
 
     def on_deactivate(self) -> None:
@@ -147,33 +161,6 @@ class PulsedESRGui(GuiBase):
         
         self.add_channel_to_logic_signal.emit(
             channel_tag, delay, channel_label, channel_count
-        )
-
-    @Slot(str)
-    def update_list_channels(self, flag_str):
-        """
-        This function is called when a channel is added to the list.
-        It updates the list of channels in the GUI.
-        """
-        print(f"Adding channel: {flag_str}")
-
-    @Slot(int, int, int, str)
-    def update_channels_table(self, channel, delay_on, delay_off, type):
-
-        i = self._mw.channels_tablewidget.rowCount()
-        self._mw.channels_tablewidget.insertRow(i)
-
-        self._mw.channels_tablewidget.setItem(
-            i, 0, QTableWidgetItem("PB" + str(channel))
-        )
-        self._mw.channels_tablewidget.setItem(
-            i, 1, QTableWidgetItem(str(delay_on))
-        )
-        self._mw.channels_tablewidget.setItem(
-            i, 2, QTableWidgetItem(str(delay_off))
-        )
-        self._mw.channels_tablewidget.setItem(
-            i, 3, QTableWidgetItem(type)
         )
 
     def add_pulse_gui(self):
@@ -206,16 +193,16 @@ class PulsedESRGui(GuiBase):
             channel_tag,
         )
 
-
     def run_experiment_gui(self):
-        value_loop = self._mw.loop_sequence_spinbox.value()
+
+        x_loop = self._mw.loop_sequence_spinbox.value()
         Type = self._mw.type_variation_combobox.currentIndex()
-        branch_flag = self._mw.branch_checkbox.isChecked()
-        self.run_exp_to_logic_signal.emit(value_loop, Type)
+        repeat_exp = self._mw.repeat_exp_spinbox.value()
+        self.run_exp_signal.emit(x_loop, Type, repeat_exp)
 
     def stop_experiment_gui(self):
         # self._pulsed_esr_logic().Stop_Experiment()
-        self.stop_exp_to_logic_signal.emit()
+        self.stop_exp_signal.emit()
 
     def prepare_frame(self):
         Frame_i = self._mw.iteration_frame_spinbox.value()
@@ -227,7 +214,6 @@ class PulsedESRGui(GuiBase):
             0, self._pulsed_esr_logic().Max_end_time, padding=0
         )  # or whatever fixed length you want
         self.frame_to_logic_signal.emit(Frame_i)
-
 
     def start_simulation(self):
         initial_frame = self._mw.iteration_frame_spinbox.value()
@@ -248,12 +234,7 @@ class PulsedESRGui(GuiBase):
         self._mw.sequence_diagram_plot.setXRange(
             0, self._pulsed_esr_logic().Max_end_time, padding=0
         )  # or whatever fixed length you want
-        # self._pulsed_esr_logic().prepare_frame(Frame_i) #this prepares the
         self.frame_to_logic_signal.emit(Frame_i)
-
-    def add_iteration_text(self, text):
-        self._mw.current_iteration_label.setText(text)
-
 
     @Slot(str)
     def show_error_message(self, error_str):

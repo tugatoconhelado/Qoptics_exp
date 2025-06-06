@@ -118,8 +118,8 @@ class PulseBlasterHardware(Base):
         None
         """
         binary_state = spinapi.ON | self.get_channel_binary(channel_state)
-        start = spinapi.pb_inst_pbonly(binary_state, spinapi.CONTINUE, 0, 200.0 * spinapi.ms)
-        spinapi.pb_inst_pbonly(binary_state, spinapi.BRANCH, start, 200.0 * spinapi.ms)
+        start = spinapi.pb_inst_pbonly(binary_state, spinapi.CONTINUE, 0, 200.0 * spinapi.ns)
+        spinapi.pb_inst_pbonly(binary_state, spinapi.BRANCH, start, 200.0 * spinapi.ns)
 
     def program_looped_variation(self, variation: list, number_of_loops: int):
         """
@@ -130,63 +130,104 @@ class PulseBlasterHardware(Base):
         a loop of instructions for the Pulse Blaster.
         [pulse1, pulse2, ...]
         """
-        spinapi.pb_close()
-        spinapi.pb_select_board(0)
-        if spinapi.pb_init() != 0:
-            exit(-1)
+        #spinapi.pb_close()
+        #spinapi.pb_select_board(0)
+        #if spinapi.pb_init() != 0:
+        #    exit(-1)
         spinapi.pb_reset()
-        spinapi.pb_core_clock(500)
+        #spinapi.pb_core_clock(500)
         self.start_programming()
 
+        width_0 = variation[0].end_tail - variation[0].start_tail
+
+        #if width_0 % 2 != 0:
+        #    width_0 = int(1 + np.round(variation[0].end_tail - variation[0].start_tail, 0))
+        #else:
+        #    width_0 = int(width_0)
+
+        channel_binary_0 = int(sum(variation[0].channel_binary[0]))
+            
+        if width_0 < 11:
+            print(f'width_0 = {width_0}')
+            channel_binary_0 = int((width_0 // 2)) << 21 | channel_binary_0
+            width_0 = 10
+        else: 
+            channel_binary_0 = (7) << 21 | channel_binary_0
+            print(f'width_0 = {width_0}')
+        
+        print(self.get_string_representation_from_decimal(channel_binary_0))
+
         start_pb_loop = spinapi.pb_inst_pbonly(
-            spinapi.ON | int(sum(variation[0].channel_binary[0])),
+            channel_binary_0,
             spinapi.Inst.LOOP,
             number_of_loops,
-            (variation[0].end_tail - variation[0].start_tail) * spinapi.ms,
+            (width_0) * spinapi.ns,
         )
 
-        #print(
-        #    f"spinapi.pb_inst_pbonly({sum(variation[0].channel_binary[0])},spinapi.Inst.LOOP,{number_of_loops},({variation[0].end_tail-variation[0].start_tail})*spinapi.ms)"
-        #)
+        print(
+            f"spinapi.pb_inst_pbonly({self.get_string_representation_from_decimal(sum(variation[0].channel_binary[0]))},spinapi.Inst.LOOP,{number_of_loops},({width_0})*spinapi.ns)"
+        )
 
-        for i in range(1, len(variation)): 
+        for k in range(1, len(variation)): 
 
             # we start from one because we already did the 0 index
-            print(f'i = {i}')
-            if i != len(variation) - 1:
+            #print(f'k = {k}')
+            width_k = int(variation[k].end_tail - variation[k].start_tail)
+            
+            #if width_k % 2 != 0:
+            #    #print(
+            #    #    f"Warning: Width of {width_k} is odd, rounding to nearest even number: {int(1 + np.round(width_k, 2))}"
+            #    #)
+            #    width_k = int(1 + np.round(variation[k].end_tail - variation[k].start_tail, 0))
+                
+            #else:
+            #    width_k = int(width_k)
+            
+            
+        
+            channel_binary_k = int(sum(variation[k].channel_binary[0]))
+            
+            if width_k < 11:
+                print(f'width_k = {width_k}')
+                channel_binary_k = (width_k // 2) << 21 | channel_binary_k
+                width_k = 10
+            else: 
+                channel_binary_k = (7) << 21 | channel_binary_k
+                print(f'width_k = {width_k}')
+            
+
+            if k != len(variation) - 1:
                 print(
-                    f"spinapi.pb_inst_pbonly({sum(list(variation[i].channel_binary[0]))},spinapi.Inst.CONTINUE,0,({variation[i].end_tail-variation[i].start_tail})*spinapi.ms)"
+                    f"spinapi.pb_inst_pbonly({self.get_string_representation_from_decimal(channel_binary_k)},spinapi.Inst.CONTINUE,0,({width_k})*spinapi.ns)"
                 )
                 spinapi.pb_inst_pbonly(
-                    spinapi.ON | int(sum(variation[i].channel_binary[0])),
+                    channel_binary_k,
                     spinapi.Inst.CONTINUE,
                     0,
-                    (variation[i].end_tail - variation[i].start_tail)
-                    * spinapi.ms,
+                    width_k * spinapi.ns,
                 )
             else:
                 print(
-                    f"spinapi.pb_inst_pbonly({sum(list(variation[i].channel_binary[0]))},spinapi.Inst.END_LOOP,start,{variation[i].end_tail-variation[i].start_tail}"
+                    f"spinapi.pb_inst_pbonly({self.get_string_representation_from_decimal(channel_binary_k)},spinapi.Inst.END_LOOP,start,{width_k}"
                 )
                 spinapi.pb_inst_pbonly(
-                    spinapi.ON | int(sum(variation[i].channel_binary[0])),
+                    channel_binary_k,
                     spinapi.Inst.END_LOOP,
                     start_pb_loop,
-                    (variation[i].end_tail - variation[i].start_tail) * spinapi.ms,
+                    width_k * spinapi.ns,
                 )
 
-            # This instruction stops the pulse sequence.
-            # The duration is set to a very small value
-            # to ensure the stop instruction is executed
-            # almost immediately.
-            spinapi.pb_inst_pbonly(
-                int(0), spinapi.Inst.STOP, 0, 0
-            )  
-            #print(
-            #    f"spinapi.pb_inst_pbonly(int(0),spinapi.Inst.STOP,0,0.01*spinapi.ms)"
-            #)
-            self.stop_programming()
-            #print(f"spinapi.pb_stop_programming()")
+        # This instruction stops the pulse sequence.
+        # The duration is set to a very small value
+        # to ensure the stop instruction is executed
+        # almost immediately.
+        spinapi.pb_inst_pbonly(
+            int(0), spinapi.Inst.STOP, 0, 0
+        )
+        #print(
+        #    f"spinapi.pb_inst_pbonly(int(0),spinapi.Inst.STOP,0,0.01*spinapi.ns)"
+        #)
+        self.stop_programming()
 
 
     def busy_wait_us(self, time_us):

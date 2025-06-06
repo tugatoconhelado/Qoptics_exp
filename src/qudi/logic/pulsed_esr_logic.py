@@ -54,13 +54,12 @@ class PulsedESRLogic(LogicBase):
     adding_channel_to_list = Signal(
         int, int, int, str
     ) 
-    frame_data_signal = Signal(
-        list, list, int, int
-    )  # this signal is used to send the data to the GUI
+    frame_data_signal = Signal(list, list, int, int)
     next_frame_signal = Signal(int)
     add_iteration_txt = Signal(str)
     added_pulse_signal = Signal(int, float, float, str, str, int, int)
     error_str_signal = Signal(str)
+    data_signal = Signal(np.ndarray)
 
     # Declare static parameters that can/must be declared in the qudi configuration
     # _increment_interval = ConfigOption(name='increment_interval', default=1, missing='warn')
@@ -72,6 +71,9 @@ class PulsedESRLogic(LogicBase):
     # Declare connectors to other logic modules or hardware modules to interact with
     _pulse_blaster_hardware = Connector(
         name="pulse_blaster_hardware", interface="PulseBlasterHardware", optional=True
+    )
+    _apd_hardware = Connector(
+        name="apd_hardware", interface="APDHardware", optional=True
     )
 
     def __init__(self, *args, **kwargs):
@@ -88,20 +90,27 @@ class PulsedESRLogic(LogicBase):
             exp_str="TMT",
         )
 
-        self.added_channel_tags = (
-            []
-        )  # This is the list of the tags of the channels that are added to the database, used to be seld.added_channels
-        self.channels = []  # alist with all the createdi instances of the channels
-        self.channel_labels = []  # Find a way to get rid of these extra variables
-        self.Delays_channel = []  # Find a way to get rid of these extra variables
-        self.Experiment_Hub = []  # list of objects were each object is a
+        self.added_channel_tags = ([])  
+        self.channels = []  
+        self.experiment_hub = []  
         self.Max_end_time = 0  # It gives you the max end time of all iterations
-        self.dev = "Dev1"  # el device con su number
-        self.counter_pin = "ctr0"  # ctr= counter basicamente una parte de la nih que cuenta o emite cuentas. El gate le dice en que intervalo contar
-        self.gate_pin = "PFI9"
         self.max_variations = 0
-        self.added_pulses_to_save = []  # list of the pulses that are added to the database
-        self.added_channels_to_save = []  # list of the channels that are added to the database
+        
+        self.added_channels = []  # list of the channels that are added to the database
+        self.added_pulses = []  # list of the pulses that are added to the database
+        self.continue_experiment = False
+
+        self.LIST_OF_CHANNEL_LABELS = [
+            "green",
+            "yellow",
+            "red",
+            "apd",
+            "microwave",
+            "blue",
+            "pink",
+            "orange",
+        ]
+        self.TOTAL_CHANNELS = 21
 
     def on_activate(self):
         pass
@@ -122,16 +131,7 @@ class PulsedESRLogic(LogicBase):
 
         if channel_tag not in self.added_channel_tags:
             # This is for the Graphs in the Sequence Plot
-            if channel_label in [
-                "green",
-                "yellow",
-                "red",
-                "apd",
-                "microwave",
-                "blue",
-                "pink",
-                "orange",
-            ]:
+            if channel_label in self.LIST_OF_CHANNEL_LABELS:
                 flag_str = f"channel: {flag[0]}, delay_on: {abs(flag[1][0])}, delay_off: {abs(flag[1][1])}, {flag[2]}"
                 status_str = "Adding " + flag_str
                 self.status_msg.emit(status_str)
@@ -147,7 +147,7 @@ class PulsedESRLogic(LogicBase):
                     channel_tag, channel_binary, channel_label, channel_delay
                 )
                 self.channels.append(channel)
-                self.added_channels_to_save.append(
+                self.added_channels.append(
                     ChannelData(
                         tag=channel_tag, channel_type=channel_label, delay=channel_delay
                 )
@@ -165,22 +165,67 @@ class PulsedESRLogic(LogicBase):
             self.error_str_signal.emit(f"Channel {channel_tag} already added")
         return flag
 
-    @Slot(int, tuple, str)
-    def modify_channel(self, tag, delay, label):
+    @Slot(list)
+    def modify_channels(self, modified_channels: list):
         """
         Modify the channel in the database.
         """
         # Logic to modify a channel in the database
         found = False
+        current_pulses = self.added_pulses
+        self.clear_channels()
+        for channel in modified_channels:
+            tag = channel[0]
+            delay = channel[1]
+            label = channel[2]
+            self.add_channel(tag, delay, label, self.TOTAL_CHANNELS)
+        # Add the pulses to the channels
+        for pulse in current_pulses:
+            self.add_pulse_to_channel(
+                pulse.start_time,
+                pulse.width,
+                pulse.function_width,
+                pulse.function_start,
+                pulse.iteration_range,
+                pulse.channel_tag,
+            )
+
+    @Slot(list)
+    def modify_pulses(self, pulses_data: list):
+        """
+        Modify a pulse in the database
+
+        In order to easily modify the pulses, the software deletes 
+        and creates again all the pulses already added.
+
+        Parameters
+        ----------
+        pulses_data : list
+            Data of all the pulses that should be in the database,
+            this contains any modifications done to the pulses.
+            Each list element is a list of the form:
+            [channel_tag, start_time, width, function_width, function_start, iteration_range]
+        """
+        # Delete all pulses
         for channel in self.channels:
-            if channel.tag == tag:
-                channel.label = label
-                channel.delay = delay
-                found = True
-                print(f"Channel PB{tag} modified to {channel}")
-                break
-        if not found:
-            self.error_str_signal.emit(f"Channel {tag} not found")
+            channel.clear_all_pulses()
+        self.added_pulses = []  # Clear the list of added pulses
+        # Add all pulses again
+        for pulse_data in pulses_data:
+            channel_tag = pulse_data[0]
+            start_time = pulse_data[1]
+            width = pulse_data[2]
+            function_width = pulse_data[3]
+            function_start = pulse_data[4]
+            iteration_range = pulse_data[5]
+            self.add_pulse_to_channel(
+                start_time,
+                width,
+                function_width,
+                function_start,
+                iteration_range,
+                channel_tag,
+            )
 
     def convert_to_binary(self, channel_tag, channel_count):
         """We need to conver the channel tag index into a binary number for the pulse blaster
@@ -257,7 +302,7 @@ class PulsedESRLogic(LogicBase):
                     iteration_range[1],
                 )
                 print(f"Added pulse to channel {channel_tag}")
-                self.added_pulses_to_save.append(
+                self.added_pulses.append(
                     PulseData(
                         channel_tag=channel_tag,
                         start_time=start_time,
@@ -269,8 +314,8 @@ class PulsedESRLogic(LogicBase):
                 )
         print(f"self.Max_end_time:{self.Max_end_time}")
 
-    @Slot(int, int)
-    def run_experiment(self, value_loop: int, Type: int):
+    @Slot(int, int, int)
+    def run_experiment(self, value_loop: int, loop_type: int, repeat_exp: int = 1):
         """here we iterate through each iteration of the loop to find the channels that have a sequence for that iteration
         then we order the pulses form the channels that have pulses in this iteration. Then we create an object from the
         class experiment. which we then add to our list Experiment_Hub
@@ -278,12 +323,9 @@ class PulsedESRLogic(LogicBase):
         list_type_cero = []
         max_end_times_vars = []  # max end times per variation
         for i in range(1, self.max_variations + 1):
-            #print(f"Creating exp:{i}")
             Exp_i_pb = []
             max_end = 0
             for channel in self.channels:
-                #print("Inside the channel loop")
-                #print(f'i= {i}')
                 result = channel.a_experiment(i) # Returns [pulse, end_time]
                 list_channel_sequence = result[0]
                 if list_channel_sequence != None:
@@ -296,45 +338,47 @@ class PulsedESRLogic(LogicBase):
             # in the instace of the variation of the experiment 
             exp.Prepare_Exp()  
 
-            self.Experiment_Hub.append(exp) 
+            self.experiment_hub.append(exp) 
             list_type_cero.append(exp.pb_sequence)
 
-
+        self.apd_is_gated = False
+        self.continue_experiment = True
         divide_exp = self.divide_iter_experiment(value_loop)
 
-        if Type == 0:
+        for channel in self.channels:
+            if channel.label == "apd":
+                counter_task = self._apd_hardware().set_gated_apd(
+                    samples= 10 * sum(divide_exp) * self.max_variations,
+                )
+                self.apd_is_gated = True
+        self.pl_data = np.zeros((repeat_exp, self.max_variations))
+        
+        if loop_type == 0:
             """
-            Variation Type A: Loop each variation x times individually
+            Variation loop_type A: Loop each variation x times individually
             (v1), (v1), ..., (v1), (v2), (v2), ..., (v2), (v3), (v3), ..., (v3)
             Each variation is looped x times
             """
-            self.program_pulse_type_a(
-                list_type_cero, value_loop, max_end_times_vars, divide_exp
+            self.run_sequence_type_a(
+                list_type_cero, repeat_exp, max_end_times_vars, divide_exp
             )
 
-        elif Type == 1:
+        elif loop_type == 1:
             """
-            Variation Type B: Loop all variations consecutively
+            Variation loop_type B: Loop all variations consecutively
             (v1, v2, v3), (v1, v2, v3), (v1, v2, v3), ... x times
             """
-            self.program_pulse_type_b(
-                list_type_cero, value_loop, max_end_times_vars, divide_exp
+            self.run_sequence_type_b(
+                list_type_cero, repeat_exp, max_end_times_vars, divide_exp
             )
-        """
-        Calculate the max end time of the experiment: value_loop*1*duration_of_variation[k]*1.2 + value_loop*1*duration_of_variation[k+1]*1.2 + ......
-        """
-        """ THIS IS  FOR THE APD """
-        #for channel in self.channels:
-        #    if channel.label == "apd":
-        #        counts = counter.read(value_loop, timeout=timeout)
-        #        count_0 = counts[0]
-        #        counts = np.diff(
-        #            counts
-        #        )  # instead of accumulating values ex (5,11,21) it gives (5,6,10)
-        #        print(counts)
-        #    pass
 
-    def program_pulse_type_a(self, Flat_exp, value_loop, max_end_times_vars, divided_value):
+        else:
+            self.error_str_signal.emit(
+                f"Loop type {loop_type} not recognized. Please use 0 or 1."
+            )
+            return
+    
+    def run_sequence_type_a(self, Flat_exp, repeat_exp, max_end_times_vars, divided_value):
 
         """here we must iterate each variation a number of value_loop times. we do this for all variations so.
         However to the pulse blaster can only have about 40k instructions and the loop can only iterate a
@@ -352,43 +396,91 @@ class PulsedESRLogic(LogicBase):
         spinapi.pb_select_board(0)
         if spinapi.pb_init() != 0:
             exit(-1)
-        spinapi.pb_reset()
         spinapi.pb_core_clock(500)
-        spinapi.pb_start_programming(spinapi.PULSE_PROGRAM)
-        ### muc add another for, to diviude the value_loop
+        spinapi.pb_reset()
+        #spinapi.pb_start_programming(spinapi.PULSE_PROGRAM)
 
-        for d in range(0, len(divided_value)):
-            # In case the x amount of loops is greater than 10k
-            # the x is divided in steps of 10k
-            #print(f'Starting loop x={d}')
-            value_loop = divided_value[d]
-            #print(f'value_loop={value_loop}')
-            for j in range(0, self.max_variations):
-                """
-                For each iteration j (a variation) , we will send one set of instructions to the pulse blaster
-                """
-                #print(f"Starting the {j}th variation")
-                self._pulse_blaster_hardware().program_looped_variation(
-                    Flat_exp[j],
-                    value_loop
-                )
-                self._pulse_blaster_hardware().start()
-                #start_time = time.perf_counter()
-                time_wait = time_wait = max_end_times_vars[j] * value_loop * 1000
-                #print(f"time_wait:{time_wait}")
-                self.busy_wait_us(
-                    time_wait
-                )  # Intended wait: minimum wait time until the next variation
-                #end_time = time.perf_counter()
-                #print(
-                #    f"Actual wait: {(end - start)*1e6:.2f} µs"
-                #)  # to get a glimpse of the error in wait time
-                # el el timepo total que espera el counter para seguir a la siguient variacion. Durante ese tiempo se toman todo los datos de una variacion. Aqui se debe calcular el maximo tiempo de cada variacion y multiplicar por value _loop
-                #print(f"number_of_loops:{number_of_loops}")
-                self._pulse_blaster_hardware().stop()
-                #spinapi.pb_close    
+        
+        for j in range(0, repeat_exp):
+            #print(f"Running experiment iteration {j + 1} of {repeat_exp}")
+            if not self.continue_experiment:
+                break
+            experiment_start = time.perf_counter()
+            accumulated_pl = np.zeros(self.max_variations)
 
-    def program_pulse_type_b(self, Flat_exp, value_loop, max_end_times_vars, divided_value):
+            if self.apd_is_gated:
+                self._apd_hardware().start_apd(start_clock=False)
+
+            last_pl_level = 0  
+
+            for i in range(0, self.max_variations):
+                """
+                For each iteration i (a variation) , we will send one set of instructions to the pulse blaster
+                """         
+                fluorescence = np.zeros(sum(divided_value))
+                for d in range(0, len(divided_value)):
+
+                    # In case the x amount of loops is greater than 10k
+                    # the x is divided in steps of 10k
+                    value_loop = divided_value[d]
+                    #print(f'value_loop={value_loop}')
+
+                    self._pulse_blaster_hardware().program_looped_variation(
+                        Flat_exp[i],
+                        value_loop
+                    )
+                    
+                    time_wait = max_end_times_vars[i] * value_loop # in ns
+                    self._pulse_blaster_hardware().start()
+
+                    if self.apd_is_gated:
+                        
+                        counts = self._apd_hardware().get_fluorescence(
+                            samples= int(value_loop),
+                            frequency=1,
+                            time_out=time_wait / 1e9 + 1
+                        )
+                        
+                        if d != 0:
+                            fluorescence[divided_value[d - 1]:sum(divided_value[0:d + 1])] = counts
+                            
+                        else:
+                            fluorescence[0:divided_value[d]] = counts
+                        
+                    elif not self.apd_is_gated:
+                        self.busy_wait_us(time_wait / 1000)
+
+                    
+                    self._pulse_blaster_hardware().stop()
+
+                    QApplication.processEvents()
+
+                # Store the last count of the fluorescence
+                # Minus the last level of the previous iteration (acumulated PL)
+                self.pl_data[j, i] = fluorescence[-1] - last_pl_level
+
+                
+                last_pl_level = fluorescence[-1]
+
+                averaged_data = np.mean(self.pl_data, axis=0) * (repeat_exp / (j + 1))
+                self.data_signal.emit(averaged_data)
+                
+        
+                if not self.continue_experiment:
+                    break
+                
+            if self.apd_is_gated:
+                self._apd_hardware().stop_acquisition()
+
+            
+            experiment_end = time.perf_counter()
+            print(
+                f"Total time for all variations in experiment iteration {j + 1} of {repeat_exp}: {(experiment_end - experiment_start) * 1000:.2f} ms"
+            )
+        print("Experiment finished, stopping pulse blaster and apd hardware")
+        self.stop_experiment()
+
+    def run_sequence_type_b(self, Flat_exp, value_loop, max_end_times_vars, divided_value):
 
         self._pulse_blaster_hardware().start_programming()
         # Exp has structure [[pulse1, pulse2, ...], [pulse1, pulse2, ...]]
@@ -426,123 +518,6 @@ class PulsedESRLogic(LogicBase):
                     #print(f"number_of_loops:{number_of_loops}")
                     self._pulse_blaster_hardware().stop()
 
-    def a_Send_to_pulse_blaster(
-        self, Flat_exp, value_loop, max_end_times_vars, divided_value
-    ):
-        """here we must iterate each variation a number of value_loop times. we do this for all variations so.
-        However to the pulse blaster can only have about 40k instructions and the loop can only iterate a
-         maximum of 1 million times. so to get around this  we divide the value_loop by 10k iterations of the experiment
-        """
-        #print("sending to pulse blaster")
-        #print(f"len(Flat_exp):{len(Flat_exp)}")
-        #print(f"divided_value:{divided_value}")
-        #print(f"max_end_times_vars:{max_end_times_vars}")
-        #print(f"flat_exp:{Flat_exp}")
-        #print(f"value_loop:{value_loop}")
-        #print(f"counter:{counter}")
-
-        spinapi.pb_close()
-        spinapi.pb_select_board(0)
-        if spinapi.pb_init() != 0:
-            exit(-1)
-        spinapi.pb_reset()
-        spinapi.pb_core_clock(500)
-        spinapi.pb_start_programming(spinapi.PULSE_PROGRAM)
-
-        ### muc add another for, to diviude the value_loop
-        for d in range(0, len(divided_value)):
-            # In case the x amount of loops is greater than 10k
-            # the x is divided in steps of 10k
-            #print(f'Starting loop x={d}')
-            value_loop = divided_value[d]
-            #print(f'value_loop={value_loop}')
-            for j in range(0, self.max_variations):
-                """
-                For each iteration j (a variation) , we will send one set of isntrutions to the pulse blaster
-                However
-                """
-                #print(f"Starting the {j}th variation")
-                spinapi.pb_start_programming(spinapi.PULSE_PROGRAM)
-
-                # generates a loop of instruction here only one iteration
-                # Exp has structure [[pulse1, pulse2, ...], [pulse1, pulse2, ...]]
-                # where [[variation1], [variation2], ...]
-                start = spinapi.pb_inst_pbonly(
-                    int(sum(Flat_exp[j][0].channel_binary[0])),
-                    spinapi.Inst.LOOP,
-                    value_loop,
-                    (Flat_exp[j][0].end_tail - Flat_exp[j][0].start_tail) * spinapi.us,
-                )
-
-                #print(
-                #    f"spinapi.pb_inst_pbonly({sum(Flat_exp[j][0].channel_binary[0])},spinapi.Inst.LOOP,{value_loop},({Flat_exp[j][0].end_tail-Flat_exp[j][0].start_tail})*spinapi.us)"
-                #)
-                for i in range(1, len(Flat_exp[j])):  
-                    # we start from one because we already did the 0 index
-                    #print(f'i = {i}')
-                    if i != len(Flat_exp[j]) - 1:
-                        print(
-                            f"spinapi.pb_inst_pbonly({sum(list(Flat_exp[j][i].channel_binary[0]))},spinapi.Inst.CONTINUE,0,({Flat_exp[j][i].end_tail-Flat_exp[j][i].start_tail})*spinapi.us)"
-                        )
-                        spinapi.pb_inst_pbonly(
-                            int(sum(Flat_exp[j][i].channel_binary[0])),
-                            spinapi.Inst.CONTINUE,
-                            0,
-                            (Flat_exp[j][i].end_tail - Flat_exp[j][i].start_tail)
-                            * spinapi.us,
-                        )
-                    else:
-                        #print(
-                        #    f"spinapi.pb_inst_pbonly({sum(list(Flat_exp[j][i].channel_binary[0]))},spinapi.Inst.CONTINUE,0,({Flat_exp[j][i].end_tail-Flat_exp[j][i].start_tail})*spinapi.us)"
-                        #)
-                        spinapi.pb_inst_pbonly(
-                            int(sum(Flat_exp[j][i].channel_binary[0])),
-                            spinapi.Inst.CONTINUE,
-                            0,
-                            (Flat_exp[j][i].end_tail - Flat_exp[j][i].start_tail)
-                            * spinapi.us,
-                        )
-                        print(
-                            f"spinapi.pb_inst_pbonly({sum(list(Flat_exp[j][i].channel_binary[0]))},spinapi.Inst.END_LOOP,start,{Flat_exp[j][i].end_tail-Flat_exp[j][i].start_tail}"
-                        )
-                        spinapi.pb_inst_pbonly(
-                            int(sum(Flat_exp[j][i].channel_binary[0])),
-                            spinapi.Inst.END_LOOP,
-                            start,
-                            Flat_exp[j][i].end_tail - Flat_exp[j][i].start_tail,
-                        )
-
-                    # This instruction stops the pulse sequence.
-                    # The duration is set to a very small value
-                    # to ensure the stop instruction is executed
-                    # almost immediately.
-                    spinapi.pb_inst_pbonly(
-                        int(0), spinapi.Inst.STOP, 0, 1 * spinapi.us
-                    )  
-                    print(
-                        f"spinapi.pb_inst_pbonly(int(0),spinapi.Inst.STOP,0,0.01*spinapi.us)"
-                    )
-                    spinapi.pb_stop_programming()  # This function call signals the end of programming the pulse sequence. It tells the SpinAPI library that the sequence definition is complete and the pulse program can be finalized
-                    print(f"spinapi.pb_stop_programming()")
-
-                spinapi.pb_start()  # here we start the spinapi
-                start = time.perf_counter()
-                time_wait = max_end_times_vars[j] * value_loop
-                #print(f"time_wait:{time_wait}")
-                self.busy_wait_us(
-                    time_wait
-                )  # Intended wait: minimum wait time until the next variation
-                end = time.perf_counter()
-                #print(
-                #    f"Actual wait: {(end - start)*1e6:.2f} µs"
-                #)  # to get a glimpse of the error in wait time
-                # el el timepo total que espera el counter para seguir a la siguient variacion. Durante ese tiempo se toman todo los datos de una variacion. Aqui se debe calcular el maximo tiempo de cada variacion y multiplicar por value _loop
-                #print(f"value_loop:{value_loop}")
-                spinapi.pb_stop()
-                #spinapi.pb_close
-            pass
-        #counter.close()
-
     def busy_wait_us(self, us):
         # Convert microseconds to seconds and add it to the current time
         # This gives us the target end time
@@ -558,17 +533,17 @@ class PulsedESRLogic(LogicBase):
         """
         #### here we divide the iterations of each varaitions by parts of 10k
         divided_value = []
-        if value_loop <= 10000:
+        if value_loop <= 1_000_000:
             divided_value = [value_loop]  # we only repeat the big loop once
-        elif value_loop > 10000:
+        elif value_loop > 1_000_000:
             difference = 0
-            dv = value_loop // 10000  # this gives us the integer result of the fraction
-            difference = value_loop - dv * 10000
+            dv = value_loop // 1_000_000  # this gives us the integer result of the fraction
+            difference = value_loop - dv * 1_000_000
             if difference > 0:
                 length_list = dv + 1
             for h in range(0, length_list):
                 if h < length_list - 1:
-                    divided_value.append(10000)
+                    divided_value.append(1_000_000)
                 else:
                     divided_value.append(difference)
         print(f"divided_value={divided_value}")
@@ -576,50 +551,17 @@ class PulsedESRLogic(LogicBase):
 
         # To recieve the counts from the apd
 
-    def create_counter_task(self):
+    @Slot()
+    def stop_experiment(self):
         """
-        Todo este task es para la ni"""
-        # creamos el task que lee las cuentas
-        counter_task = nidaqmx.Task(
-            new_task_name="T1 APD fluorescence counts"
-        )  # crear el task
-        # En que canal recivir las cuentas y bajo que condiciones
-        counter_task.ci_channels.add_ci_count_edges_chan(
-            counter=self.dev
-            + "/"
-            + self.counter_pin,  # pin APD en la ni, en este caso seria pin 8
-            name_to_assign_to_channel="APD",
-            edge=nidaqmx.constants.Edge.RISING,
-            initial_count=0,
-            count_direction=nidaqmx.constants.CountDirection.COUNT_UP,
-        )  # ci=counter input, edges cuenta cada vez que hay una subida o bajada de una señal
-        # el cuando recibir las cuentas
-        counter_task.timing.cfg_samp_clk_timing(
-            rate=100,
-            source="/"
-            + self.dev
-            + "/"
-            + self.gate_pin,  # cuenta segu cuando llegan las señales del gate
-            active_edge=nidaqmx.constants.Edge.FALLING,  # empieza acontar cuando la señal gate baja
-            sample_mode=nidaqmx.constants.AcquisitionType.CONTINUOUS,
-            samps_per_chan=100000,
-        )
-        # una continuiacion de lo de arriba
-        counter_task.triggers.pause_trigger.dig_lvl_src = self.gate_pin
-        counter_task.triggers.pause_trigger.dig_lvl_when = (
-            nidaqmx.constants.Level.LOW
-        )  # que pause de contar cuando este en low
-        counter_task.triggers.pause_trigger.trig_type = (
-            nidaqmx.constants.TriggerType.DIGITAL_LEVEL
-        )
-
-        return counter_task
-
-    def Stop_Experiment(self):
-        """spinapi.pb_stop() #stop de program
-        spinapi.pb_close() # close the pusle blaster, becasue when you want to open it again it must be close for this
+        This function is used to stop the experiment and close the pulse blaster
+        and the apd hardware.
         """
-        pass
+        self._pulse_blaster_hardware().stop_programming()
+        self._pulse_blaster_hardware().stop()
+        self._pulse_blaster_hardware().close()  
+        self._apd_hardware().stop()
+        self.continue_experiment = False
 
     def prepare_frame(self, frame_i):
         """Each time we change the value of the frame, it shows the corresponding frame in the graph
@@ -628,15 +570,12 @@ class PulsedESRLogic(LogicBase):
         sequences_all_channels = []
         tags_colors = []
         for channel in self.channels:
-            pulses_channel = channel.a_display(
-                frame_i
-            )  # checks in the respective channel instance if it has a sequence for this frame, if it has a a sequence active_check will hold the pb_pulses
-            if (
-                pulses_channel != None
-            ):  # meaning there is a sequence in this channel per the iteration i
+            pulses_channel = channel.a_display(frame_i)
+
+            if pulses_channel != None:  
                 sequences_all_channels.append(pulses_channel)
                 tags_colors.append([channel.tag, channel.label])
-                pass
+                
         self.frame_data_signal.emit(
             tags_colors, sequences_all_channels, frame_i, self.Max_end_time
         )
@@ -691,22 +630,18 @@ class PulsedESRLogic(LogicBase):
     def clear_channels(self):
 
         self.added_channel_tags = []
-        self.added_channels_to_save = []
-        self.added_pulses_to_save = []
+        self.added_channels = []
+        self.added_pulses = []
         self.channels = []
-        self.channel_labels = []
-        self.Delays_channel = []
-        self.Experiment_Hub = []
+        self.experiment_hub = []
         self.Max_end_time = 0
-        self.dev = "Dev1"
-        self.counter_pin = "ctr0"
-        self.gate_pin = "PFI9"
 
     @Slot(tuple)
     def switch_pb_outputs(self, pb_status: tuple):
         """
         This function is used to switch the outputs of the pulse blaster
         """
+        self._pulse_blaster_hardware().initialise()
         self._pulse_blaster_hardware().stop_programming()
         self._pulse_blaster_hardware().stop()
         self._pulse_blaster_hardware().start_programming()
@@ -715,6 +650,7 @@ class PulsedESRLogic(LogicBase):
         self._pulse_blaster_hardware().start()
         #print(f'Switching pulse blaster outputs to {pb_status}')
 
+    @Slot()
     def stop_pb_outputs(self):
         """
         This function is used to stop the outputs of the pulse blaster
@@ -768,10 +704,10 @@ class PulsedESRLogic(LogicBase):
         }
 
         # Logic to save the file
-        for channel in self.added_channels_to_save:
+        for channel in self.added_channels:
             channel_data_dict = dataclasses.asdict(channel)
             data["channels"].append(channel_data_dict)
-        for pulse in self.added_pulses_to_save:
+        for pulse in self.added_pulses:
             pulse_data_dict = dataclasses.asdict(pulse)
             data["pulses"].append(pulse_data_dict)
         with open(file_path, "w") as json_file:
@@ -789,8 +725,16 @@ class Channel(QObject):
         self.Sequence_hub = []  # in this list we keep all the sequences creates
         self.error_flag = False  # Flag to track if an error occurred
         self.binary = binary
+        self.added_pulses = []  # list of pulses added to the channel
 
     error_adding_pulse_channel = Signal(str)
+
+    def clear_all_pulses(self):
+        """
+        This function is used to clear all the pulses in the channel
+        """
+        self.Sequence_hub = []
+        self.added_pulses = []
 
     def a_sequence(
         self, start_time, width, function_width, function_start, iteration_range
@@ -822,6 +766,16 @@ class Channel(QObject):
             range [50,55] --> [1,2,3,4,5,6] to plug it into 
             the function for the new width
         """
+        self.added_pulses.append(
+            PulseData(
+                channel_tag=self.tag,
+                start_time=start_time,
+                width=width,
+                function_start=function_start,
+                function_width=function_width,
+                iteration_range=iteration_range,
+            )
+        )
 
         for k in range(iteration_range[0], iteration_range[1] + 1):  
             # we iterate through the iteration range, 
@@ -1183,12 +1137,13 @@ class Experiment(QObject):
         else:  # send error message
             pass
 
-        print(f"len(self.pb_sequence):{len(self.pb_sequence)}")
+        #print(f"len(self.pb_sequence):{len(self.pb_sequence)}")
         for pulse in self.pb_sequence:  
             # this is just to show that it0s working it should be taken away later
-            print(
-                f"Pulse start:{pulse.start_tail}, end:{pulse.end_tail}, channel:{pulse.channel_binary}"
-            )
+            #print(
+            #    f"Pulse start:{pulse.start_tail}, end:{pulse.end_tail}, channel:{pulse.channel_binary}"
+            #)
+            pass
 
     def Order_Exp_i_pb(self):
         """To order the list Exp_pb.
