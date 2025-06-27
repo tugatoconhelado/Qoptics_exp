@@ -5,9 +5,11 @@ from qudi.util.uic import loadUi
 import sys
 import os
 import numpy as np
-from pyqtgraph import PlotWidget, plot
+from pyqtgraph import PlotWidget, plot, exporters,PlotItem
 import pyqtgraph as pg
-import pyqtgraph.exporters # needed to save plotted data
+import pyqtgraph.exporters.CSVExporter  # needed to save plotted data
+from datetime import datetime
+import csv
 class IonGunMainWindow(QMainWindow):
 
     conect_signal = Signal(str)
@@ -27,6 +29,7 @@ class IonGunMainWindow(QMainWindow):
     start_read_xy_signal = Signal()
     stop_read_xy_signal = Signal()
     clear_read_xy_signal = Signal()
+    save_xy_voltage_signal = Signal(list)
 
 
 
@@ -77,6 +80,7 @@ class IonGunMainWindow(QMainWindow):
             self
         )
         self.dgb=1
+
         self.box_created = False
         self.connect_button.clicked.connect(self.req_connect)
         self.parameter_box.currentIndexChanged.connect(self.req_parameter)
@@ -94,6 +98,7 @@ class IonGunMainWindow(QMainWindow):
         self.Clear_xy_button.clicked.connect(self.clear_read_xy)
         self.start_xy_button.clicked.connect(self.start_read_xy)
         self.stop_xy_button.clicked.connect(self.stop_read_xy, Qt.QueuedConnection)
+        self.save_button.clicked.connect(self.save_xy_voltage)
         self.control_radios = [self.radio_remote, self.radio_local]
         self.mode_radios = [self.radio_operate, self.radio_standby, self.radio_degas, self.radio_off]
         self.high_voltage_radios = [self.radio_hv_on, self.radio_hv_off]
@@ -268,19 +273,17 @@ class IonGunMainWindow(QMainWindow):
     def updateplot(self, data) -> None:
         self.graphWidget.clear()
         self.graphWidget_2.clear()
-        datax=np.array(data[0])
-        datay=np.array(data[1])
-        t=np.linspace(0, len(data[0]), len(data[0]))
+        self.datax=np.array(data[0])
+        self.datay=np.array(data[1])
+        
+        self.t=np.linspace(0, len(data[0]), len(data[0]))
         self.graphWidget.setLabel('left', 'Voltage X', units='V')
         self.graphWidget_2.setLabel('left', 'Voltage Y', units='V')
         self.graphWidget.setLabel('bottom','Time ', units='0.1s')
         self.graphWidget_2.setLabel('bottom','Time', units='0.1s')
-        self.graphWidget.plot(t, datax, pen='r')
-        self.graphWidget_2.plot(t, datay, pen='g')
-
-
-        
-        
+        self.graphWidget.plot(self.t, self.datax, pen='r')
+        self.graphWidget_2.plot(self.t, self.datay, pen='g')
+    
 
     @Slot()
     def clear_read_xy(self) -> None:
@@ -297,7 +300,25 @@ class IonGunMainWindow(QMainWindow):
         self.start_read_xy_signal.emit()
         print("start")
 
-      
+    @Slot()
+    def save_xy_voltage(self) -> None:
+        now=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        if not os.path.exists('data_voltage'): 
+            os.mkdir('data_voltage')
+            print('Directory created')
+
+        file = r'C:\Users\Jero\Documents\Qoptics_exp\src\qudi\hardware\data_voltage/oscilloscopeData' + now + '.csv'
+        
+        print('Saved as ' + file)
+        
+        datos=[self.datax,self.datay,self.t]	
+        datos=np.transpose(datos)
+        datos=np.array(datos)
+        with open(file, mode='w', newline='') as archivo:
+            writer = csv.writer(archivo)
+    # Escribir las filas en el archivo CSV
+            writer.writerows(datos)
+            
 if __name__ == '__main__':
 
     sys.path.append('artwork')

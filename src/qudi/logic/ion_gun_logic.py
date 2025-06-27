@@ -94,6 +94,7 @@ class IonGunLogic(LogicBase):
         self._mutex = Mutex()  # Mutex for access serialization 
         self.dgb=1
         
+        
     def on_activate(self) -> None:
         self.get_status()
 

@@ -10,6 +10,7 @@ from qudi.util.mutex import Mutex
 from qudi.util.datastorage import TextDataStorage, ImageFormat
 from qudi.logic.filemanager import FileManager
 import datetime
+import pandas as pd
 from time import sleep
 
 import dataclasses
@@ -320,7 +321,10 @@ class IonGunLogicOsiloscope(LogicBase):
     
         return [x,y]
     
-    
+    @Slot()
+    def save_data(self, list):
+        
+        print('Data saved')
         
 
 

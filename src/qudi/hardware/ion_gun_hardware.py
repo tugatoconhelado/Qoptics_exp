@@ -151,7 +151,7 @@ class IonGunHardware(Base):
                 value = value[0].split(' ')
 
                 if value[0] != 'SYRemote':
-                    if command['ASCII string'] == 'ES':
+                    if command["ASCII string"] == 'ES' or command["ASCII string"] == 'ES\nL':
                         value = value[0]
                         response = value[0]
                     else:

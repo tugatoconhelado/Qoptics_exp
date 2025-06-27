@@ -111,7 +111,10 @@ class IonGunGui(GuiBase):
             self._ion_gun_logic_osiloscope().stop_acquisition,
             Qt.QueuedConnection
         )
-
+        self._mw.save_xy_voltage_signal.connect(
+            self._ion_gun_logic_osiloscope().save_data,
+            Qt.QueuedConnection
+        )
         self._ion_gun_logic().refresh_ports_signal.connect(
             self._mw.refresh_ports,
             Qt.QueuedConnection
