@@ -302,7 +302,7 @@ class IonGunLogicOsiloscope(LogicBase):
         print('Acquisition started', self.continue_acquisition)
         while self.continue_acquisition:
             valor=self._ion_gun_hardware().read_xy()
-            time_0=time_0+ 0.1
+            time_0=time_0+  0.1
             samp_time.append(time_0)
             listx.append(valor[0][0])
             listy.append(valor[0][1])
