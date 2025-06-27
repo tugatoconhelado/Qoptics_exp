@@ -1,4 +1,6 @@
 
+import nidaqmx.stream_readers
+import nidaqmx.stream_writers
 from qudi.core.statusvariable import StatusVar
 from qudi.core.configoption import ConfigOption
 from qudi.util.mutex import Mutex
@@ -11,7 +13,12 @@ from time import sleep
 import serial
 from time import time
 from qudi.gui.ion_gun.ion_gun_ni import myni
-
+import nidaqmx
+from nidaqmx.constants import AcquisitionType, READ_ALL_AVAILABLE, FrequencyUnits, Level, VoltageUnits, Edge, WAIT_INFINITELY
+import nidaqmx.constants
+import numpy as np
+from nidaqmx.stream_writers import AnalogSingleChannelWriter, AnalogMultiChannelWriter
+from nidaqmx.stream_readers import AnalogSingleChannelReader, AnalogMultiChannelReader
 class IonGunHardware(Base):
     """
     Models the turbo pump instrument
@@ -31,7 +38,7 @@ class IonGunHardware(Base):
     """
 
     status_msg_signal = Signal(str)
-    
+    update_voltage_signal = Signal(list)
 
     def __init__(self, *args, **kwargs) -> None:
         
@@ -199,4 +206,130 @@ class IonGunHardware(Base):
         data = self.ni.read_xy()
         
         return data
-    
+    def start_extern_Voltage(self,DATA):
+        self.samp_rate = 100000
+        vector_x = []
+        vector_y = []
+        VX = []
+        VY = []
+        self.vectorN=[]
+        vector_time = []
+        self.sacrifice_x=DATA.sacrifice_spot[0]
+        self.sacrifice_y=DATA.sacrifice_spot[1]
+        vector_x.append(self.sacrifice_x/650)
+        vector_y.append(self.sacrifice_y/650)
+        vector_time.append(1/self.samp_rate)
+        for spot in DATA.implantation_matrix:
+            self.position_x = spot.position_x*0.833/650
+            self.position_y = spot.position_y*0.746/650
+            self.time=spot.implantation_time
+            vector_x.append(self.position_x)
+            vector_y.append(self.position_y)
+            vector_time.append(self.time)
+        vector_x.append(self.sacrifice_x/650)
+        vector_y.append(self.sacrifice_y/650)
+        vector_time.append(1/self.samp_rate)
+        VX=np.array(VX, dtype=np.float64)
+        VY=np.array(VY, dtype=np.float64)
+                
+        self.device = 'Dev1'
+        
+        
+        
+        self.taskP = nidaqmx.Task()
+        self.taskAO = nidaqmx.Task()
+        self.taskAI= nidaqmx.Task()
+
+        
+       
+        for elemento in vector_time:
+            
+            self.vectorN.append(elemento*self.samp_rate)
+        
+
+        #new matrix to implanter
+        vector_x_new=[]
+        vector_y_new=[]
+        cont=0
+        for i in self.vectorN:
+            N=i
+            while N>0:
+                vector_x_new.append(vector_x[cont])
+                vector_y_new.append(vector_y[cont])
+                N-=1
+            cont+=1
+        VX=np.array(vector_x_new, dtype=np.float64)
+        VY=np.array(vector_y_new, dtype=np.float64)
+        self.samples = len(VX)
+        timeout=(self.samples/self.samp_rate)*2
+
+        #Pulse Train
+        self.taskP.co_channels.add_co_pulse_chan_freq(self.device + '/ctr0',
+                                                    units = FrequencyUnits.HZ,
+                                                    idle_state = Level.LOW,
+                                                    initial_delay = 0.0,
+                                                    freq = self.samp_rate,
+                                                    duty_cycle = 0.5)
+
+        self.taskP.timing.cfg_implicit_timing(sample_mode=AcquisitionType.FINITE,
+                                            samps_per_chan = self.samples)
+            
+            
+        #Analog Input
+        self.taskAI.ai_channels.add_ai_voltage_chan(self.device + '/ai0:1',
+                                                min_val=-10.0,
+                                                max_val=10.0,
+                                                units = VoltageUnits.VOLTS,
+                                                terminal_config = nidaqmx.constants.TerminalConfiguration.DIFF)
+        self.taskAI.timing.cfg_samp_clk_timing(self.samp_rate,
+                                    'PFI4',
+                                    active_edge = Edge.FALLING,
+                                    sample_mode = AcquisitionType.FINITE,
+                                    samps_per_chan = self.samples)
+
+            #Analog Output
+        self.taskAO.ao_channels.add_ao_voltage_chan(self.device + '/ao0:1',
+                                                min_val=-10.0,
+                                                max_val=10.0,
+                                                units = VoltageUnits.VOLTS)
+
+        self.taskAO.timing.cfg_samp_clk_timing(self.samp_rate,
+                                    'PFI4',
+                                    active_edge = Edge.RISING,
+                                    sample_mode = AcquisitionType.FINITE,
+                                    samps_per_chan = self.samples)
+
+            
+        dataAO =  np.vstack((VX,VY))
+        
+        
+        aw = nidaqmx.stream_writers.AnalogMultiChannelWriter(self.taskAO.out_stream, False)
+        aw.write_many_sample(dataAO, timeout = timeout)
+            
+        self.taskAO.start()
+        self.taskAI.start()
+        self.taskP.start()
+            
+        
+
+        data=np.zeros((2,self.samples),dtype=np.float64)
+        Ar=nidaqmx.stream_readers.AnalogMultiChannelReader(self.taskAI.in_stream)
+
+        Ar.read_many_sample(data,number_of_samples_per_channel=self.samples,timeout= WAIT_INFINITELY)
+        
+
+        self.taskAI.stop()
+        self.taskAO.stop()
+        self.taskP.stop()
+
+        self.taskAO.close()
+        self.taskAI.close()
+        self.taskP.close()
+
+        return [data,self.samp_rate]
+              
+
+    def reset_Ni_Voltage(self):
+        with nidaqmx.Task() as task:    
+            task.close()
+        print('reset adquisition') 

@@ -115,6 +115,22 @@ class IonGunGui(GuiBase):
             self._ion_gun_logic_osiloscope().save_data,
             Qt.QueuedConnection
         )
+        self._mw.reset_Ni_signal.connect(
+            self._ion_gun_logic_osiloscope().reset_Ni_Voltage,
+            Qt.QueuedConnection
+        )
+        self._mw.start_extern_Voltage_signal.connect(
+            self._ion_gun_logic().start_extern_Voltage,
+            Qt.QueuedConnection
+        )
+        self._mw.find_datos_signal.connect(
+            self._ion_gun_logic().find_datos,
+            Qt.QueuedConnection
+        )
+        self._mw.calibration_matrix_signal.connect(
+            self._ion_gun_logic().matrix_calibration_one,
+            Qt.QueuedConnection
+        )
         self._ion_gun_logic().refresh_ports_signal.connect(
             self._mw.refresh_ports,
             Qt.QueuedConnection
@@ -150,10 +166,17 @@ class IonGunGui(GuiBase):
         )
 
         self._ion_gun_logic_osiloscope().update_parameter_voltage_signal.connect(
+            self._mw.update_parameter_voltage2,
+            Qt.QueuedConnection
+        )
+        self._ion_gun_logic().update_parameter_voltage_signal.connect(
             self._mw.update_parameter_voltage,
             Qt.QueuedConnection
         )
-
+        self._ion_gun_logic().update_parameters_signal.connect(
+            self._mw.save_xy_voltage,
+            Qt.QueuedConnection
+        )
         self.show()
     def on_deactivate(self) -> None:
         # Disconnect all connections done in "on_activate"

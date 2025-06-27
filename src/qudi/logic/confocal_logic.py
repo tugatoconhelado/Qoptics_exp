@@ -71,8 +71,7 @@ class ConfocalLogic(LogicBase):
         self.measure = False
         self._mutex = Mutex()  # Mutex for access serialization
         self.filemanager = FileManager(
-            data_dir=os.path.join(os.sep, 'C:' + os.sep, 'EXP', 'testdata'),
-            experiment_name='confocal',
+            data_dir=os.path.join(os.sep, 'C:' + os.sep,"Users","Jero","Documents","Qoptics_exp", 'EXP', 'testdata'),
             exp_str='IMG'
         )
 

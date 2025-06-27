@@ -81,9 +81,45 @@ class PumpGui(GuiBase):
             self._pump_logic().get_parameter_for_setter,
             Qt.QueuedConnection
         )
-
+        self._mw.set_parameter_signal.connect(
+            self._pump_logic().set_parameter,
+            Qt.QueuedConnection
+        )
         self._pump_logic().update_parameter_for_setter_signal.connect(
             self._mw.update_parameter_for_setter,
+            Qt.QueuedConnection
+        )
+        self._pump_logic().update_currentvalue_signal.connect(
+            self._mw.update_currentvalue,
+            Qt.QueuedConnection
+        )
+        self._mw.onn_pumpgstatn_signal.connect(
+            self._pump_logic().set_parameter,
+            Qt.QueuedConnection
+        )
+        self._mw.off_pumpgstatn_signal.connect(
+            self._pump_logic().set_parameter,
+            Qt.QueuedConnection
+        )
+    
+        self._mw.current_parameter_signal.connect(
+            self._pump_logic().get_currentvalue,
+            Qt.QueuedConnection
+        )
+        self._mw.disconnect_signal.connect(
+            self._pump_logic().disconnect_pump,
+            Qt.QueuedConnection
+        )
+        self._mw.on_turbo_signal.connect(
+            self._pump_logic().on_turbo,
+            Qt.QueuedConnection
+        )
+        self._mw.off_turbo_signal.connect(
+            self._pump_logic().off_turbo,
+            Qt.QueuedConnection
+        )
+        self._mw.automatic_turbo_signal.connect(
+            self._pump_logic().automatic_turbo,
             Qt.QueuedConnection
         )
         '''
@@ -102,7 +138,7 @@ class PumpGui(GuiBase):
         #self._template_logic().sigCounterUpdated.disconnect(self._mw.count_spinbox.setValue)
         # Use "plain" disconnects (without argument) only on signals owned by this module
         # Close main window
-        self._mw.turn_on_button.clicked.disconnect()
+        "self._mw.turn_on_button.clicked.disconnect()"
         self._mw.close()
 
     def show(self) -> None:

@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QDialog, QWidget, QMainWindow, QApplication, QProgressBar
+from PySide2.QtWidgets import QDialog, QWidget, QMainWindow, QApplication, QProgressBar,QLineEdit,QVBoxLayout
 from PySide2.QtCore import Slot, Signal, QDir, Qt, QTimer
 from PySide2.QtGui import QFont
 from qudi.util.uic import loadUi
@@ -30,8 +30,10 @@ class IonGunMainWindow(QMainWindow):
     stop_read_xy_signal = Signal()
     clear_read_xy_signal = Signal()
     save_xy_voltage_signal = Signal(list)
-
-
+    reset_Ni_signal=Signal()
+    start_extern_Voltage_signal=Signal()
+    find_datos_signal=Signal()
+    calibration_matrix_signal=Signal()
 
     commands = {'Remote enable':{'ASCII string':'RE', 'description':'Remote enable','access':'NP'},
                 'Local':{'ASCII string':'LO', 'description':'Local','access':'NP'},
@@ -82,6 +84,7 @@ class IonGunMainWindow(QMainWindow):
         self.dgb=1
 
         self.box_created = False
+        self.lineEdits = QLineEdit()
         self.connect_button.clicked.connect(self.req_connect)
         self.parameter_box.currentIndexChanged.connect(self.req_parameter)
         self.parameter_set_box.currentIndexChanged.connect(self.update_setter)
@@ -94,11 +97,13 @@ class IonGunMainWindow(QMainWindow):
         self.remove_last_spot_button.clicked.connect(self.remove_implantation_spot)
         self.start_matrix_button.clicked.connect(self.start_matrix)
         self.show_matrix_button.clicked.connect(self.show_matrix)
-        self.read_xy_button.clicked.connect(self.read_xy)
+        self.start_implantation_button.clicked.connect(self.start_extern_Voltage)
         self.Clear_xy_button.clicked.connect(self.clear_read_xy)
         self.start_xy_button.clicked.connect(self.start_read_xy)
         self.stop_xy_button.clicked.connect(self.stop_read_xy, Qt.QueuedConnection)
-        self.save_button.clicked.connect(self.save_xy_voltage)
+        self.save_button.clicked.connect(self.update_parameters)
+        self.reset_botton.clicked.connect(self.reset_Ni)
+        self.calibration_button.clicked.connect(self.calibration_matrix)
         self.control_radios = [self.radio_remote, self.radio_local]
         self.mode_radios = [self.radio_operate, self.radio_standby, self.radio_degas, self.radio_off]
         self.high_voltage_radios = [self.radio_hv_on, self.radio_hv_off]
@@ -110,7 +115,7 @@ class IonGunMainWindow(QMainWindow):
 
         for radio in self.high_voltage_radios:
             radio.toggled.connect(self.req_high_voltage)
-
+        
     @Slot()
     def req_control(self) -> None:
         for radio in self.control_radios:
@@ -258,31 +263,53 @@ class IonGunMainWindow(QMainWindow):
     @Slot()
     def show_matrix(self) -> None:
         self.show_matrix_signal.emit()
-    
-    @Slot()
-    def read_xy(self) -> None:
-        self.read_xy_signal.emit()  
         
     @Slot(list)
     def update_parameter_voltage(self, valor:list)-> None:
         #self.label_read_x.setText(str(round(valor[0], 2)))
         #self.label_read_y.setText(str(round(valor[1], 2)))
         self.updateplot(valor)
-       
+    @Slot(list)
+    def update_parameter_voltage2(self,valor:list) ->None:
+        self.updateplot2(valor)
+
     @Slot()
-    def updateplot(self, data) -> None:
+    def updateplot2(self,data) -> None:
         self.graphWidget.clear()
         self.graphWidget_2.clear()
         self.datax=np.array(data[0])
         self.datay=np.array(data[1])
-        
-        self.t=np.linspace(0, len(data[0]), len(data[0]))
+        self.time=np.array(data[2])
         self.graphWidget.setLabel('left', 'Voltage X', units='V')
         self.graphWidget_2.setLabel('left', 'Voltage Y', units='V')
-        self.graphWidget.setLabel('bottom','Time ', units='0.1s')
-        self.graphWidget_2.setLabel('bottom','Time', units='0.1s')
-        self.graphWidget.plot(self.t, self.datax, pen='r')
-        self.graphWidget_2.plot(self.t, self.datay, pen='g')
+        self.graphWidget.setLabel('bottom','Time ', units='S')
+        self.graphWidget_2.setLabel('bottom','Time', units='S')
+        pen = pg.mkPen(color='purple', width=3)
+        pen2 = pg.mkPen(color='green', width=3)
+        self.graphWidget.plot(self.time, self.datax, pen=pen)
+        self.graphWidget_2.plot(self.time, self.datay, pen=pen2)
+    @Slot()
+    def updateplot(self, data) -> None:
+        self.graphWidget.clear()
+        self.graphWidget_2.clear()
+        self.datax=np.array(data[0][0])
+        self.datay=np.array(data[0][1])
+        self.sample_rate=data[1]
+        self.t=1/self.sample_rate
+        time=0
+        self.time=[]
+        for i in range(len(self.datax)):
+            time=time+self.t
+            self.time.append(time)
+        np.array(self.time)    
+        
+            
+        self.graphWidget.setLabel('left', 'Voltage X', units='V')
+        self.graphWidget_2.setLabel('left', 'Voltage Y', units='V')
+        self.graphWidget.setLabel('bottom','Time ', units='S')
+        self.graphWidget_2.setLabel('bottom','Time', units='S')
+        self.graphWidget.plot(self.time, self.datax, pen='r')
+        self.graphWidget_2.plot(self.time, self.datay, pen='g')
     
 
     @Slot()
@@ -301,24 +328,55 @@ class IonGunMainWindow(QMainWindow):
         print("start")
 
     @Slot()
-    def save_xy_voltage(self) -> None:
+    def reset_Ni(self)->None:
+        self.reset_Ni_signal.emit()
+
+  
+    @Slot()
+    def update_parameters(self,parameters) -> None:
+        self.find_datos_signal.emit()
+        
+
+
+    @Slot()
+    def save_xy_voltage(self,parameters) -> None:
+        
         now=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         if not os.path.exists('data_voltage'): 
             os.mkdir('data_voltage')
             print('Directory created')
 
-        file = r'C:\Users\Jero\Documents\Qoptics_exp\src\qudi\hardware\data_voltage/oscilloscopeData' + now + '.csv'
         
-        print('Saved as ' + file)
-        
-        datos=[self.datax,self.datay,self.t]	
-        datos=np.transpose(datos)
-        datos=np.array(datos)
-        with open(file, mode='w', newline='') as archivo:
-            writer = csv.writer(archivo)
-    # Escribir las filas en el archivo CSV
-            writer.writerows(datos)
+        if self.lineEdit.text() != '':
+            file = r'C:\Users\Jero\Documents\Qoptics_exp\src\qudi\hardware\data_voltage/oscilloscopeData' + now +self.lineEdit.text()+'.csv'
             
+            print('Saved as ' + file)
+            
+            datos=[self.datax,self.datay,self.time]	
+            datos_2=[parameters]
+            datos_2=np.transpose(datos_2)
+            datos=np.transpose(datos)
+            
+            print(datos_2)
+            datos_2=np.array(datos_2)
+            datos=np.array(datos)
+            
+            with open(file, mode='w', newline='') as archivo:
+                writer = csv.writer(archivo)
+                
+        # Escribir las filas en el archivo CSV
+                writer.writerows(datos)
+                
+                archivo.close()
+
+    @Slot()
+    def start_extern_Voltage(self) -> None:
+        self.start_extern_Voltage_signal.emit()        
+            
+    @Slot()
+    def calibration_matrix(self) -> None:
+        self.calibration_matrix_signal.emit()
+
 if __name__ == '__main__':
 
     sys.path.append('artwork')

@@ -11,6 +11,7 @@ from qudi.util.datastorage import TextDataStorage, ImageFormat
 from qudi.logic.filemanager import FileManager
 import datetime
 from time import sleep
+import time
 
 import dataclasses
 
@@ -81,6 +82,8 @@ class IonGunLogic(LogicBase):
     update_parameter_signal = Signal(str,str)
     update_parameter_for_setter_signal = Signal(float)
     update_parameter_spot_setter_signal = Signal(float)
+    update_parameter_voltage_signal = Signal(list)
+    update_parameters_signal=Signal(ImplantationParameters)
     
 
     _ion_gun_hardware = Connector(name='ion_gun_hardware',
@@ -235,6 +238,7 @@ class IonGunLogic(LogicBase):
         for spot in self.implantation_matrix.implantation_matrix:
             QApplication.processEvents()
             self.move_to_sacrice_point()
+            
             for parameter in spot.extra_parameter.keys():
                 self._ion_gun_hardware().set_parameter(parameter, spot.extra_parameter[parameter])
                 sleep(0.15)
@@ -254,7 +258,10 @@ class IonGunLogic(LogicBase):
                     print(f'Implantation spot {spot.position_x, spot.position_y} is ongoing')
             self._ion_gun_hardware().set_parameter('Position X', spot.position_x)
             sleep(0.15)
-            self._ion_gun_hardware().set_parameter('Position Y', spot.position_y) 
+            self._ion_gun_hardware().set_parameter('Position Y', spot.position_y)
+            
+
+            
             '''
             with self._mutex:
                 self._ion_gun_hardware().set_parameter('Position X', spot.position_x)
@@ -277,4 +284,39 @@ class IonGunLogic(LogicBase):
         print(f'Sacrifice spot: {self.implantation_matrix.sacrifice_spot}')
         print('-'*20)
 
+    @Slot()
+    def start_extern_Voltage(self):
+        #Here you send the spots to the external voltage implementation
+        data=self._ion_gun_hardware().start_extern_Voltage(self.implantation_matrix)
+        
+        self.update_parameter_voltage_signal.emit(data)
+
+    @Slot()
+    def find_datos(self): 
+        self.update_parameters_signal.emit(self.implantation_matrix.current_implantation_spot.total_parameters)
+        return None
     
+    @Slot()
+    def matrix_calibration_one(self):
+        print("what?")
+        """
+        y=79.5
+        x=79.5
+        posicionesx=[-5000, -4000, -3000, -2000, -1000, 0, 1000, 2000, 3000, 4000, 5000]
+        posicionesy=[-5000, -4000, -3000, -2000, -1000, 0, 1000, 2000, 3000, 4000, 5000]
+        contador=11
+        while y>=74.5:
+            self.add_implantation_spot_parameter('Focus 1 voltage', y)
+            y-=0.5
+            contador-=1
+            contador2=0
+            x=79.5
+            while x>=74.5 :
+                self.add_implantation_spot_parameter('Focus 2 voltage', x)
+                self.add_implantation_spot_parameter("Focus 1 voltage", y+0.5)
+                x-=0.5
+                self.add_implantation_spot(posicionesx[contador2], posicionesy[contador],3.0)
+                
+                contador2+=1
+                sleep(0.1)"""
+            

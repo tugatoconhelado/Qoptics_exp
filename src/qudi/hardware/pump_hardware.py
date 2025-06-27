@@ -8,8 +8,9 @@ import pyvisa as visa
 from pyvisa.constants import StopBits, Parity
 import logging
 from time import sleep
-
-
+import serial
+import nidaqmx
+from nidaqmx.constants import AcquisitionType, READ_ALL_AVAILABLE, FrequencyUnits, Level, VoltageUnits, Edge, WAIT_INFINITELY
 
 class PumpHardware(Base):
     """
@@ -45,6 +46,7 @@ class PumpHardware(Base):
                               'STOP_BITS' : StopBits.one}
         self.rm = visa.ResourceManager('@py')
         self.devices = self.rm.list_resources()
+        
         self.current_status = 'Idle'
         self.connected = False
         self.data_types = {0:{'description':'False / true', 'length':'06', 'example':'000000 / 111111'},
@@ -146,10 +148,11 @@ class PumpHardware(Base):
         if port is not None:
             self.port = port        
         self.device_id = self._format_id(device_id)
+        
         if self.port in self.devices:
             self.inst = self.rm.open_resource(self.port, baud_rate=self.communication["BAUDRATE"], data_bits=self.communication["DATA_BITS"], parity=self.communication["PARITY"], stop_bits=self.communication["STOP_BITS"])
             self.inst.write_termination = '\r'
-            self.inst.read_termination = '\r'
+            
             try:
                 response = self.send_message(self.commands['HW_Version'],'=?')
                 
@@ -187,6 +190,7 @@ class PumpHardware(Base):
         else:
             payload = str(payload)
             if len(payload) >= length:
+                
                 return payload
             else:
                 return cls._pad_payload('0'+payload, length)
@@ -255,20 +259,23 @@ class PumpHardware(Base):
         """
         partial_message = device_id + action + param_number +payload_length+ self._pad_payload(payload,int(payload_length))
         checksum = self._calculate_checksum(partial_message)
+         
         message = partial_message + checksum
         
         return message
     
     def send_message(self, coamnd, paylooad):
         message = self.build_message(coamnd, paylooad)
-        self.inst.write(message)  
+        
+        self.inst.write(message) 
+    
         response = self.read_message()
         
         return response
 
     def read_message(self):
         
-        full_response = self.inst.read(termination='\r')
+        full_response = self.inst.read(termination="\r")
         
 
         if not self._received_ok(full_response):
@@ -307,3 +314,14 @@ class PumpHardware(Base):
         else:
             response = {'device_id':1, 'action' : 10, 'param_number' : '666', 'payload_length' : 6, 'payload' : 'ERROR'}
         return response
+
+    def get_pressure(self):
+        self.task = nidaqmx.Task()
+        self.task.ai_channels.add_ai_voltage_chan("Dev1/ai2", min_val=-10, max_val=10, terminal_config=nidaqmx.constants.TerminalConfiguration.DIFF, units=nidaqmx.constants.VoltageUnits.VOLTS)
+        self.task.timing.cfg_samp_clk_timing(1000, sample_mode=AcquisitionType.FINITE,samps_per_chan=100)
+        data = self.task.read(READ_ALL_AVAILABLE)
+        datos=[]
+        datos.append(-data[0])
+        self.task.close()
+        
+        return datos

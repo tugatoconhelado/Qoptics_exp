@@ -1,36 +1,56 @@
-import dataclasses
-from typing import List, Tuple, Union
-from functools import wraps
-
-@dataclasses.dataclass
-class Test:
-    a: tuple
-    b: tuple
-    c: tuple
+import nidaqmx
+import time
+import keyboard
 
 
-def receive_dataclass(function) -> None:
-    
-    @wraps(function)
-    def accept_dataclass(param_data, *args):
-        if not args and dataclasses.is_dataclass(param_data):
-            # If 1 argument is given, use the dataclass as a tuple
-            return function(*dataclasses.astuple(param_data))
-        return function(param_data, *args)
-    return accept_dataclass
+def test_func():
 
-@receive_dataclass
-def my_function(a, b, c):
+    with nidaqmx.Task() as task:
+        task.do_channels.add_do_chan("Dev2/port1/line1")
+        task.start()
+        dt = 0.001
+        
+        task.write(False)
 
-    print('-' * 9)
-    print(a)
-    print(b)
-    print(c)
-    print('-' * 9)
+    with nidaqmx.Task() as task:
+        task.do_channels.add_do_chan("Dev2/port0/line1")
+        task.start()
+        dt = 0.001
+        
+        for i in range(1600):
+            task.write(True)
+            time.sleep(dt)
+            task.write(False)
+            time.sleep(dt)
 
-if __name__ == '__main__':
-    test = Test((1, 2, 3), (4, 5, 6), (7, 8, 9))
-    test2 = [(1, 2, 3), (4, 5, 6), (7, 8, 9)]
-    print(dataclasses.astuple(test))
-    my_function((1, 2, 3), (4, 5, 6), (7, 8, 9))
-    my_function(test)  # Example usage with 3 arguments
+            #keyboard interrupt
+            if keyboard.is_pressed('q'):
+                break
+            print(f'loop {i}')
+
+    with nidaqmx.Task() as task:
+        task.do_channels.add_do_chan("Dev2/port0/line1")
+        task.start()
+        dt = 0.001
+        
+        task.write(True)
+
+def test_func2():
+    with nidaqmx.Task() as task:
+        task.ao_channels.add_ao_voltage_chan("Dev2/AO0", min_val=0, max_val=5)
+        task.start()
+        dt = 0.0005
+        
+        for i in range(1600):
+            task.write(5.0)
+            time.sleep(dt)
+            task.write(0.0)
+            time.sleep(dt)
+
+            #keyboard interrupt
+            if keyboard.is_pressed('q'):
+                break
+            print(f'loop {i}')
+
+
+test_func()

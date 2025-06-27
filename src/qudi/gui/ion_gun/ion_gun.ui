@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1123</width>
-    <height>600</height>
+    <width>1175</width>
+    <height>595</height>
    </rect>
   </property>
   <property name="font">
@@ -405,8 +405,8 @@
      <rect>
       <x>210</x>
       <y>20</y>
-      <width>214</width>
-      <height>433</height>
+      <width>231</width>
+      <height>431</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -586,11 +586,20 @@
            </item>
            <item>
             <widget class="QDoubleSpinBox" name="spot_time_spin">
+             <property name="decimals">
+              <number>6</number>
+             </property>
              <property name="minimum">
-              <double>0.100000000000000</double>
+              <double>0.000001000000000</double>
              </property>
              <property name="maximum">
-              <double>1000.000000000000000</double>
+              <double>100.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.001000000000000</double>
+             </property>
+             <property name="value">
+              <double>0.001000000000000</double>
              </property>
             </widget>
            </item>
@@ -660,8 +669,8 @@
      <rect>
       <x>210</x>
       <y>460</y>
-      <width>212</width>
-      <height>23</height>
+      <width>231</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
@@ -672,26 +681,26 @@
     <property name="geometry">
      <rect>
       <x>210</x>
-      <y>490</y>
-      <width>211</width>
-      <height>23</height>
+      <y>500</y>
+      <width>231</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
      <string>Show Matrix</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="read_xy_button">
+   <widget class="QPushButton" name="start_implantation_button">
     <property name="geometry">
      <rect>
       <x>470</x>
       <y>440</y>
       <width>301</width>
-      <height>23</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
-     <string>Read x and y</string>
+     <string>Start Implantation with Extern Voltage</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_read_x">
@@ -712,64 +721,6 @@
      <string/>
     </property>
    </widget>
-   <widget class="QLabel" name="label_10">
-    <property name="geometry">
-     <rect>
-      <x>640</x>
-      <y>470</y>
-      <width>91</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>13</pointsize>
-      <weight>50</weight>
-      <bold>false</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Voltage y</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_read_y">
-    <property name="geometry">
-     <rect>
-      <x>730</x>
-      <y>470</y>
-      <width>71</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>13</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_12">
-    <property name="geometry">
-     <rect>
-      <x>470</x>
-      <y>470</y>
-      <width>91</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>13</pointsize>
-      <weight>50</weight>
-      <bold>false</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Voltage x</string>
-    </property>
-   </widget>
    <widget class="PlotWidget" name="graphWidget" native="true">
     <property name="geometry">
      <rect>
@@ -784,10 +735,13 @@
     <property name="geometry">
      <rect>
       <x>800</x>
-      <y>40</y>
+      <y>32</y>
       <width>75</width>
-      <height>23</height>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Start</string>
@@ -797,10 +751,13 @@
     <property name="geometry">
      <rect>
       <x>900</x>
-      <y>40</y>
+      <y>32</y>
       <width>75</width>
-      <height>23</height>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Stop</string>
@@ -812,8 +769,11 @@
       <x>850</x>
       <y>70</y>
       <width>75</width>
-      <height>23</height>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Clear all</string>
@@ -835,8 +795,11 @@
       <x>950</x>
       <y>70</y>
       <width>75</width>
-      <height>23</height>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Save</string>
@@ -846,13 +809,42 @@
     <property name="geometry">
      <rect>
       <x>1000</x>
-      <y>40</y>
+      <y>32</y>
       <width>75</width>
-      <height>23</height>
+      <height>31</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Reset</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="calibration_button">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>480</y>
+      <width>121</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Calibration matrix</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>1030</x>
+      <y>70</y>
+      <width>113</width>
+      <height>31</height>
+     </rect>
     </property>
    </widget>
   </widget>
@@ -861,7 +853,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1123</width>
+     <width>1175</width>
      <height>21</height>
     </rect>
    </property>

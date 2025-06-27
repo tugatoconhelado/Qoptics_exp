@@ -10,10 +10,18 @@ import numpy as np
 class PumpMainWindow(QMainWindow):
 
     conect_signal = Signal(str)
+    disconnect_signal = Signal()
     parameter_signal = Signal(str)
     get_parameter_for_setter_signal = Signal(str)
     set_parameter_signal = Signal(str, float)
-
+    onn_pumpgstatn_signal = Signal(str,bool)
+    off_pumpgstatn_signal = Signal(str,bool)
+    current_parameter_signal = Signal(str) #aqui es la señal para obtener la presion o los hz de la turbo
+    refresh_button_signal = Signal()
+    on_turbo_signal=Signal()
+    off_turbo_signal=Signal()
+    automatic_turbo_signal=Signal(bool)
+    
     data_types = {0:{'description':'False / true', 'length':'06', 'example':'000000 / 111111'},
             1:{'description':'Positive integer number', 'length':'06', 'example':'000000 to 999999'},
             2:{'description':'Positive fixed comma number', 'length':'06', 'example':'001571' 'equal to 15,71'},
@@ -106,13 +114,29 @@ class PumpMainWindow(QMainWindow):
             os.path.join(os.path.dirname(__file__), 'pump.ui'),
             self
         )
-
+        self.status_pumpg = False
         self.connect_button.clicked.connect(self.req_connect)
         self.parameter_box.currentIndexChanged.connect(self.req_parameter)
         self.parameter_set_box.currentIndexChanged.connect(self.update_setter)
         self.set_button.clicked.connect(self.set_parameter)
-
-    
+        self.onn_pumpg_button.clicked.connect(self.on_pumpgstatn)
+        self.off_pumpg_button.clicked.connect(self.off_pumpgstatn)
+        self.disconnect_button.clicked.connect(self.disconnect)
+        self.radio_turbo.toggled.connect(self.req_control)
+        self.on_turbo_button.clicked.connect(self.on_turbo)
+        self.off_turbo_button.clicked.connect(self.off_turbo)
+        
+    @Slot()
+    def req_control(self) -> None:
+        if self.radio_turbo.isChecked():
+            self.automatic_turbo = True
+            self.on_turbo_button.setEnabled(False)
+            self.off_turbo_button.setEnabled(False)
+        else:
+            self.automatic_turbo = False
+            self.on_turbo_button.setEnabled(True)    
+            self.off_turbo_button.setEnabled(False) 
+        self.automatic_turbo_signal.emit(self.automatic_turbo)    
     @Slot(list)
     def refresh_ports(self, list_ports: list) -> None:
         self.ports_box.clear()
@@ -121,12 +145,19 @@ class PumpMainWindow(QMainWindow):
     @Slot()
     def unlock_connect(self) -> None:
         self.connect_button.setEnabled(True)
+        self.off_pumpg_button.setEnabled(False)
+        self.off_turbo_button.setEnabled(False)
+        self.on_turbo_button.setEnabled(False)
         self.disconnect_button.setEnabled(False)
-
+        
     @Slot()
     def lock_connect(self) -> None:
         self.connect_button.setEnabled(False)
         self.disconnect_button.setEnabled(True)
+        self.on_turbo_button.setEnabled(True)
+
+        
+
 
     @Slot()
     def req_connect(self) -> None:
@@ -141,9 +172,12 @@ class PumpMainWindow(QMainWindow):
             if self.commands[key]['access'] == 'RW':
                 self.parameter_set_box.addItem(key)
 
-        
+    @Slot()
+    def disconnect(self) -> None:
+        self.disconnect_signal.emit()
     @Slot()
     def req_parameter(self) -> None:
+        
         self.parameter_signal.emit(self.parameter_box.currentText())
 
     @Slot(str, str)
@@ -151,7 +185,18 @@ class PumpMainWindow(QMainWindow):
 
         self.parameter_value.setText(parameter)
         self.parameter_value.setToolTip(description)
-
+    
+    @Slot(str)
+    def update_currentvalue(self, value: list ) -> None:
+        self.parameter_set_pressure.setText(value[0]+" mbar")
+        self.parameter_set_actualspd.setText(value[1])
+        self.graphwidget.clear()
+        self.pressure=value[2][0]
+        self.time=value[2][1]
+        self.graphwidget.setLabel('left', 'Voltage X', units='mbar')
+        self.graphwidget.setLabel('bottom','Time ', units='s')
+        self.graphwidget.plot(self.time, self.pressure, pen='r')
+        
     @Slot()
     def update_setter(self) -> None:
         max_value = self.commands[self.parameter_set_box.currentText()]['max']
@@ -182,9 +227,39 @@ class PumpMainWindow(QMainWindow):
         value = self.setter_spin_box.value()
         self.set_parameter_signal.emit(self.parameter_set_box.currentText(), value)
 
+    @Slot()
+    def on_pumpgstatn(self) -> None:
+        self.onn_pumpgstatn_signal.emit("PumpgStatn", True)
+        self.status_pumpg = True
+        self.onn_pumpg_button.setEnabled(False)
+        self.off_pumpg_button.setEnabled(True)
+        self.state_pumpg.setText("ON")
+        self.get_currentvalue()
+        
 
-       
+    @Slot()
+    def off_pumpgstatn(self) -> None:
+        self.off_pumpgstatn_signal.emit("PumpgStatn", False)   
+        self.status_pumpg = False
+        self.off_pumpg_button.setEnabled(False)
+        self.onn_pumpg_button.setEnabled(True)
+        self.state_pumpg.setText("OFF")
 
+
+    @Slot()
+    def get_currentvalue(self) -> None:
+        self.current_parameter_signal.emit("ActualSpd")
+        
+    @Slot()
+    def on_turbo(self) -> None:
+        self.on_turbo_signal.emit()
+        self.on_turbo_button.setEnabled(False)
+        self.off_turbo_button.setEnabled(True)
+    @Slot()
+    def off_turbo(self) -> None:
+        self.off_turbo_signal.emit()    
+        self.off_turbo_button.setEnabled(False)
+        self.on_turbo_button.setEnabled(True)
 if __name__ == '__main__':
 
     sys.path.append('artwork')

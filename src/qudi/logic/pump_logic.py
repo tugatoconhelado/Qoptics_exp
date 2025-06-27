@@ -10,9 +10,11 @@ from qudi.util.mutex import Mutex
 from qudi.util.datastorage import TextDataStorage, ImageFormat
 from qudi.logic.filemanager import FileManager
 import datetime
-
+from time import sleep
 import dataclasses
-
+import nidaqmx
+from nidaqmx.constants import AcquisitionType, READ_ALL_AVAILABLE, FrequencyUnits, Level, VoltageUnits, Edge, WAIT_INFINITELY
+import nidaqmx.constants
 
 
 class PumpLogic(LogicBase):
@@ -21,6 +23,7 @@ class PumpLogic(LogicBase):
     lock_connect_signal = Signal()
     update_parameter_signal = Signal(str,str)
     update_parameter_for_setter_signal = Signal(float)
+    update_currentvalue_signal = Signal(list)
 
 
     _pump_hardware = Connector(name='pump_hardware',
@@ -30,7 +33,7 @@ class PumpLogic(LogicBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._mutex = Mutex()  # Mutex for access serialization
-
+        self.automaticturbo=False
     def on_activate(self) -> None:
         pass
 
@@ -52,6 +55,7 @@ class PumpLogic(LogicBase):
     @Slot()
     def connect_pump(self, port_name: str):
         self._pump_hardware().connect(device_id=1, port = self.dict_ports[port_name])
+        
         if self._pump_hardware().connected:
             self.lock_connect_signal.emit()
 
@@ -105,7 +109,7 @@ class PumpLogic(LogicBase):
 
         
         value = str(value)
-
+        
         self.update_parameter_signal.emit(value, description)
     
     @Slot(str)
@@ -158,6 +162,57 @@ class PumpLogic(LogicBase):
         self.update_parameter_for_setter_signal.emit(value)
         #self.get_parameter_for_setter(parameter_name)
         
-        
+    @Slot()
+    def get_currentvalue(self,parameter_name:str):
+        pressure_alongtime=[]
+        time_list=[]
+        time=0
+        while self._pump_hardware().connected:
+            read_actualspd = self._pump_hardware().get_parameter(parameter_name)
+            value = read_actualspd['payload']
+            data_type = self._pump_hardware().commands[parameter_name]['data type']
+            max_value = self._pump_hardware().commands[parameter_name]['max']
+            description = self._pump_hardware().commands[parameter_name]['description']
+            if value.isdigit():
+                value = int(value)
+            if data_type == 2:
+                if max_value == 9999.99:
+                    value = value/100
 
-        
+                elif max_value == 1:
+                    value = value/100000
+                elif max_value == 100:
+                    value = value/100
+            if data_type == 0:
+                if value == 0:
+                    value = "OFF"
+                else:
+                    value = "ON"
+            if '(' in description:
+                unit = description.split('(')[1].split(')')[0]
+                value = str(value) + " " + unit
+
+            datos = self._pump_hardware().get_pressure()
+            pressure=10**(1.6666*datos[0]-11.33)
+            pressure_alongtime.append(pressure)
+            time=time+0.5
+            time_list.append(time)
+            if pressure<=5 and self.stateturbo==True:
+                self.on_turbo()
+                self.stateturbo=False
+            pressure = format(pressure, '.2e')
+            
+            self.update_currentvalue_signal.emit([str(pressure),str(value),[pressure_alongtime,time_list]])  
+            QApplication.processEvents()
+            sleep(0.5)  
+    @Slot()
+    def on_turbo(self):
+        self.set_parameter("MotorPump",1)
+
+    @Slot()
+    def off_turbo(self):
+        self.set_parameter("MotorPump",0)    
+        self.stateturbo=False
+    @Slot()
+    def automatic_turbo(self,automatic_turbo:bool):
+        self.stateturbo =automatic_turbo

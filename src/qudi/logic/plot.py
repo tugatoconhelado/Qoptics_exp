@@ -6,7 +6,7 @@ from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 import matplotlib.ticker as ticker
 
 matplotlib.rcdefaults()
-plt.style.use('presentation')
+plt.style.use('ggplot')
 matplotlib.use('Qt5Agg')
 
 def confocal_image_plot(

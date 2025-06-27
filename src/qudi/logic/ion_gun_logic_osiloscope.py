@@ -279,9 +279,8 @@ class IonGunLogicOsiloscope(LogicBase):
 
     @Slot()
     def read_xy(self):
-        valor=self._ion_gun_hardware().read_xy()
-        self.update_voltage(valor)
-        return valor
+        self.update_voltage(3)
+        return 3
         
 
     @Slot(list)
@@ -295,16 +294,23 @@ class IonGunLogicOsiloscope(LogicBase):
 
     @Slot()
     def start_read_xy(self):
-        list = []
+        listx = []
+        listy=[]
+        samp_time=[]
         self.continue_acquisition = True
+        time_0=0
+        print('Acquisition started', self.continue_acquisition)
         while self.continue_acquisition:
             valor=self._ion_gun_hardware().read_xy()
-            list.append(valor)
-            valor=self.create_array(list)
-            self.update_voltage(valor)
+            time_0=time_0+0.1
+            samp_time.append(time_0)
+            listx.append(valor[0][0])
+            listy.append(valor[0][1])
+            self.update_voltage([listx,listy,samp_time])
+            
             QApplication.processEvents()
             
-            sleep(0.1)
+            
 
     @Slot()
     def stop_acquisition(self):
@@ -326,6 +332,10 @@ class IonGunLogicOsiloscope(LogicBase):
         
         print('Data saved')
         
-
+    @Slot()
+    def reset_Ni_Voltage(self):
+        self._ion_gun_hardware().reset_Ni_Voltage()
+        sleep(2)
+        
 
         

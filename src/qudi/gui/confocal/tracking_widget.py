@@ -5,7 +5,7 @@ from qudi.util.uic import loadUi
 from qudi.gui.confocal.confocal_widget import HeatmapWidget
 import numpy as np
 import pyqtgraph as pg
-
+import os
 
 class TrackingWidget(QWidget):
 
@@ -18,7 +18,7 @@ class TrackingWidget(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         loadUi(
-            r'C:\EXP\python\Qoptics_exp\src\qudi\gui\confocal\tracking.ui',
+            os.path.join(os.path.dirname(__file__),'tracking.ui'),
             self
         )
 
@@ -220,7 +220,7 @@ class TrackingParametersDialog(QDialog):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         loadUi(
-            r'C:\EXP\python\Qoptics_exp\src\qudi\gui\confocal\set_tracking_parameters.ui',
+            os.path.join(os.path.dirname(__file__),'set_tracking_parameters.ui'),
             self
         )
         self.init_gui()

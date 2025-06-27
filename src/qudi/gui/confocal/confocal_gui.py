@@ -15,7 +15,7 @@ class ConfocalGui(GuiBase):
     _confocal_logic = Connector(name='confocal_logic', interface='ConfocalLogic')
     _tracking_logic = Connector(name='tracking_logic', interface='TrackingLogic')
     _timetrace_gui = Connector(name='timetrace_gui', interface='TimeTraceGui')
-    _tcspc_gui = Connector(name='tcspc_gui', interface='TCSPCGui')
+    """ _tcspc_gui = Connector(name='tcspc_gui', interface='TCSPCGui')"""
 
     # Declare static parameters that can/must be declared in the qudi configuration
     # _my_config_option = ConfigOption(name='my_config_option', default=1, missing='warn')
@@ -211,10 +211,10 @@ class ConfocalGui(GuiBase):
             self.connect_tracking_interval_to_TCSPC, Qt.QueuedConnection
         )
 
-        self._tcspc_gui()._tcspc_logic().track_point_signal.connect(
+        """self._tcspc_gui()._tcspc_logic().track_point_signal.connect(
                 self._tracking_logic().track_point,
                 Qt.QueuedConnection
-        )
+        )"""
         self._timetrace_gui()._timetrace_logic().track_point_signal.connect(
             self._tracking_logic().track_point,
             Qt.QueuedConnection
@@ -225,7 +225,7 @@ class ConfocalGui(GuiBase):
             self._tracking_logic().track_point,
             Qt.QueuedConnection
         )
-        self._tracking_logic().tracking_finished_signal.connect(
+        """self._tracking_logic().tracking_finished_signal.connect(
             self._tcspc_gui()._tcspc_logic().restart_measurement,
         )
         self._tcspc_gui()._tcspc_logic().measurement_finished_signal.connect(
@@ -235,7 +235,7 @@ class ConfocalGui(GuiBase):
         self._tcspc_gui()._tcspc_logic().measurement_finished_signal.connect(
             self._tracking_logic().stop_acquisition,
             Qt.QueuedConnection
-        )
+        )"""
 
 
         self.connect_tracking_intensity_monitor('TCSPC')
@@ -258,13 +258,13 @@ class ConfocalGui(GuiBase):
 
         self._tracking_logic().start_track_intensity_signal.disconnect()
 
-        if monitor == 'TCSPC':
+        """ if monitor == 'TCSPC':
             self._tracking_logic().start_track_intensity_signal.connect(
                 self._tcspc_gui()._tcspc_logic().start_track_intensity,
                 Qt.QueuedConnection
-            )
+            )"""
 
-        elif monitor == 'TimeTrace':
+        if monitor == 'TimeTrace':
             self._tracking_logic().start_track_intensity_signal.connect(
                 self._timetrace_gui().on_start_track_intensity,
                 Qt.QueuedConnection
@@ -274,12 +274,12 @@ class ConfocalGui(GuiBase):
     def connect_tracking_interval_to_TCSPC(self, connect: bool):
 
         self._tracking_logic().interval_clock_signal.disconnect()
-        if connect is True:
+        """if connect is True:
             self._tracking_logic().interval_clock_signal.connect(
                 self._tcspc_gui()._tcspc_logic().track_interval_triggered,
                 Qt.QueuedConnection
-            )
-        elif connect is False:
+            )"""
+        if connect is False:
             self._tracking_logic().interval_clock_signal.connect(
                 self._tracking_logic().track_point,
                 Qt.QueuedConnection

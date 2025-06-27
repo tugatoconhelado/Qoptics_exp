@@ -5,7 +5,7 @@ import pyqtgraph as pg
 from qudi.util.uic import loadUi
 import functools
 import seaborn as sns
-
+import os
 
 class ConfocalWidget(QWidget):
 
@@ -15,7 +15,7 @@ class ConfocalWidget(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         loadUi(
-            r'C:\EXP\python\Qoptics_exp\src\qudi\gui\confocal\confocal_scan.ui',
+            os.path.join(os.path.dirname(__file__),'confocal_scan.ui'),
             self
         )
         self.configure_plots()
@@ -97,7 +97,7 @@ class ScanParametersDialog(QDialog):
     def __init__(self, parent = None):
         super().__init__(parent=parent)
         loadUi(
-            r'C:\EXP\python\Qoptics_exp\src\qudi\gui\confocal\set_scan_parameters.ui',
+            os.path.join(os.path.dirname(__file__),'set_scan_parameters.ui'),
             self
         )
         self.init_gui()

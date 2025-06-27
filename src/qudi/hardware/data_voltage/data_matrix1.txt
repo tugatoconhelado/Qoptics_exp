@@ -1,0 +1,1 @@
+emision_current=10000,	energy=5000,	extractor_voltage=90.01,	focus_1_voltage=78.0,	focus_2_voltage=77.0,	position_x=0,	position_y=0,	width_x=0,	width_y=0,	blanking_x=1,	blanking_y=1,	blanking_level=0,	time_per_dot=50,	angle_phi=0,	angle_theta=0,	l=31500,	m=11500,	deflection_x=55,	deflection_y=75
