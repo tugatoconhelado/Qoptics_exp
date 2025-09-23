@@ -277,4 +277,4 @@ class GalvoHardware(Base):
             task.stop()
             task.close()
         self.tasks = []
-
+    
