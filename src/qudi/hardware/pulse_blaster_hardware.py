@@ -148,14 +148,14 @@ class PulseBlasterHardware(Base):
         channel_binary_0 = int(sum(variation[0].channel_binary[0]))
             
         if width_0 < 11:
-            print(f'width_0 = {width_0}')
+            #print(f'width_0 = {width_0}')
             channel_binary_0 = int((width_0 // 2)) << 21 | channel_binary_0
             width_0 = 10
         else: 
             channel_binary_0 = (7) << 21 | channel_binary_0
-            print(f'width_0 = {width_0}')
+            #print(f'width_0 = {width_0}')
         
-        print(self.get_string_representation_from_decimal(channel_binary_0))
+        #print(self.get_string_representation_from_decimal(channel_binary_0))
 
         start_pb_loop = spinapi.pb_inst_pbonly(
             channel_binary_0,
@@ -164,9 +164,9 @@ class PulseBlasterHardware(Base):
             (width_0) * spinapi.ns,
         )
 
-        print(
-            f"spinapi.pb_inst_pbonly({self.get_string_representation_from_decimal(sum(variation[0].channel_binary[0]))},spinapi.Inst.LOOP,{number_of_loops},({width_0})*spinapi.ns)"
-        )
+        #print(
+        #    f"spinapi.pb_inst_pbonly({self.get_string_representation_from_decimal(sum(variation[0].channel_binary[0]))},spinapi.Inst.LOOP,{number_of_loops},({width_0})*spinapi.ns)"
+        #)
 
         for k in range(1, len(variation)): 
 
@@ -188,18 +188,18 @@ class PulseBlasterHardware(Base):
             channel_binary_k = int(sum(variation[k].channel_binary[0]))
             
             if width_k < 11:
-                print(f'width_k = {width_k}')
+                #print(f'width_k = {width_k}')
                 channel_binary_k = (width_k // 2) << 21 | channel_binary_k
                 width_k = 10
             else: 
                 channel_binary_k = (7) << 21 | channel_binary_k
-                print(f'width_k = {width_k}')
+                #print(f'width_k = {width_k}')
             
 
             if k != len(variation) - 1:
-                print(
-                    f"spinapi.pb_inst_pbonly({self.get_string_representation_from_decimal(channel_binary_k)},spinapi.Inst.CONTINUE,0,({width_k})*spinapi.ns)"
-                )
+                #print(
+                #    f"spinapi.pb_inst_pbonly({self.get_string_representation_from_decimal(channel_binary_k)},spinapi.Inst.CONTINUE,0,({width_k})*spinapi.ns)"
+                #)
                 spinapi.pb_inst_pbonly(
                     channel_binary_k,
                     spinapi.Inst.CONTINUE,
@@ -207,9 +207,9 @@ class PulseBlasterHardware(Base):
                     width_k * spinapi.ns,
                 )
             else:
-                print(
-                    f"spinapi.pb_inst_pbonly({self.get_string_representation_from_decimal(channel_binary_k)},spinapi.Inst.END_LOOP,start,{width_k}"
-                )
+                #print(
+                #    f"spinapi.pb_inst_pbonly({self.get_string_representation_from_decimal(channel_binary_k)},spinapi.Inst.END_LOOP,start,{width_k}"
+                #)
                 spinapi.pb_inst_pbonly(
                     channel_binary_k,
                     spinapi.Inst.END_LOOP,
