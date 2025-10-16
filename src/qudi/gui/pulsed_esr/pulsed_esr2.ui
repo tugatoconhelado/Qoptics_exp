@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1131</width>
-    <height>869</height>
+    <width>1263</width>
+    <height>945</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,8 +28,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1131</width>
-     <height>21</height>
+     <width>1263</width>
+     <height>39</height>
     </rect>
    </property>
   </widget>
@@ -667,199 +667,11 @@
     <number>4</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_3">
-    <layout class="QVBoxLayout" name="verticalLayout_5">
+    <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,2">
      <item>
-      <layout class="QHBoxLayout" name="pulsed_exp_control_layout" stretch="4,2,1,2">
+      <layout class="QVBoxLayout" name="simulation_layout" stretch="1,1,1">
        <item>
-        <layout class="QHBoxLayout" name="loop_layout" stretch="1,2,4">
-         <item>
-          <widget class="QLabel" name="loop_label">
-           <property name="text">
-            <string>Loop: </string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="loop_sequence_spinbox">
-           <property name="prefix">
-            <string>x=</string>
-           </property>
-           <property name="maximum">
-            <number>999999999</number>
-           </property>
-           <property name="singleStep">
-            <number>1000</number>
-           </property>
-           <property name="value">
-            <number>10</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="type_variation_combobox">
-           <item>
-            <property name="text">
-             <string>Type A: Loop x amount each variation independently</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Type B: Loop x amount the variations consecutively</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="repeat_exp_layout" stretch="3,2,1">
-         <item>
-          <widget class="QLabel" name="repeat_exp_label">
-           <property name="text">
-            <string>Repeat Experiment:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="repeat_exp_spinbox">
-           <property name="prefix">
-            <string>j=</string>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>999999999</number>
-           </property>
-           <property name="singleStep">
-            <number>100</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="times_label">
-           <property name="text">
-            <string>times</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="run_pulsed_exp_layout" stretch="1,1">
-         <item>
-          <widget class="QPushButton" name="run_sequence_button">
-           <property name="text">
-            <string>Run</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="stop_sequence_button">
-           <property name="text">
-            <string>Stop</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,1,0,1">
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_8">
-         <item>
-          <widget class="QLabel" name="current_iteration_2">
-           <property name="text">
-            <string>Display iteration</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="iteration_frame_spinbox">
-           <property name="prefix">
-            <string>i=</string>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>1000000000</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_14" stretch="1,1">
-         <item>
-          <widget class="QLabel" name="label_16">
-           <property name="text">
-            <string>Simulation refresh time:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="ms_per_iteration_spinbox">
-           <property name="maximumSize">
-            <size>
-             <width>111</width>
-             <height>24</height>
-            </size>
-           </property>
-           <property name="suffix">
-            <string> ms</string>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>1000000000</number>
-           </property>
-           <property name="singleStep">
-            <number>100</number>
-           </property>
-           <property name="value">
-            <number>100</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_12">
-         <item>
-          <widget class="QLabel" name="loop_duration_label">
-           <property name="text">
-            <string>Duration: ()</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="current_iteration_label">
-           <property name="text">
-            <string>Current iteration: ()</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="1,1">
+        <layout class="QHBoxLayout" name="sim_control_layout" stretch="1,1">
          <item>
           <widget class="QPushButton" name="stop_simulation_button">
            <property name="maximumSize">
@@ -888,6 +700,294 @@
          </item>
         </layout>
        </item>
+       <item>
+        <layout class="QHBoxLayout" name="sim_status_layout" stretch="1,1">
+         <item>
+          <widget class="QLabel" name="loop_duration_label">
+           <property name="text">
+            <string>Duration: ()</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="current_iteration_label">
+           <property name="text">
+            <string>Current iteration: ()</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="sim_config_layout" stretch="1,1">
+         <item>
+          <layout class="QHBoxLayout" name="disp_iteration_layout" stretch="1,1">
+           <item>
+            <widget class="QLabel" name="disp_iteration_label">
+             <property name="text">
+              <string>Display iteration</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="iteration_frame_spinbox">
+             <property name="prefix">
+              <string>i=</string>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>1000000000</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="sim_refresh_layout" stretch="2,1">
+           <item>
+            <widget class="QLabel" name="ms_sim_label">
+             <property name="text">
+              <string>Simulation refresh time:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="ms_per_iteration_spinbox">
+             <property name="maximumSize">
+              <size>
+               <width>111</width>
+               <height>24</height>
+              </size>
+             </property>
+             <property name="suffix">
+              <string> ms</string>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>1000000000</number>
+             </property>
+             <property name="singleStep">
+              <number>100</number>
+             </property>
+             <property name="value">
+              <number>100</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="pulsed_exp_control_layout" stretch="2,1">
+       <item>
+        <layout class="QVBoxLayout" name="exp_config_layout">
+         <item>
+          <layout class="QHBoxLayout" name="loop_layout" stretch="1,2,4">
+           <item>
+            <widget class="QLabel" name="loop_label">
+             <property name="text">
+              <string>Loop: </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="loop_sequence_spinbox">
+             <property name="prefix">
+              <string>x=</string>
+             </property>
+             <property name="maximum">
+              <number>999999999</number>
+             </property>
+             <property name="singleStep">
+              <number>1000</number>
+             </property>
+             <property name="value">
+              <number>10</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="type_variation_combobox">
+             <item>
+              <property name="text">
+               <string>Type A: Loop x amount each variation independently</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Type B: Loop x amount the variations consecutively</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="repeat_exp_layout" stretch="1,2,1">
+           <item>
+            <widget class="QLabel" name="repeat_exp_label">
+             <property name="text">
+              <string>Repeat Experiment:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="repeat_exp_spinbox">
+             <property name="prefix">
+              <string>j=</string>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>999999999</number>
+             </property>
+             <property name="singleStep">
+              <number>100</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="times_label">
+             <property name="text">
+              <string>times</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="track_option_layout" stretch="1,2,1,1">
+           <item>
+            <widget class="QCheckBox" name="track_checkbox">
+             <property name="text">
+              <string>Track Every</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="track_every_spinbox"/>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="iteration_radiobutton">
+             <property name="text">
+              <string>Iteration i</string>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="loop_radiobutton">
+             <property name="text">
+              <string>Loop x</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="exp_control_layout" stretch="1,2">
+         <item>
+          <layout class="QHBoxLayout" name="run_pulsed_exp_layout" stretch="1,1">
+           <item>
+            <widget class="QPushButton" name="run_sequence_button">
+             <property name="text">
+              <string>Run</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="stop_sequence_button">
+             <property name="text">
+              <string>Stop</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1,1">
+           <item>
+            <layout class="QHBoxLayout" name="save_data_layout" stretch="1,1">
+             <item>
+              <widget class="QPushButton" name="save_button">
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../../../../artwork/qudi_icons.qrc">
+                 <normaloff>:/icons/icons/save.png</normaloff>:/icons/icons/save.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="delete_button">
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../../../../artwork/qudi_icons.qrc">
+                 <normaloff>:/icons/icons/delete.png</normaloff>:/icons/icons/delete.png</iconset>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="load_data_layout" stretch="1,1,1">
+             <item>
+              <widget class="QPushButton" name="load_button">
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../../../../artwork/qudi_icons.qrc">
+                 <normaloff>:/icons/icons/load.png</normaloff>:/icons/icons/load.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="previous_button">
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../../../../artwork/qudi_icons.qrc">
+                 <normaloff>:/icons/icons/previous.png</normaloff>:/icons/icons/previous.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="next_button">
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../../../../artwork/qudi_icons.qrc">
+                 <normaloff>:/icons/icons/next.png</normaloff>:/icons/icons/next.png</iconset>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
       </layout>
      </item>
     </layout>
@@ -895,7 +995,7 @@
   </widget>
   <widget class="QDockWidget" name="dockWidget">
    <property name="windowTitle">
-    <string>PulseBlaster Control</string>
+    <string>PulseBlaster QuickAccess Control</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
