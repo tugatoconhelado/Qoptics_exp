@@ -19,7 +19,8 @@ class ODMRParameterData:
     frequency_range: np.ndarray = np.ones(10)
     microwave_power: float = 0.0
     frequency_points: int = 300
-
+    repetitions: int = 1
+    number_of_averages: int = 1
 
 @dataclasses.dataclass
 class ODMRData:
@@ -33,10 +34,15 @@ class ODMRLogic(LogicBase):
 
     odmr_data_signal = Signal(np.ndarray, np.ndarray)
     odmr_full_data_signal = Signal(np.ndarray, np.ndarray)
+    file_changed_signal = Signal(str)
+    number_averages_signal = Signal(int)
 
     # Declare connectors to other logic modules or hardware modules to interact with
     _signal_generator_hardware = Connector(name='SG384_hardware',
-                                   interface='SG384Hardware')
+                                   interface='SG384Hardware', optional=True)
+    _tracking_logic = Connector(
+        name="tracking_logic", interface="TrackingLogic", optional=True
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -44,7 +50,7 @@ class ODMRLogic(LogicBase):
         self._mutex = Mutex()
 
         self.filemanager = FileManager(
-            data_dir=os.path.join(os.sep, 'c:' + os.sep, 'EXP', 'testdata'),
+            data_dir=os.path.join(os.sep, 'C:' + os.sep, 'EXP', 'testdata'),
             experiment_name='odmr',
             exp_str='ODMR'
         )
@@ -60,10 +66,38 @@ class ODMRLogic(LogicBase):
     def on_deactivate(self) -> None:
         pass
 
-    @Slot(float, float, float, int)
-    def start_acquisition(self, frequency_center: float, power: float, frequency_range: float, number_points: int):
+    @Slot(float, float, float, int, tuple, tuple)
+    def start_acquisition(self, frequency_center: float, power: float,
+            frequency_range: float, number_points: int,
+            track_options: tuple = (), averaging_options: tuple = ()
+        ) -> None:
+        """
+        Start the ODMR acquisition with the given parameters.
 
-        self.log.info('Starting acquisition')
+        Configures the signal generator for a frequency sweep and
+        initializes the data arrays. Then starts the acquisition loop.
+
+        Parameters
+        ----------
+        frequency_center : float
+            Center frequency of the microwave sweep in GHz.
+        power : float
+            Microwave power in dBm.
+        frequency_range : float
+            Frequency range of the sweep in GHz.
+        number_points : int
+            Number of points in the sweep.
+        track_options : tuple
+            Options for tracking. Contains (enabled: bool, interval: int).
+            when enabled, tracking is performed every 'interval' scans.
+        averaging_options : tuple
+            Options for averaging. Contains (finite: bool, repetitions: int,
+            stop: bool). When finite is True, the data is averaged over 
+            'repetitions' scans, if finite is False, the data is averaged 
+            until stopped. If stop is True,the acquisition stops after 
+            the averaging is complete. Note that if finite is False, 
+            stop is ignored.
+        """
         self._signal_generator_hardware().configure_frequency_sweep(
             frequency_centre=frequency_center,
             amplitude=power,
@@ -77,11 +111,42 @@ class ODMRLogic(LogicBase):
         self.data.parameters.microwave_power = power
         self.data.parameters.frequency_points = number_points
 
-        self.log.info(f'Starting acquisition with parameters: {self.data.parameters}')
+        self.log.info(
+            f'Starting acquisition with parameters: {self.data.parameters}')
         self.data.frequency = np.zeros(number_points)
         self.data.fluorescence = np.zeros(number_points)
 
+        self.average_finite = averaging_options[0]
+        self.total_repetitions = averaging_options[1]
+        self.stop_after_averaging = averaging_options[2]
+
+        self.track_enabled = track_options[0]
+        self.track_interval = track_options[1]
+
         self.run_exp(number_points=number_points, modulation_rate=1)
+
+    def set_tasks(self, sample_rate, number_samples):
+        self.clock_task = self.set_clock(
+            frequency=sample_rate,
+            number_samples= number_samples
+        )
+        self.fluorescence_task = self.set_counter_fluorescence(
+            number_samples=number_samples,
+            sample_rate=sample_rate
+        )
+        self.modulation_function_task = self.set_signal_generator_ramp_reader(
+            number_samples=number_samples,
+            sample_rate=sample_rate
+        )
+        return (
+            self.clock_task,
+            self.fluorescence_task,
+            self.modulation_function_task
+        )
+    def start_acquisition_tasks(self):
+        self.clock_task.start()
+        self.fluorescence_task.start()
+        self.modulation_function_task.start()
 
     def run_exp(self, number_points, modulation_rate):
 
@@ -92,32 +157,34 @@ class ODMRLogic(LogicBase):
         sample_rate = int(1 / dt)
         timeout = sweep_time
 
-        self.clock_task = self.set_clock(
-            frequency=sample_rate,
-            number_samples= number_points
-        )
-        self.fluorescence_task = self.set_counter_fluorescence(
-            number_samples=number_points,
-            sample_rate=sample_rate
-        )
-        self.modulation_function_task = self.set_signal_generator_ramp_reader(
-            number_samples=number_points,
-            sample_rate=sample_rate
-        )
-
-        self.clock_task.start()
-        self.fluorescence_task.start()
-        self.modulation_function_task.start()
+        self.set_tasks(sample_rate=sample_rate, number_samples=number_points)
+        self.start_acquisition_tasks()
 
         level_fluorescence = 0
         level_volts = 0
         iteration = 0
         self.measure = True
+        self.track_completed = False
 
-        self.all_fluorescence = np.array([[]])
+        if self.average_finite:
+            self.all_fluorescence = np.zeros((self.total_repetitions, number_points))
+        elif not self.average_finite:
+            self.all_fluorescence = np.array([[]])
 
         while self.measure:
 
+            if self.track_enabled and self.measure:
+                if (iteration + 1) % self.track_interval == 0:
+                    self.stop_acquisition()
+                    
+                    self._tracking_logic().handle_max_request('xyz')
+
+                    # Resume the measurement
+                    self.measure = True
+                    self.set_tasks(sample_rate=sample_rate, number_samples=number_points)
+                    self.start_acquisition_tasks()
+                    self.log.info('Resumed acquisition after tracking')
+                    self.track_completed = True
 
             readed_fluorescence = self.fluorescence_task.read(
                 number_of_samples_per_channel=number_points,
@@ -134,14 +201,19 @@ class ODMRLogic(LogicBase):
 
             generator_ramp = np.array(generator_ramp)
 
-            if iteration == 0:
+            if iteration == 0 or self.track_completed:
                 level_fluorescence = readed_fluorescence[0]
                 fluorescence = np.diff(fluorescence)
                 fluorescence = np.append(fluorescence[0], fluorescence)
                 level_fluorescence = readed_fluorescence[-1]
+                self.track_completed = False
             else:
                 fluorescence = np.diff(fluorescence)
-                fluorescence = np.append(np.array(readed_fluorescence[0] - level_fluorescence), fluorescence)
+                fluorescence = np.append(
+                    np.array(
+                        readed_fluorescence[0] - level_fluorescence),
+                        fluorescence
+                    )
                 level_fluorescence = readed_fluorescence[-1]
 
             fluorescence = fluorescence[generator_ramp.argsort()]
@@ -155,15 +227,31 @@ class ODMRLogic(LogicBase):
             if iteration == 0:
                 self.all_fluorescence = np.array([fluorescence])
             else:
-                self.all_fluorescence = np.append(self.all_fluorescence, [fluorescence], axis=0)
+                self.all_fluorescence = np.append(
+                    self.all_fluorescence,
+                    [fluorescence],
+                    axis=0
+                )
+                if self.average_finite:
+                    if self.all_fluorescence.shape[0] > self.total_repetitions:
+                        self.all_fluorescence = (
+                            self.all_fluorescence[-self.total_repetitions:, :]
+                        )
             self.odmr_full_data_signal.emit(
                 self.data.frequency,
                 self.all_fluorescence
             )
             averaged_fluorescence = np.average(self.all_fluorescence, axis=0)
+            self.data.parameters.number_of_averages = self.all_fluorescence.shape[0]
             self.data.fluorescence = averaged_fluorescence
 
             self.odmr_data_signal.emit(self.data.frequency, self.data.fluorescence)
+            self.number_averages_signal.emit(self.data.parameters.number_of_averages)
+
+            if self.average_finite and self.stop_after_averaging:
+                if iteration + 1 >= self.total_repetitions:
+                    self.log.info('Completed averaging, stopping acquisition')
+                    self.measure = False
 
             iteration += 1
 
@@ -243,6 +331,9 @@ class ODMRLogic(LogicBase):
         self.tasks.append(task)
         return task
 
+    def send_data(self, data):
+        self.odmr_data_signal.emit(self.data.frequency, self.data.fluorescence)
+
     def save_data(self, filepath: str = '') -> None:
         """
         Saves the data to a file.
@@ -284,20 +375,21 @@ class ODMRLogic(LogicBase):
                 setattr(self.data.parameters, key, value)
             for key, value in data.items():
                 setattr(self.data, key, value)
-            self.data_signal.emit(self.data.time_array, self.data.counts)
-
+            self.send_data(self.data)
             self.log.info(f'Loaded data from {filepath}')
             self.file_changed_signal.emit(filepath)
+            return filepath
 
     def load_previous_data(self):
 
         data, metadata, general, filepath = self.filemanager.load_previous()
+        self.log.info(f'Loading previous data')
         if filepath != '':
             for key, value in metadata.items():
                 setattr(self.data.parameters, key, value)
             for key, value in data.items():
                 setattr(self.data, key, value)
-            self.data_signal.emit(self.data.time_array, self.data.counts)
+            self.odmr_data_signal.emit(self.data.frequency, self.data.fluorescence)
             self.log.info(f'Loaded data from {filepath}')
             self.file_changed_signal.emit(filepath)
             return filepath
@@ -310,7 +402,7 @@ class ODMRLogic(LogicBase):
                 setattr(self.data.parameters, key, value)
             for key, value in data.items():
                 setattr(self.data, key, value)
-            self.data_signal.emit(self.data.time_array, self.data.counts)
+            self.odmr_data_signal.emit(self.data.frequency, self.data.fluorescence)
             self.log.info(f'Loaded data from {filepath}')
             self.file_changed_signal.emit(filepath)
             return filepath

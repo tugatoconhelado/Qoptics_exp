@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>863</width>
-    <height>856</height>
+    <width>895</width>
+    <height>690</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,7 +40,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>863</width>
+     <width>895</width>
      <height>21</height>
     </rect>
    </property>
@@ -76,155 +76,27 @@
   <widget class="QDockWidget" name="signal_generator_dockwidget">
    <property name="minimumSize">
     <size>
-     <width>622</width>
-     <height>251</height>
+     <width>820</width>
+     <height>150</height>
     </size>
    </property>
    <property name="features">
     <set>QDockWidget::AllDockWidgetFeatures</set>
    </property>
    <property name="windowTitle">
-    <string>Signal Generator SRS SG384</string>
+    <string>Signal Generator SRS SG384 Measurement Parameters</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>4</number>
    </attribute>
    <widget class="QWidget" name="signal_generator_widget">
-    <layout class="QVBoxLayout" name="verticalLayout_9" stretch="4,0">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,4">
      <item>
-      <layout class="QHBoxLayout" name="status_control_layout">
+      <layout class="QHBoxLayout" name="status_control_layout" stretch="1,1">
        <item>
-        <layout class="QVBoxLayout" name="modulation_layout">
+        <layout class="QVBoxLayout" name="sg_display_layout" stretch="1,1">
          <item>
-          <layout class="QHBoxLayout" name="modulation_status_layout">
-           <item>
-            <widget class="QLabel" name="modulation_label">
-             <property name="text">
-              <string>Modulation</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="modulation_on_radiobutton">
-             <property name="text">
-              <string>On</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="modulation_off_radiobutton">
-             <property name="text">
-              <string>Off</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="modulation_type_layout">
-           <item>
-            <widget class="QLabel" name="modulation_type_label">
-             <property name="text">
-              <string>Modulation Type</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="modulation_type_combobox">
-             <property name="currentIndex">
-              <number>3</number>
-             </property>
-             <item>
-              <property name="text">
-               <string>AM</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>FM</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>PhaseM</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Sweep</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Pulse</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>I/O</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="modulation_function_layout">
-           <item>
-            <widget class="QLabel" name="modulation_function_label">
-             <property name="text">
-              <string>Modulation Function</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="modulation_function_combobox">
-             <property name="currentIndex">
-              <number>1</number>
-             </property>
-             <item>
-              <property name="text">
-               <string>Sine</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Ramp</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Triangle</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Square</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Noise</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>External</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="sg_display_layout">
-         <item>
-          <layout class="QHBoxLayout" name="display_layout">
+          <layout class="QHBoxLayout" name="display_layout" stretch="1,3">
            <item>
             <widget class="QLabel" name="display_label">
              <property name="text">
@@ -234,6 +106,12 @@
            </item>
            <item>
             <widget class="QComboBox" name="display_combobox">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <item>
               <property name="text">
                <string>Modulation Type</string>
@@ -304,7 +182,7 @@
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="output_layout">
+          <layout class="QHBoxLayout" name="output_layout" stretch="1,1,1,1">
            <item>
             <widget class="QLabel" name="output_label">
              <property name="text">
@@ -346,10 +224,138 @@
          </item>
         </layout>
        </item>
+       <item>
+        <layout class="QVBoxLayout" name="modulation_layout" stretch="1,1,1">
+         <item>
+          <layout class="QHBoxLayout" name="modulation_status_layout" stretch="1,1,1">
+           <item>
+            <widget class="QLabel" name="modulation_label">
+             <property name="text">
+              <string>Modulation</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="modulation_on_radiobutton">
+             <property name="text">
+              <string>On</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="modulation_off_radiobutton">
+             <property name="text">
+              <string>Off</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="modulation_type_layout" stretch="1,1">
+           <item>
+            <widget class="QLabel" name="modulation_type_label">
+             <property name="text">
+              <string>Modulation Type</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="modulation_type_combobox">
+             <property name="currentIndex">
+              <number>3</number>
+             </property>
+             <item>
+              <property name="text">
+               <string>AM</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>FM</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>PhaseM</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Sweep</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Pulse</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>I/O</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="modulation_function_layout" stretch="1,1">
+           <item>
+            <widget class="QLabel" name="modulation_function_label">
+             <property name="text">
+              <string>Modulation Function</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="modulation_function_combobox">
+             <property name="currentIndex">
+              <number>1</number>
+             </property>
+             <item>
+              <property name="text">
+               <string>Sine</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Ramp</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Triangle</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Square</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Noise</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>External</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
       </layout>
      </item>
      <item>
-      <layout class="QGridLayout" name="parameters_layout" rowstretch="0,0,0" columnstretch="1,1,1,1">
+      <layout class="QGridLayout" name="parameters_layout" rowstretch="1,1,1" columnstretch="1,2,1,2">
        <item row="1" column="2">
         <widget class="QLabel" name="step_label">
          <property name="text">
@@ -411,7 +417,7 @@
           <double>100000000.000000000000000</double>
          </property>
          <property name="singleStep">
-          <double>0.100000000000000</double>
+          <double>0.500000000000000</double>
          </property>
          <property name="value">
           <double>-10.000000000000000</double>
@@ -522,15 +528,96 @@
   </widget>
   <widget class="QDockWidget" name="control_dockwidget">
    <property name="windowTitle">
-    <string>ODMR Control</string>
+    <string>ODMR Measurement Control</string>
    </property>
    <attribute name="dockWidgetArea">
-    <number>4</number>
+    <number>1</number>
    </attribute>
    <widget class="QWidget" name="control_widget">
-    <layout class="QVBoxLayout" name="verticalLayout_7" stretch="1,3">
+    <layout class="QVBoxLayout" name="verticalLayout_7" stretch="3,1,1,0,1,3">
      <item>
-      <layout class="QHBoxLayout" name="control_layout">
+      <layout class="QVBoxLayout" name="average_layout" stretch="1,1,1">
+       <item>
+        <widget class="QRadioButton" name="average_continuosly_radiobutton">
+         <property name="text">
+          <string>Average all measurements</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="average_for_layout" stretch="1,1">
+         <item>
+          <widget class="QRadioButton" name="average_finite_radiobutton">
+           <property name="text">
+            <string>Average for</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="average_repetitions_spinbox">
+           <property name="suffix">
+            <string> repetitions</string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>999999999</number>
+           </property>
+           <property name="singleStep">
+            <number>10</number>
+           </property>
+           <property name="value">
+            <number>10</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="stop_after_averages_checkbox">
+         <property name="text">
+          <string>Stop after averaging is done</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="track_layout" stretch="1,1">
+       <item>
+        <widget class="QCheckBox" name="track_checkbox">
+         <property name="text">
+          <string>Track every</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="track_interval_spinbox">
+         <property name="suffix">
+          <string> repetitions</string>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>99999999</number>
+         </property>
+         <property name="singleStep">
+          <number>10</number>
+         </property>
+         <property name="value">
+          <number>10</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="control_layout" stretch="1,1">
        <item>
         <widget class="QPushButton" name="start_button">
          <property name="text">
@@ -551,9 +638,47 @@
       </layout>
      </item>
      <item>
+      <widget class="QLabel" name="number_averages_label">
+       <property name="styleSheet">
+        <string notr="true">font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
+       </property>
+       <property name="text">
+        <string>Averaged 0 repetitions</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
       <layout class="QVBoxLayout" name="file_layout" stretch="1,1,1">
        <item>
         <widget class="QLabel" name="filename_label">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>30</height>
+          </size>
+         </property>
          <property name="text">
           <string>FILENAME</string>
          </property>
@@ -591,7 +716,7 @@
           <widget class="QPushButton" name="load_button">
            <property name="maximumSize">
             <size>
-             <width>60</width>
+             <width>16777215</width>
              <height>16777215</height>
             </size>
            </property>
@@ -606,9 +731,15 @@
          </item>
          <item>
           <widget class="QPushButton" name="previous_button">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="maximumSize">
             <size>
-             <width>60</width>
+             <width>16777215</width>
              <height>16777215</height>
             </size>
            </property>
@@ -623,9 +754,15 @@
          </item>
          <item>
           <widget class="QPushButton" name="next_button">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="maximumSize">
             <size>
-             <width>60</width>
+             <width>16777215</width>
              <height>16777215</height>
             </size>
            </property>

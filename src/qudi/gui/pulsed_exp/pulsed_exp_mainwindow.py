@@ -8,7 +8,7 @@ import sys
 import os
 
 
-class PulsedESRMainWindow(QMainWindow):
+class PulsedExpMainWindow(QMainWindow):
     """
     Main Window of the TimeTrace Experiment
     """
@@ -24,7 +24,7 @@ class PulsedESRMainWindow(QMainWindow):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        loadUi(os.path.join(os.path.dirname(__file__), "pulsed_esr2.ui"), self)
+        loadUi(os.path.join(os.path.dirname(__file__), "pulsed_exp.ui"), self)
 
         self.iteration_start_spinbox.valueChanged.connect(self._set_max_iteration_end)
         self.stop_output_button.clicked.connect(self.pb_output_stop_signal.emit)
@@ -49,6 +49,10 @@ class PulsedESRMainWindow(QMainWindow):
         self.pulsed_exp_plot.setLabel('left', 'Counts')
 
         self.sequence_diagram_plot.getPlotItem().hideAxis('left')
+
+    @Slot(str)
+    def update_status_bar(self, msg: str):
+        self.statusbar.showMessage(msg)
 
     @Slot(np.ndarray)
     def update_pulsed_exp_plot(self, y: np.ndarray):
@@ -644,11 +648,11 @@ if __name__ == "__main__":
     print(os.path.dirname(__file__))
     sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
     import artwork.qudi_icons_rc
-    from qudi.logic.pulsed_esr_logic import Pulse
+    from qudi.logic.pulsed_exp_logic import Pulse
 
     app = QApplication(sys.argv)
     window = QMainWindow()
-    widget = PulsedESRMainWindow()
+    widget = PulsedExpMainWindow()
     widget.show()
 
     sequences = [

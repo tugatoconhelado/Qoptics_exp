@@ -11,7 +11,7 @@ import functools
 
 class ODMRGui(GuiBase):
 
-    start_odmr_exp_signal = Signal(float, float, float, int)
+    start_odmr_exp_signal = Signal(float, float, float, int, tuple, tuple)
     stop_experiment_signal = Signal()
 
     _odmr_logic = Connector(name='odmr_logic', interface='ODMRLogic')
@@ -180,35 +180,39 @@ class ODMRGui(GuiBase):
 
         # File management
         self._mw.save_button.clicked.connect(
-            self._odmr_logic().save_data,
+            functools.partial(self._odmr_logic().save_data),
             Qt.QueuedConnection
         )
         self._mw.save_action.triggered.connect(
-            self._odmr_logic().save_data,
+            functools.partial(self._odmr_logic().save_data),
             Qt.QueuedConnection
         )
         self._mw.load_button.clicked.connect(
-            self._odmr_logic().load_data,
+            functools.partial(self._odmr_logic().load_data),
             Qt.QueuedConnection
         )
         self._mw.load_action.triggered.connect(
-            self._odmr_logic().load_data,
+            functools.partial(self._odmr_logic().load_data),
             Qt.QueuedConnection
         )
         self._mw.save_as_action.triggered.connect(
-            self._odmr_logic().save_data_as,
+            functools.partial(self._odmr_logic().save_data_as),
             Qt.QueuedConnection
         )
         self._mw.previous_button.clicked.connect(
-            self._odmr_logic().load_previous_data,
+            functools.partial(self._odmr_logic().load_previous_data),
             Qt.QueuedConnection
         )
         self._mw.next_button.clicked.connect(
-            self._odmr_logic().load_next_data,
+            functools.partial(self._odmr_logic().load_next_data),
             Qt.QueuedConnection
         )
         self._mw.delete_button.clicked.connect(
-            self._odmr_logic().delete_file,
+            functools.partial(self._odmr_logic().delete_file),
+            Qt.QueuedConnection
+        )
+        self._odmr_logic().file_changed_signal.connect(
+            self._mw.update_file_label,
             Qt.QueuedConnection
         )
 
@@ -217,8 +221,16 @@ class ODMRGui(GuiBase):
             self._mw.update_odmr_plot,
             Qt.QueuedConnection
         )
+        self._odmr_logic().odmr_full_data_signal.connect(
+            self._mw.update_odmr_scans,
+            Qt.QueuedConnection
+        )
         self.start_odmr_exp_signal.connect(
             self._odmr_logic().start_acquisition,
+            Qt.QueuedConnection
+        )
+        self._odmr_logic().number_averages_signal.connect(
+            self._mw.update_averages_label,
             Qt.QueuedConnection
         )
         self.stop_experiment_signal.connect(
@@ -226,6 +238,7 @@ class ODMRGui(GuiBase):
             Qt.QueuedConnection
         )
         
+        self._mw.previous_button.clicked.emit()
         self.show()
 
     def on_deactivate(self) -> None:
@@ -238,7 +251,20 @@ class ODMRGui(GuiBase):
         power = float(self._mw.ampl_spinbox.value())
         number_points = int(self._mw.number_points_spinbox.value())
 
-        self.start_odmr_exp_signal.emit(frequency_center, power, frequency_range, number_points)
+        track_enabled = self._mw.track_checkbox.isChecked()
+        track_interval = int(self._mw.track_interval_spinbox.value())
+
+        average_finite = self._mw.average_finite_radiobutton.isChecked()
+        total_repetitions = int(self._mw.average_repetitions_spinbox.value())
+        stop_after_averaging = (
+            self._mw.stop_after_averages_checkbox.isChecked()
+        )
+
+        self.start_odmr_exp_signal.emit(
+            frequency_center, power, frequency_range, number_points,
+            (track_enabled, track_interval),
+            (average_finite, total_repetitions, stop_after_averaging)
+        )
 
     def stop_experiment(self):
 

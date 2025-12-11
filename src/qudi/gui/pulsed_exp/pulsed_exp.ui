@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1263</width>
+    <width>1277</width>
     <height>945</height>
    </rect>
   </property>
@@ -28,8 +28,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1263</width>
-     <height>39</height>
+     <width>1277</width>
+     <height>21</height>
     </rect>
    </property>
   </widget>
@@ -802,6 +802,9 @@
              <property name="prefix">
               <string>x=</string>
              </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
              <property name="maximum">
               <number>999999999</number>
              </property>
@@ -850,7 +853,7 @@
               <number>999999999</number>
              </property>
              <property name="singleStep">
-              <number>100</number>
+              <number>10</number>
              </property>
             </widget>
            </item>
@@ -864,7 +867,7 @@
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="track_option_layout" stretch="1,2,1,1">
+          <layout class="QHBoxLayout" name="track_option_layout" stretch="1,2,1">
            <item>
             <widget class="QCheckBox" name="track_checkbox">
              <property name="text">
@@ -873,25 +876,22 @@
             </widget>
            </item>
            <item>
-            <widget class="QSpinBox" name="track_every_spinbox"/>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="iteration_radiobutton">
-             <property name="text">
-              <string>Iteration i</string>
+            <widget class="QSpinBox" name="track_every_spinbox">
+             <property name="minimum">
+              <number>1</number>
              </property>
-             <property name="checked">
-              <bool>false</bool>
+             <property name="maximum">
+              <number>999999999</number>
+             </property>
+             <property name="value">
+              <number>1</number>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QRadioButton" name="loop_radiobutton">
+            <widget class="QLabel" name="repetition_label">
              <property name="text">
-              <string>Loop x</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
+              <string>repetition j</string>
              </property>
             </widget>
            </item>

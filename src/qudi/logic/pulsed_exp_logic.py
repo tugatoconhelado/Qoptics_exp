@@ -35,9 +35,22 @@ class ChannelData:
     delay: list
     tag: int = 0
     channel_type: str = ""
-    
 
-class PulsedESRLogic(LogicBase):
+
+@dataclasses.dataclass
+class SequenceData:
+
+    channels: list
+    pulses: list
+
+@dataclasses.dataclass
+class PulsedExpData:
+
+    sequence: list
+    iterations: np.ndarray
+    PL_data: np.ndarray
+
+class PulsedExpLogic(LogicBase):
     """This is a simple template logic measurement module for qudi.
 
     Example config that goes into the config file:
@@ -74,6 +87,9 @@ class PulsedESRLogic(LogicBase):
     )
     _apd_hardware = Connector(
         name="apd_hardware", interface="APDHardware", optional=True
+    )
+    _tracking_logic = Connector(
+        name="tracking_logic", interface="TrackingLogic", optional=True
     )
 
     def __init__(self, *args, **kwargs):
@@ -314,12 +330,26 @@ class PulsedESRLogic(LogicBase):
                 )
         print(f"self.Max_end_time:{self.Max_end_time}")
 
-    @Slot(int, int, int)
-    def run_experiment(self, value_loop: int, loop_type: int, repeat_exp: int = 1):
-        """here we iterate through each iteration of the loop to find the channels that have a sequence for that iteration
-        then we order the pulses form the channels that have pulses in this iteration. Then we create an object from the
-        class experiment. which we then add to our list Experiment_Hub
+    @Slot(int, int, int, dict)
+    def run_experiment(self, value_loop: int, loop_type: int, repeat_exp: int = 1, track_options: dict = None):
         """
+        Starts the pulsed experiment.
+
+        Here we iterate through each iteration of the loop to find the channels that have a sequence for that iteration
+        then we order the pulses from the channels that have pulses in this iteration. Then we create an object from the
+        class experiment. which we then add to our list Experiment_Hub. Finally, the APD is configured if a channel with
+        label "apd" exists. The experiment is then executed based on the specified loop type (A or B).
+
+        Parameters
+        ----------
+        value_loop : int
+            Number of times x each variation or all variations are looped, depending on the loop type.
+        loop_type : int
+            Type of loop to use (0 for variation loop, 1 for all variations loop).
+        repeat_exp : int, optional
+            Number of times j to repeat the entire experiment, by default 1.
+        """
+        print("Starting run experiment...")
         list_type_cero = []
         max_end_times_vars = []  # max end times per variation
         for i in range(1, self.max_variations + 1):
@@ -336,20 +366,20 @@ class PulsedESRLogic(LogicBase):
             exp = Experiment(Exp_i_pb, i) 
             # order the pulses of all the channels by time
             # in the instace of the variation of the experiment 
-            exp.Prepare_Exp()  
+            exp.Prepare_Exp() 
 
             self.experiment_hub.append(exp) 
             list_type_cero.append(exp.pb_sequence)
 
         self.apd_is_gated = False
         self.continue_experiment = True
-        divide_exp = self.divide_iter_experiment(value_loop)
+        chunck_separation = value_loop
+        divide_exp = self.divide_loops_into_chunks(
+            loops=value_loop, separation=chunck_separation, max_separation=1_000_000
+        )
 
         for channel in self.channels:
             if channel.label == "apd":
-                counter_task = self._apd_hardware().set_gated_apd(
-                    samples= 10 * sum(divide_exp) * self.max_variations,
-                )
                 self.apd_is_gated = True
         self.pl_data = np.zeros((repeat_exp, self.max_variations))
         
@@ -360,7 +390,7 @@ class PulsedESRLogic(LogicBase):
             Each variation is looped x times
             """
             self.run_sequence_type_a(
-                list_type_cero, repeat_exp, max_end_times_vars, divide_exp
+                list_type_cero, repeat_exp, max_end_times_vars, divide_exp, track_options
             )
 
         elif loop_type == 1:
@@ -378,12 +408,19 @@ class PulsedESRLogic(LogicBase):
             )
             return
     
-    def run_sequence_type_a(self, Flat_exp, repeat_exp, max_end_times_vars, divided_value):
+    def run_sequence_type_a(self, Flat_exp, repeat_exp, max_end_times_vars, divided_value, track_options=None):
 
         """here we must iterate each variation a number of value_loop times. we do this for all variations so.
         However to the pulse blaster can only have about 40k instructions and the loop can only iterate a
          maximum of 1 million times. so to get around this  we divide the value_loop by 10k iterations of the experiment
+
+        Parameters
+        ----------
+        track_options : dict, optional
+            Options for tracking intensity during the experiment, by default None.
+            Format: {'track': bool, 'by_repetition': bool, 'interval': int}
         """
+        print("Running sequence type A")
         #print("sending to pulse blaster")
         #print(f"len(Flat_exp):{len(Flat_exp)}")
         #print(f"divided_value:{divided_value}")
@@ -409,13 +446,18 @@ class PulsedESRLogic(LogicBase):
             accumulated_pl = np.zeros(self.max_variations)
 
             if self.apd_is_gated:
+                counter_task = self._apd_hardware().set_gated_apd(
+                    samples= 10 * sum(divided_value) * self.max_variations,
+                )
                 self._apd_hardware().start_apd(start_clock=False)
 
             last_pl_level = 0  
 
             for i in range(0, self.max_variations):
                 """
-                For each iteration i (a variation) , we will send one set of instructions to the pulse blaster
+                For each iteration i (a variation) ,
+                we will send one set of instructions 
+                to the pulse blaster
                 """         
                 fluorescence = np.zeros(sum(divided_value))
                 for d in range(0, len(divided_value)):
@@ -442,7 +484,7 @@ class PulsedESRLogic(LogicBase):
                         )
                         
                         if d != 0:
-                            fluorescence[divided_value[d - 1]:sum(divided_value[0:d + 1])] = counts
+                            fluorescence[sum(divided_value[0:d]):sum(divided_value[0:d + 1])] = counts
                             
                         else:
                             fluorescence[0:divided_value[d]] = counts
@@ -450,18 +492,17 @@ class PulsedESRLogic(LogicBase):
                     elif not self.apd_is_gated:
                         self.busy_wait_us(time_wait / 1000)
 
-                    
                     self._pulse_blaster_hardware().stop()
 
                     QApplication.processEvents()
 
-                # Store the last count of the fluorescence
-                # Minus the last level of the previous iteration (acumulated PL)
+                # Store the last count of the fluorescence, minus the
+                # last level of the previous iteration (acumulated PL)
                 self.pl_data[j, i] = fluorescence[-1] - last_pl_level
-
-                
                 last_pl_level = fluorescence[-1]
 
+                # The factor (repeat_exp / (j + 1)) normalizes
+                # the data between repetitions
                 averaged_data = np.mean(self.pl_data, axis=0) * (repeat_exp / (j + 1))
                 self.data_signal.emit(averaged_data)
                 
@@ -471,13 +512,23 @@ class PulsedESRLogic(LogicBase):
                 
             if self.apd_is_gated:
                 self._apd_hardware().stop_acquisition()
+                self._apd_hardware().stop()
 
-            
             experiment_end = time.perf_counter()
             print(
                 f"Total time for all variations in experiment iteration {j + 1} of {repeat_exp}: {(experiment_end - experiment_start) * 1000:.2f} ms"
             )
-        print("Experiment finished, stopping pulse blaster and apd hardware")
+            if track_options['track']:
+                if (j + 1) % track_options['interval'] == 0:
+                    self.switch_pb_outputs((0, 1, 0, 0, 0, 0))
+                    self.status_msg.emit(f"Tracking intensity at repetition {j + 1}")
+                    self.log.info(f"Tracking intensity at repetition {j + 1}")
+                    self._tracking_logic().handle_max_request('xyz')
+                    self.stop_pb_outputs()
+                    self.status_msg.emit("Resuming experiment")
+                    self.log.info("Resuming experiment after tracking")
+        self.status_msg.emit("Experiment finished, stopping pulse blaster and apd hardware")
+        self.log.info("Experiment finished, stopping pulse blaster and apd hardware")
         self.stop_experiment()
 
     def run_sequence_type_b(self, Flat_exp, value_loop, max_end_times_vars, divided_value):
@@ -550,6 +601,44 @@ class PulsedESRLogic(LogicBase):
         return divided_value
 
         # To recieve the counts from the apd
+
+    def divide_loops_into_chunks(self, loops, separation, max_separation):
+        """
+        Separates the number of loops into chunks based on the desired separation and maximum separation.
+        Such that, if the separation is larger than the max_separation, it will use the max_separation, 
+        and the next chunk will be the remaining separation, then for the next chunk
+        it will again use the max_separation if the remaining separation is still larger than max_separation,
+        and the next chunk will be the remaining separation.
+        This will continue until the loops are fully divided.
+
+        So, for example, for 100, a separation of 30 and a max_separation of 20,
+        it would return [20, 10, 20, 10, 20, 10, 10]
+
+        Parameters
+        ----------
+        loops : int
+            Total number of loops to be divided.
+        separation : int
+            Desired separation between chunks.
+        max_separation : int
+            Maximum allowed separation for each chunk.
+        """
+        chunks = []
+        remaining_separation = separation
+        while loops > 0:
+            if remaining_separation > max_separation:
+                chunk = max_separation
+            else:
+                chunk = remaining_separation
+            if chunk > loops:
+                chunk = loops
+            chunks.append(chunk)
+            loops -= chunk
+            remaining_separation -= chunk
+            if remaining_separation <= 0:
+                remaining_separation = separation
+        print("Divided loops into chunks:", chunks)
+        return chunks
 
     @Slot()
     def stop_experiment(self):
@@ -641,6 +730,7 @@ class PulsedESRLogic(LogicBase):
         """
         This function is used to switch the outputs of the pulse blaster
         """
+        print(f'Switching pulse blaster outputs to {pb_status}')
         self._pulse_blaster_hardware().initialise()
         self._pulse_blaster_hardware().stop_programming()
         self._pulse_blaster_hardware().stop()

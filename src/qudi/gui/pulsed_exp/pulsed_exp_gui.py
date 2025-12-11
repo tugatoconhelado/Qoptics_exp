@@ -13,24 +13,24 @@ from qudi.gui.template.template_main_window import TemplateMainWindow
 from qudi.gui.timetrace.timetrace_mainwindow import TimeTraceMainWindow
 from qudi.logic import filemanager
 from qudi.logic import plot
-from qudi.gui.pulsed_esr.pulsed_esr_mainwindow import PulsedESRMainWindow
+from qudi.gui.pulsed_exp.pulsed_exp_mainwindow import PulsedExpMainWindow
 import functools
 import pyqtgraph as pg
 
 
-class PulsedESRGui(GuiBase):
+class PulsedExpGui(GuiBase):
     """This is a simple template GUI measurement module for qudi"""
 
     add_channel_to_logic_signal = Signal(int, list, str, int)
     prepare_frame_signal = Signal(int)
     add_pulse_to_logic_signal = Signal(float, float, str, str, list, int)
-    run_exp_signal = Signal(int, int, int)
+    run_exp_signal = Signal(int, int, int, dict)
     stop_exp_signal = Signal()
     frame_to_logic_signal = Signal(int)
     simulation_to_logic = Signal(int, int, int)
     clear_channels_signal = Signal()
 
-    _pulsed_esr_logic = Connector(name="pulsed_esr_logic", interface="PulsedESRLogic")
+    _pulsed_exp_logic = Connector(name="pulsed_exp_logic", interface="PulsedExpLogic")
 
     # Declare static parameters that can/must be declared in the qudi configuration
     # _my_config_option = ConfigOption(name='my_config_option', default=1, missing='warn')
@@ -41,28 +41,28 @@ class PulsedESRGui(GuiBase):
 
     def on_activate(self) -> None:
 
-        self._mw = PulsedESRMainWindow()  # initializes the UI form
+        self._mw = PulsedExpMainWindow()  # initializes the UI form
 
         ########## SIGNALS and connectios ##########
 
         ##### ADDING CHANNELS #####
         # from gui window to gui slots
         self._mw.add_channel_button.clicked.connect(self.add_channel_gui)
-        self._pulsed_esr_logic().adding_channel_to_list.connect(
+        self._pulsed_exp_logic().adding_channel_to_list.connect(
             self._mw.update_channels_table, Qt.QueuedConnection
         )
         # from gui slots to logic
-        self.add_channel_to_logic_signal.connect(self._pulsed_esr_logic().add_channel)
+        self.add_channel_to_logic_signal.connect(self._pulsed_exp_logic().add_channel)
 
         ######## Adding and varying pulses ##############
         # from gui window to gui slots
-        self._pulsed_esr_logic().error_str_signal.connect(self.show_error_message)
+        self._pulsed_exp_logic().error_str_signal.connect(self.show_error_message)
         self._mw.add_pulse_button.clicked.connect(self.add_pulse_gui)
         # from gui slots to logic
         self.add_pulse_to_logic_signal.connect(
-            self._pulsed_esr_logic().add_pulse_to_channel
+            self._pulsed_exp_logic().add_pulse_to_channel
         )
-        self._pulsed_esr_logic().added_pulse_signal.connect(
+        self._pulsed_exp_logic().added_pulse_signal.connect(
             self._mw.update_pulse_table, Qt.QueuedConnection
         )
 
@@ -72,20 +72,20 @@ class PulsedESRGui(GuiBase):
         self._mw.iteration_frame_spinbox.valueChanged.connect(self.prepare_frame)
         self._mw.update_button.clicked.connect(self.prepare_frame)
         # from gui slots to logic
-        self.frame_to_logic_signal.connect(self._pulsed_esr_logic().prepare_frame)
-        self._pulsed_esr_logic().frame_data_signal.connect(
+        self.frame_to_logic_signal.connect(self._pulsed_exp_logic().prepare_frame)
+        self._pulsed_exp_logic().frame_data_signal.connect(
             self._mw.create_frame
         ) 
 
         ####### Run Simulation ########
         # from gui window to gui slots
         self._mw.stop_simulation_button.clicked.connect(self.start_simulation)
-        self._pulsed_esr_logic().next_frame_signal.connect(
+        self._pulsed_exp_logic().next_frame_signal.connect(
             self.prepare_next_frame_simulation
         )
-        self._pulsed_esr_logic().add_iteration_txt.connect(self._mw.add_iteration_text)
+        self._pulsed_exp_logic().add_iteration_txt.connect(self._mw.add_iteration_text)
         # from gui slots to logic
-        self.simulation_to_logic.connect(self._pulsed_esr_logic().Run_Simulation)
+        self.simulation_to_logic.connect(self._pulsed_exp_logic().Run_Simulation)
 
         ####### RUn Experiment #######
         # from gui window to gui slots
@@ -93,49 +93,54 @@ class PulsedESRGui(GuiBase):
         self._mw.stop_sequence_button.clicked.connect(self.stop_experiment_gui)
         # from gui slots to logic
         self.run_exp_signal.connect(
-            self._pulsed_esr_logic().run_experiment, Qt.QueuedConnection)
+            self._pulsed_exp_logic().run_experiment, Qt.QueuedConnection)
         self.stop_exp_signal.connect(
-            self._pulsed_esr_logic().stop_experiment, Qt.QueuedConnection)
+            self._pulsed_exp_logic().stop_experiment, Qt.QueuedConnection)
 
         ###### Clear Gui #######
         # from gui window to gui slots
         
         self._mw.clear_channels_signal.connect(
-            self._pulsed_esr_logic().clear_channels
+            self._pulsed_exp_logic().clear_channels
         )
         ###### Switch outputs #######
         self._mw.pb_output_status_signal.connect(
-            self._pulsed_esr_logic().switch_pb_outputs,
+            self._pulsed_exp_logic().switch_pb_outputs,
             Qt.QueuedConnection,
         )
         self._mw.pb_output_stop_signal.connect(
-            self._pulsed_esr_logic().stop_pb_outputs,
+            self._pulsed_exp_logic().stop_pb_outputs,
             Qt.QueuedConnection
         )
 
 
         self._mw.save_file_signal.connect(
-            self._pulsed_esr_logic().save_file,
+            self._pulsed_exp_logic().save_file,
             Qt.QueuedConnection
         )
         self._mw.load_file_signal.connect(
-            self._pulsed_esr_logic().load_file,
+            self._pulsed_exp_logic().load_file,
             Qt.QueuedConnection
         )
 
         self._mw.update_channels_signal.connect(
-            self._pulsed_esr_logic().modify_channels,
+            self._pulsed_exp_logic().modify_channels,
             Qt.QueuedConnection
         )
         self._mw.update_pulses_signal.connect(
-            self._pulsed_esr_logic().modify_pulses,
+            self._pulsed_exp_logic().modify_pulses,
             Qt.QueuedConnection
         )
 
-        self._pulsed_esr_logic().data_signal.connect(
+        self._pulsed_exp_logic().data_signal.connect(
             self._mw.update_pulsed_exp_plot,
             Qt.QueuedConnection
         )
+        self._pulsed_exp_logic().status_msg.connect(
+            self._mw.update_status_bar,
+            Qt.QueuedConnection
+        )
+
         self.show()
 
     def on_deactivate(self) -> None:
@@ -183,7 +188,7 @@ class PulsedESRGui(GuiBase):
             self._mw.iteration_start_spinbox.value(),
             self._mw.iteration_end_spinbox.value(),
         ]
-        # self._pulsed_esr_logic().add_pulse_to_channel(start_time, width,function_width,function_start,iteration_range, channel_tag)
+        # self._pulsed_exp_logic().add_pulse_to_channel(start_time, width,function_width,function_start,iteration_range, channel_tag)
         self.add_pulse_to_logic_signal.emit(
             start_time,
             width,
@@ -198,10 +203,17 @@ class PulsedESRGui(GuiBase):
         x_loop = self._mw.loop_sequence_spinbox.value()
         Type = self._mw.type_variation_combobox.currentIndex()
         repeat_exp = self._mw.repeat_exp_spinbox.value()
-        self.run_exp_signal.emit(x_loop, Type, repeat_exp)
+
+        track = self._mw.track_checkbox.isChecked()
+        interval = self._mw.track_every_spinbox.value()
+        track_options = {
+            'track': track,
+            'interval': interval
+        }
+        self.run_exp_signal.emit(x_loop, Type, repeat_exp, track_options)
 
     def stop_experiment_gui(self):
-        # self._pulsed_esr_logic().Stop_Experiment()
+        # self._pulsed_exp_logic().Stop_Experiment()
         self.stop_exp_signal.emit()
 
     def prepare_frame(self):
@@ -211,7 +223,7 @@ class PulsedESRGui(GuiBase):
             axis=pg.ViewBox.XAxis, enable=False
         )
         self._mw.sequence_diagram_plot.setXRange(
-            0, self._pulsed_esr_logic().Max_end_time, padding=0
+            0, self._pulsed_exp_logic().Max_end_time, padding=0
         )  # or whatever fixed length you want
         self.frame_to_logic_signal.emit(Frame_i)
 
@@ -222,7 +234,7 @@ class PulsedESRGui(GuiBase):
         print(f"ms:{ms}")
         value_loop = self._mw.loop_sequence_spinbox.value()
         print(f"value_loop: {value_loop}")
-        # self._pulsed_esr_logic().Run_Simulation(initial_frame,value_loop,ms)
+        # self._pulsed_exp_logic().Run_Simulation(initial_frame,value_loop,ms)
         self.simulation_to_logic.emit(initial_frame, value_loop, ms)
         # Disable the button after click
 
@@ -232,7 +244,7 @@ class PulsedESRGui(GuiBase):
             axis=pg.ViewBox.XAxis, enable=False
         )
         self._mw.sequence_diagram_plot.setXRange(
-            0, self._pulsed_esr_logic().Max_end_time, padding=0
+            0, self._pulsed_exp_logic().Max_end_time, padding=0
         )  # or whatever fixed length you want
         self.frame_to_logic_signal.emit(Frame_i)
 
