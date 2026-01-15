@@ -35,10 +35,11 @@ class GalvoHardware(Base):
 
         super().__init__(*args, **kwargs)
 
-        self.fast_um_per_volts = 5 / 0.80
-        self.slow_um_per_volts = 5 / 1.12
+        self.fast_um_per_volts = 128
+        self.slow_um_per_volts = 128
         self.tasks = []
         self.current_position = (0, 0)
+        self.zero_offset_galvo = (0, -4.9)
         self._mutex = Mutex()
 
         self.settings = {
@@ -90,14 +91,14 @@ class GalvoHardware(Base):
         number_samples = 2 * pixel_x * pixel_y
 
         # Creates scan voltage arrays
-        x_volts = np.linspace(-0.5, 0.5, pixel_x) * range_x + offset_x
+        x_volts = np.linspace(-0.5, 0.5, pixel_x) * range_x + offset_x 
         x_volts = np.append(x_volts, np.flip(x_volts))
         x_volts = np.tile(x_volts, int(pixel_y))
-        y_volts = np.linspace(-0.5, 0.5, pixel_y) * range_y + offset_y
+        y_volts = np.linspace(-0.5, 0.5, pixel_y) * range_y + offset_y 
         y_volts = np.repeat(y_volts, 2 * pixel_x)
 
-        x_volts = x_volts / self.fast_um_per_volts
-        y_volts = y_volts / self.slow_um_per_volts
+        x_volts = x_volts / self.fast_um_per_volts + self.zero_offset_galvo[0]
+        y_volts = y_volts / self.slow_um_per_volts + self.zero_offset_galvo[1]
         xy_volts = np.array([x_volts, y_volts])
 
         # Goes to the offset position
@@ -240,8 +241,8 @@ class GalvoHardware(Base):
         x0 = self.current_position[0]
         y0 = self.current_position[1]
 
-        x_volt = np.linspace(x0, xf, num=number_samples) / self.fast_um_per_volts
-        y_volt = np.linspace(y0, yf, num=number_samples) / self.slow_um_per_volts
+        x_volt = np.linspace(x0, xf, num=number_samples) / self.fast_um_per_volts + self.zero_offset_galvo[0]
+        y_volt = np.linspace(y0, yf, num=number_samples) / self.slow_um_per_volts + self.zero_offset_galvo[1]
 
         xy_volt = np.array([x_volt, y_volt])
 

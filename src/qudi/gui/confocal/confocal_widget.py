@@ -219,7 +219,7 @@ class HeatmapWidget(pg.GraphicsLayoutWidget):
         self.image_item.setRect(self.rect)
         self.heatmap.addItem(self.image_item)
         self.colorbar = self.heatmap.addColorBar(
-            self.image_item, colorMap=pg.colormap.getFromMatplotlib('rocket'),
+            self.image_item, colorMap=pg.colormap.getFromMatplotlib('inferno'),
             *args, **kwargs
         )
         #self.colorbar = self.heatmap.addColorBar(self.image_item, colorMap=pg.colormap.getFromColorcet('rainbow4'))

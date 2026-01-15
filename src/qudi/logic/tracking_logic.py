@@ -110,10 +110,10 @@ class TrackingLogic(LogicBase):
         name='timetrace_logic',
         interface='TimeTraceLogic'
     )
-    _tcspc_logic = Connector(
-        name='tcspc_logic',
-        interface='TCSPCLogic'
-    )
+    #_tcspc_logic = Connector(
+    #    name='tcspc_logic',
+    #    interface='TCSPCLogic'
+    #)
 
     def __init__(self,*args, **kwargs):
 
@@ -148,21 +148,21 @@ class TrackingLogic(LogicBase):
             Qt.QueuedConnection
         )
 
-        self._tcspc_logic().track_point_signal.connect(
-                self.track_point,
-                Qt.QueuedConnection
-        )
-        self.tracking_finished_signal.connect(
-            self._tcspc_logic().restart_measurement,
-        )
-        self._tcspc_logic().measurement_finished_signal.connect(
-            self.stop_maxing,
-            Qt.QueuedConnection
-        )
-        self._tcspc_logic().measurement_finished_signal.connect(
-            self.stop_acquisition,
-            Qt.QueuedConnection
-        )
+        #self._tcspc_logic().track_point_signal.connect(
+        #        self.track_point,
+        #        Qt.QueuedConnection
+        #)
+        #self.tracking_finished_signal.connect(
+        #    self._tcspc_logic().restart_measurement,
+        #)
+        #self._tcspc_logic().measurement_finished_signal.connect(
+        #    self.stop_maxing,
+        #    Qt.QueuedConnection
+        #)
+        #self._tcspc_logic().measurement_finished_signal.connect(
+        #    self.stop_acquisition,
+        #    Qt.QueuedConnection
+        #)
 
     def on_deactivate(self) -> None:
         pass
@@ -170,13 +170,18 @@ class TrackingLogic(LogicBase):
     @Slot(str)
     def connect_tracking_intensity_monitor(self, monitor: str) -> None:
 
-        self.start_track_intensity_signal.disconnect()
+        #if self.start_track_intensity_signal is not None:
+        try:
+            self.start_track_intensity_signal.disconnect()
+        except:
+            pass
 
         if monitor == 'TCSPC':
-            self.start_track_intensity_signal.connect(
-                self._tcspc_logic().start_track_intensity,
-                Qt.QueuedConnection
-            )
+            #self.start_track_intensity_signal.connect(
+            #    self._tcspc_logic().start_track_intensity,
+            #    Qt.QueuedConnection
+            #)
+            pass
 
         elif monitor == 'TimeTrace':
             self.start_track_intensity_signal.connect(
@@ -189,10 +194,11 @@ class TrackingLogic(LogicBase):
 
         self.interval_clock_signal.disconnect()
         if connect is True:
-            self.interval_clock_signal.connect(
-                self._tcspc_logic().track_interval_triggered,
-                Qt.QueuedConnection
-            )
+            #self.interval_clock_signal.connect(
+            #    self._tcspc_logic().track_interval_triggered,
+            #    Qt.QueuedConnection
+            #)
+            pass
         elif connect is False:
             self.interval_clock_signal.connect(
                 self.track_point,
