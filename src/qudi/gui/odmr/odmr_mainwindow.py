@@ -136,16 +136,31 @@ class ODMRMainWindow(QMainWindow):
     def update_odmr_plot(self, x: np.ndarray, y: np.ndarray):
         self.odmr_dataline.setData(x, y)
 
-    def set_odmr_scans_size(self, freq_center: float, freq_range:float, number_points: int):
-
-        self.rect.setSize(QSizeF(freq_range, number_points))
-        self.rect.moveCenter(QPointF(freq_center, number_points / 2))
+    def set_odmr_scans_size(self, freq_center: float, freq_range:float, number_scans: float):
+        self.rect.setSize(QSizeF(freq_range, number_scans))
+        self.rect.moveCenter(QPointF(freq_center, number_scans / 2 + 1 / 2))
         self.image_item.setRect(self.rect)
 
-    def update_odmr_scans(self, scans):
-        scans = np.array(scans)
-        self.image_item.setImage(np.flip(scans, 0))
+    @Slot(np.ndarray, np.ndarray)
+    def update_odmr_scans(self, frequency: np.ndarray, scans: np.ndarray):
+
+        self.image_item.setImage(scans)
+        self.set_odmr_scans_size(
+            float(frequency[len(frequency)//2]),
+            float((frequency[-1] - frequency[0])),
+            float(scans.shape[0])
+        )
         self.colorbar.setLevels((np.min(scans), np.max(scans)))
+
+    @Slot(str)
+    def update_file_label(self, filename: str):
+        head, filename = os.path.split(filename)
+        self.filename_label.setText(f'{filename}')
+        self.odmr_plot.setTitle(filename,  **{'size': '7pt'})
+
+    @Slot(int)
+    def update_averages_label(self, number_averages: int):
+        self.number_averages_label.setText(f'Averaged {number_averages} repetitions')
 
 
 class SignalGeneratorConnection(QWidget):

@@ -1,6 +1,11 @@
-import serial
+import numpy as np
 
-ser = serial.Serial('COM3', 9600)
-ser.write(b'100')
-response = ser.readline()
-print(response)
+a = np.array([])
+max_size = 3
+for i in range(5):
+    a = np.append(a, i)
+    if a.size > max_size:
+        a = a[-max_size:]
+    print(a)
+
+print(a)

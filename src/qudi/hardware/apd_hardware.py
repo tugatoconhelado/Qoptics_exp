@@ -72,6 +72,11 @@ class APDHardware(Base):
             "Clock Output Channel": "PFI13",
             "Clock Source Channel": "Ctr1"
         }
+        self.COUNTER_SOURCE_CHANNEL = 'ctr0'
+        self.DEVICE = 'Dev1'
+        self.CLOCK_SOURCE_CHANNEL = 'ctr2'
+        self.CLOCK_OUTPUT_CHANNEL = 'PFI14'
+        self.COUNTER_GATE_PIN = 'PFI9'
 
     def on_activate(self) -> None:
         pass
@@ -114,11 +119,89 @@ class APDHardware(Base):
             )
         return (self.clock, self.counter)
 
-    def start_apd(self):
+    def set_gated_apd(self, samples : int) -> tuple:
+        """
+        Creates and sets the tasks necessary for the acquisition.
+
+        These are the clock task and the counter task.
+        The apd is configured to be gated, meaning that the counter will
+        only count when the gate_pin is high.
+
+        Parameters
+        ----------
+        frequency
+        samples
+        duty_cycle
+
+        Returns 
+        -------
+        tuple
+            A tuple with the clock and counter tasks.
+        """
+
+        self.log.debug(f'Starting APD')
+        self.counter = self.set_gated_input_counter(
+            samples=samples
+        )
+        return self.counter
+
+    def set_gated_input_counter(self, samples : int) -> nidaqmx.Task:
+        """
+        Set the counter in the NI card that will read the fluorescence counts.
+
+        Programs the counter to operate in gated mode, meaning that it will
+        only count when the gate pin is high.
+
+        Parameters
+        ----------
+        frequency : int
+            Sampling frequency.
+        samples : int
+            Number of samples the clock will save in buffer.
+
+        Returns
+        -------
+        nidaqmx.Task
+            Created task.
+        """
+        counter_source_channel = "dev1/ctr0"
+        counter_gate_channel = "/dev1/PFI9"
+
+        read_task = nidaqmx.Task(new_task_name='APD fluorescence counts')
+
+        # Adds counter input channel (counter 0)
+        read_task.ci_channels.add_ci_count_edges_chan(
+            counter=counter_source_channel,
+            name_to_assign_to_channel='',
+            edge=nidaqmx.constants.Edge.RISING,
+            initial_count=0,
+            count_direction=nidaqmx.constants.CountDirection.COUNT_UP
+        )
+
+        # Configures the sampling clock
+        status = read_task.timing.cfg_samp_clk_timing(
+            rate=100e6,
+            source=counter_gate_channel,
+            active_edge=nidaqmx.constants.Edge.FALLING,
+            sample_mode=nidaqmx.constants.AcquisitionType.CONTINUOUS,
+            samps_per_chan=samples
+        )
+
+        #read_task.read_all_avail_samp = True
+        read_task.triggers.pause_trigger.dig_lvl_src = counter_gate_channel
+        read_task.triggers.pause_trigger.dig_lvl_when = nidaqmx.constants.Level.LOW
+        read_task.triggers.pause_trigger.trig_type = nidaqmx.constants.TriggerType.DIGITAL_LEVEL
+        read_task.channels.ci_dup_count_prevention = True
+
+        self.tasks.append(read_task)
+        return read_task
+
+    def start_apd(self, start_clock: bool = True):
         """
         Starts the clock and counter tasks
         """
-        self.clock.start()
+        if start_clock is True:
+            self.clock.start()
         self.counter.start()
         return True
     
@@ -173,6 +256,11 @@ class APDHardware(Base):
             task.close()
         self.tasks = []
         return True
+    
+    def stop_acquisition(self):
+
+        for task in self.tasks:
+            task.stop()
 
     def set_clock(self, clock: nidaqmx.Task):
         """

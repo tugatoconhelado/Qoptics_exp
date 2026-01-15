@@ -84,6 +84,7 @@ class TrackingLogic(LogicBase):
     tracking_finished_signal = Signal()
     start_track_intensity_signal = Signal(int, float)
     interval_clock_signal = Signal()
+    maxing_finished_signal = Signal()
 
     # Declare connectors to other logic modules or hardware modules to interact with
     _apd_hardware = Connector(
@@ -166,6 +167,35 @@ class TrackingLogic(LogicBase):
 
     def on_deactivate(self) -> None:
         pass
+
+    def handle_max_request(self, max_type: str) -> None:
+        """
+        When another logic module wants to perform a maxing operation,
+        this method is called with the type of maxing operation to perform.
+
+        Parameters
+        ----------
+        max_type : str
+            The type of maxing operation to perform.
+        """
+        if max_type == 'xy':
+            self.max_xy(
+                dataclasses.astuple(self.data.parameters.max_xy_parameters),
+                fit_gauss=self.fit_gaussian[0]
+            )
+            self.maxing_finished_signal.emit()
+        elif max_type == 'z':
+            self.max_z(
+                dataclasses.astuple(self.data.parameters.max_z_parameters),
+                fit_gauss=self.fit_gaussian[1]
+            )
+            self.maxing_finished_signal.emit()
+        elif max_type == 'xyz':
+            self.max_xyz(
+                dataclasses.astuple(self.data.parameters.max_xy_parameters),
+                dataclasses.astuple(self.data.parameters.max_z_parameters)
+            )
+            self.maxing_finished_signal.emit()
 
     @Slot(str)
     def connect_tracking_intensity_monitor(self, monitor: str) -> None:
@@ -637,7 +667,7 @@ class TrackingLogic(LogicBase):
             )
             readed_counts = np.array(readed_counts) * 1 / pixel_time
             fluorescence = np.diff(readed_counts)
-            fluorescence = np.insert(fluorescence, -1, readed_counts[0])
+            fluorescence = np.append(fluorescence[0], fluorescence)
             self.stop_acquisition()
             self._laser_controller_logic()._bh_laser_hardware().power = initial_laser_power
             return (z_values, fluorescence)
