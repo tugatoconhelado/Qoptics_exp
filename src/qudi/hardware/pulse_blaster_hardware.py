@@ -50,7 +50,7 @@ class PulseBlasterHardware(Base):
         """
         spinapi.pb_start_programming(spinapi.PULSE_PROGRAM)
 
-    def get_channel_binary(self, channel: int | list | tuple) -> int:
+    def get_channel_binary(self, channel: int or list or tuple) -> int:
         """
         Get the binary representation of the channel.
 
@@ -102,7 +102,7 @@ class PulseBlasterHardware(Base):
         formatted = format(decimal, '024b')
         return " ".join([formatted[::-1][i:i+4] for i in range(0, len(formatted), 4)])[::-1]
     
-    def program_switch_state(self, channel_state: list | tuple):
+    def program_switch_state(self, channel_state: list or tuple):
         """
         Switch the state of the Pulse Blaster outputs.
         Turns them on or off based on the provided channel state.

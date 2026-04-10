@@ -16,9 +16,9 @@ class PiezoHardware(Base):
 
         super().__init__(*args, **kwargs)
         
-        self.z_um_per_volts = 200 / 10 # 200 um / 10 V
+        self.z_um_per_volts = 26 / 7.79 # um in NI range (7.79 V in this case)
         self.tasks = []
-        self.current_z = 100
+        self.current_z = 13
         self._mutex = Mutex()
 
         self.settings = {
@@ -155,7 +155,7 @@ class PiezoHardware(Base):
         task.ao_channels.add_ao_voltage_chan(
             physical_channel=ao_task_channel,
             name_to_assign_to_channel='',
-            min_val=0,
+            min_val=2.21,
             max_val=10.0,
             units=nidaqmx.constants.VoltageUnits.VOLTS
         )

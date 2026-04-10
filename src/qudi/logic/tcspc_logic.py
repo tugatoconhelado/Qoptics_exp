@@ -85,7 +85,7 @@ class TCSPCLogic(LogicBase):
         self.counter = 0
         self.data = TCSPCData()
         self.filemanager = FileManager(
-            data_dir=os.path.join(os.sep, 'c:' + os.sep, 'EXP', 'testdata'),
+            data_dir=os.path.join(os.sep, 'c:' + os.sep, 'EXP', 'data'),
             experiment_name='lifetime',
             exp_str='LFT'
         )

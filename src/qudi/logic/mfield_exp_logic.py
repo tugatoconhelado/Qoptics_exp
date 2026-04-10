@@ -56,7 +56,7 @@ class MFieldExpLogic(LogicBase):
         self.measure = False
 
         self.filemanager = FileManager(
-            data_dir=os.path.join(os.sep, 'c:' + os.sep, 'EXP', 'testdata'),
+            data_dir=os.path.join(os.sep, 'c:' + os.sep, 'EXP', 'data'),
             experiment_name='mfield_exp',
             exp_str='MFE'
         )

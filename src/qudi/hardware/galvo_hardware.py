@@ -1,12 +1,36 @@
 import nidaqmx
 import numpy as np
-from PySide2.QtCore import QObject, Signal
-from qudi.core.statusvariable import StatusVar
-from qudi.core.configoption import ConfigOption
+from PySide2.QtCore import Signal
 from qudi.util.mutex import Mutex
 from qudi.core.module import Base
+from config_utils import load_settings
+from pydantic import BaseModel, Field
+from typing import List
 
 
+class ScannerConfig(BaseModel):
+    class NISetup(BaseModel):
+        device: str = "Dev3"
+        analog_output_channel: str = "AO0:1"
+        clock_source_channel: str = "Ctr1"
+        clock_output_channel: str = "PFI13"
+        ao_min_val: float = -10.0
+        ao_max_val: float = 10.0
+        timeout: int = 10
+
+    class ScanParams(BaseModel):
+        fast_um_per_volts: int = 128
+        slow_um_per_volts: int = 128
+        zero_offset: List[int] = [0, 0]
+
+    class Navigation(BaseModel):
+        pixel_time: int = 5
+        number_steps: int = 20
+
+    ni_setup: NISetup = NISetup()
+    scan_params: ScanParams = ScanParams()
+    navigation: Navigation = Navigation()
+    
 class GalvoHardware(Base):
     """
     Models the galvo instrument
@@ -35,27 +59,26 @@ class GalvoHardware(Base):
 
         super().__init__(*args, **kwargs)
 
-        self.fast_um_per_volts = 128
-        self.slow_um_per_volts = 128
         self.tasks = []
         self.current_position = (0, 0)
-        self.zero_offset_galvo = (0, -4.9)
         self._mutex = Mutex()
 
-        self.settings = {
-            "Device": "Dev1",
-            "Analog Output Channel": "AO0:1",
-            "Clock Source Channel": "Ctr1",
-            "Clock Output Channel": "PFI13",
-            "Pixel Time (ms) on movement": 5,
-            "Number of steps on movement": 20
-        }
+        self.cfg = load_settings("galvo", ScannerConfig)
 
     def on_activate(self) -> None:
         pass
 
     def on_deactivate(self) -> None:
         pass
+
+    def set_device(self, dev: str):
+        if dev == 'Dev1':
+            self.cfg.scan_params.fast_um_per_volts = 128
+            self.cfg.scan_params.slow_um_per_volts = 128
+        else:
+            self.cfg.scan_params.fast_um_per_volts = 128
+            self.cfg.scan_params.slow_um_per_volts = 128
+        self.cfg.ni_setup.device = dev
 
     def set_scan(self, scan_size: tuple, offset: tuple, pixels: tuple, pixel_time: int):
         """
@@ -86,19 +109,30 @@ class GalvoHardware(Base):
         offset_x = offset[0]
         offset_y = offset[1]
 
+        if self.cfg.ni_setup.device == "Dev2":
+            offset_x = 0
+            offset_y = 0
+
         pixel_time = pixel_time
         samp_rate = float(1 / pixel_time)
         number_samples = 2 * pixel_x * pixel_y
 
         # Creates scan voltage arrays
-        x_volts = np.linspace(-0.5, 0.5, pixel_x) * range_x + offset_x 
+        x_volts = np.linspace(-0.5, 0.5, pixel_x) * range_x + offset_x
+        if self.cfg.ni_setup.device == 'Dev2':
+            x_volts = np.flip(x_volts)
         x_volts = np.append(x_volts, np.flip(x_volts))
         x_volts = np.tile(x_volts, int(pixel_y))
         y_volts = np.linspace(-0.5, 0.5, pixel_y) * range_y + offset_y 
         y_volts = np.repeat(y_volts, 2 * pixel_x)
 
-        x_volts = x_volts / self.fast_um_per_volts + self.zero_offset_galvo[0]
-        y_volts = y_volts / self.slow_um_per_volts + self.zero_offset_galvo[1]
+        x_volts = (x_volts / self.cfg.scan_params.fast_um_per_volts
+            + self.cfg.scan_params.zero_offset[0])
+        y_volts = (y_volts / self.cfg.scan_params.slow_um_per_volts
+            + self.cfg.scan_params.zero_offset[1])
+        
+        if self.cfg.ni_setup.device == 'Dev2':
+            y_volts = np.flip(y_volts)
         xy_volts = np.array([x_volts, y_volts])
 
         # Goes to the offset position
@@ -115,11 +149,10 @@ class GalvoHardware(Base):
         )
 
         self.scan_volts = xy_volts
-        self.timeout = float(pixel_time * pixel_x * pixel_y)
         self.xy_scan_task.write(
             self.scan_volts,
             auto_start=False,
-            timeout= 10000
+            timeout= self.cfg.ni_setup.timeout
         )
         scan_tasks = (self.clock, self.xy_scan_task)
         return scan_tasks
@@ -133,7 +166,7 @@ class GalvoHardware(Base):
         written = self.xy_scan_task.write(
             self.scan_volts,
             auto_start=True,
-            timeout= 10000
+            timeout= self.cfg.ni_setup.timeout
         )
 
     def set_analog_output(self, number_samples: int, samp_rate: float):
@@ -152,15 +185,15 @@ class GalvoHardware(Base):
         ao_task: nidaqmx.Task
             Task for the analog output scan.
         """
-        clock_output_channel = '/' + self.settings['Device'] + '/' + self.settings["Clock Output Channel"]
-        ao_output_channel = self.settings['Device'] + '/' + self.settings["Analog Output Channel"]
+        clock_output_channel = '/' + self.cfg.ni_setup.device + '/' + self.cfg.ni_setup.clock_output_channel
+        ao_output_channel = self.cfg.ni_setup.device + '/' + self.cfg.ni_setup.analog_output_channel
 
         ao_task = nidaqmx.Task(new_task_name='Galvo Analog Output')
         ao_task.ao_channels.add_ao_voltage_chan(
             physical_channel=ao_output_channel,
             name_to_assign_to_channel='',
-            min_val=-10.0,
-            max_val=10.0,
+            min_val=self.cfg.ni_setup.ao_min_val,
+            max_val=self.cfg.ni_setup.ao_max_val,
             units=nidaqmx.constants.VoltageUnits.VOLTS
         )
         ao_task.timing.cfg_samp_clk_timing(
@@ -190,7 +223,7 @@ class GalvoHardware(Base):
         clock: nidaqmx.Task
             Clock task for the scan.
         """
-        clock_source_channel = self.settings["Device"] + '/' + self.settings["Clock Source Channel"]
+        clock_source_channel = self.cfg.ni_setup.device + '/' + self.cfg.ni_setup.clock_source_channel
         clock_task = nidaqmx.Task(new_task_name='Galvo Scan clock')
         clock_task.co_channels.add_co_pulse_chan_time(
             counter=clock_source_channel,
@@ -225,9 +258,9 @@ class GalvoHardware(Base):
         Returns
         -------
         """
-        pixel_time = self.settings["Pixel Time (ms) on movement"] / 1000 # To seconds
+        pixel_time = self.cfg.navigation.pixel_time / 1000 # To seconds
         samp_rate = float(1 / pixel_time)
-        number_samples = self.settings["Number of steps on movement"]
+        number_samples = self.cfg.navigation.number_steps
         
         self.status_msg_signal.emit("Galvo: Moving from (%.2f, %.2f) to (%.2f, %.2f)" % (
             float(self.current_position[0]),
@@ -241,8 +274,8 @@ class GalvoHardware(Base):
         x0 = self.current_position[0]
         y0 = self.current_position[1]
 
-        x_volt = np.linspace(x0, xf, num=number_samples) / self.fast_um_per_volts + self.zero_offset_galvo[0]
-        y_volt = np.linspace(y0, yf, num=number_samples) / self.slow_um_per_volts + self.zero_offset_galvo[1]
+        x_volt = np.linspace(x0, xf, num=number_samples) / self.cfg.scan_params.fast_um_per_volts + self.cfg.scan_params.zero_offset[0]
+        y_volt = np.linspace(y0, yf, num=number_samples) / self.cfg.scan_params.slow_um_per_volts + self.cfg.scan_params.zero_offset[1]
 
         xy_volt = np.array([x_volt, y_volt])
 

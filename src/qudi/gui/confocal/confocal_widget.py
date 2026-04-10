@@ -12,6 +12,7 @@ class ConfocalWidget(QWidget):
 
     start_confocal_image_signal = Signal(tuple, tuple, tuple, float)
     stop_confocal_image_signal = Signal()
+    device_signal = Signal(str)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -31,7 +32,16 @@ class ConfocalWidget(QWidget):
             self.req_scan, Qt.QueuedConnection)
         self.stop_button.clicked.connect(
             self.on_stop_image, Qt.QueuedConnection)
+        self.device_checkbox.stateChanged.connect(
+            self.on_device_changed, Qt.QueuedConnection
+        )
         
+    def on_device_changed(self):
+
+        if self.device_checkbox.isChecked():
+            self.device_signal.emit("Dev2")
+        else:
+            self.device_signal.emit("Dev1")
 
     def configure_plots(self):
 

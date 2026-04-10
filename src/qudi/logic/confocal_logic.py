@@ -75,7 +75,7 @@ class ConfocalLogic(LogicBase):
         self.measure = False
         self._mutex = Mutex()  # Mutex for access serialization
         self.filemanager = FileManager(
-            data_dir=os.path.join(os.sep, 'C:' + os.sep, 'EXP', 'testdata'),
+            data_dir=os.path.join(os.sep, 'C:' + os.sep, 'EXP', 'data'),
             experiment_name='confocal',
             exp_str='IMG'
         )
@@ -219,7 +219,10 @@ class ConfocalLogic(LogicBase):
 
         self.save_data()
         self.stop_acquisition()
-        self._galvo_hardware().go_to_xy_point(self.data.parameters.offset)
+        if self._galvo_hardware().cfg.ni_setup.device == 'Dev2':
+            self._galvo_hardware().go_to_xy_point((0, 0))
+        elif self._galvo_hardware().cfg.ni_setup.device == 'Dev1':
+            self.go_to_xy_point(self.data.parameters.offset)
         self._laser_controller_logic()._bh_laser_hardware().power = initial_laser_power
 
     def go_to_xy_point(self, point: tuple):
@@ -254,6 +257,12 @@ class ConfocalLogic(LogicBase):
         self._galvo_hardware().stop()
         self._apd_hardware().stop()
         self._piezo_hardware().stop()
+
+    @Slot(str)
+    def set_galvo_device(self, dev: str):
+
+        self._galvo_hardware().set_device(dev)
+        self._apd_hardware().settings['Device'] = dev
 
     def save_data(self) -> None:
         """

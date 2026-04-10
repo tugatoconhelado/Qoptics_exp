@@ -19,8 +19,8 @@ class PulsedExpMainWindow(QMainWindow):
     update_channels_signal = Signal(list)
     update_pulses_signal = Signal(list)
     clear_channels_signal = Signal()
-    load_file_signal = Signal(str)
-    save_file_signal = Signal(str)
+    load_seq_file_signal = Signal(str)
+    save_seq_file_signal = Signal(str)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -48,19 +48,23 @@ class PulsedExpMainWindow(QMainWindow):
         self.pulsed_exp_dataline = self.pulsed_exp_plot.plot([], pen='yellow')
         self.pulsed_exp_plot.setLabel('left', 'Counts')
 
+        self.errorbars = pg.ErrorBarItem(pen=(31, 119, 180), beam=0.3)
+        self.pulsed_exp_plot.addItem(self.errorbars)
+
         self.sequence_diagram_plot.getPlotItem().hideAxis('left')
 
     @Slot(str)
     def update_status_bar(self, msg: str):
         self.statusbar.showMessage(msg)
 
-    @Slot(np.ndarray)
-    def update_pulsed_exp_plot(self, y: np.ndarray):
+    @Slot(np.ndarray, np.ndarray, np.ndarray)
+    def update_pulsed_exp_plot(self, x: np.ndarray, y: np.ndarray, st_dev: np.ndarray):
         """
         Update the pulsed experiment plot with new data.
         """
         y = y.flatten()
-        self.pulsed_exp_dataline.setData(y)
+        self.pulsed_exp_dataline.setData(x, y)
+        self.errorbars.setData(x=x, y=y, height=2 * st_dev)
         self.pulsed_exp_plot.setYRange(min(y), max(y))
 
     @Slot()
@@ -173,7 +177,7 @@ class PulsedExpMainWindow(QMainWindow):
 
     def _load_sequence(self):
 
-        file_dir = os.path.join(os.sep, "c:" + os.sep, "EXP", "testdata", "sequences")
+        file_dir = os.path.join(os.sep, "c:" + os.sep, "EXP", "data", "sequences")
         dialog = QFileDialog(self)
         directory = file_dir
         dialog.setDirectory(directory)
@@ -186,7 +190,10 @@ class PulsedExpMainWindow(QMainWindow):
         else:
             return ''
         
-        self.load_file_signal.emit(file_path)
+        self.load_seq_file_signal.emit(file_path)
+        filename = os.path.basename(file_path)
+        filename = os.path.splitext(filename)[0]
+        self.sequence_name_label.setText(filename)
         return os.path.abspath(file_path)
     
     def _save_sequence(self):
@@ -194,7 +201,7 @@ class PulsedExpMainWindow(QMainWindow):
         This function is called when the user clicks the "Save" button.
         It saves the current sequence to a file.
         """
-        file_dir = os.path.join(os.sep, "c:" + os.sep, "EXP", "testdata", "sequences")
+        file_dir = os.path.join(os.sep, "c:" + os.sep, "EXP", "data", "sequences")
         dialog = QFileDialog(self)
         directory = file_dir
         dialog.setDirectory(directory)
@@ -207,7 +214,10 @@ class PulsedExpMainWindow(QMainWindow):
             file_type = dialog.selectedNameFilter()
         else:
             return ''
-        self.save_file_signal.emit(file_path)
+        self.save_seq_file_signal.emit(file_path)
+        filename = os.path.basename(file_path)
+        filename = os.path.splitext(filename)[0]
+        self.sequence_name_label.setText(filename)
         return os.path.abspath(file_path)
 
     @Slot()

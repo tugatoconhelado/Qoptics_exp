@@ -50,7 +50,7 @@ class ODMRLogic(LogicBase):
         self._mutex = Mutex()
 
         self.filemanager = FileManager(
-            data_dir=os.path.join(os.sep, 'C:' + os.sep, 'EXP', 'testdata'),
+            data_dir=os.path.join(os.sep, 'C:' + os.sep, 'EXP', 'data'),
             experiment_name='odmr',
             exp_str='ODMR'
         )

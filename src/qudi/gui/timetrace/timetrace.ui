@@ -98,7 +98,7 @@
               <string> sec</string>
              </property>
              <property name="decimals">
-              <number>9</number>
+              <number>3</number>
              </property>
              <property name="maximum">
               <double>1000000000000000019884624838656.000000000000000</double>
@@ -107,7 +107,7 @@
               <double>0.100000000000000</double>
              </property>
              <property name="value">
-              <double>0.100000000000000</double>
+              <double>0.010000000000000</double>
              </property>
             </widget>
            </item>
@@ -136,7 +136,7 @@
               <number>100</number>
              </property>
              <property name="value">
-              <number>1000</number>
+              <number>10000</number>
              </property>
             </widget>
            </item>
@@ -159,7 +159,7 @@
               <string> sec</string>
              </property>
              <property name="decimals">
-              <number>6</number>
+              <number>2</number>
              </property>
              <property name="maximum">
               <double>1000000000000000000000.000000000000000</double>

@@ -86,7 +86,7 @@ class TimeTraceLogic(LogicBase):
 
         self.time_counter = 0
         self.filemanager = FileManager(
-            data_dir=os.path.join(os.sep, 'c:' + os.sep, 'EXP', 'testdata'),
+            data_dir=os.path.join(os.sep, 'c:' + os.sep, 'EXP', 'data'),
             experiment_name='timetrace',
             exp_str='TMT'
         )

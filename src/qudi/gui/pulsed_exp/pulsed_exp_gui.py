@@ -24,7 +24,7 @@ class PulsedExpGui(GuiBase):
     add_channel_to_logic_signal = Signal(int, list, str, int)
     prepare_frame_signal = Signal(int)
     add_pulse_to_logic_signal = Signal(float, float, str, str, list, int)
-    run_exp_signal = Signal(int, int, int, dict)
+    run_exp_signal = Signal(int, int, int, dict, str)
     stop_exp_signal = Signal()
     frame_to_logic_signal = Signal(int)
     simulation_to_logic = Signal(int, int, int)
@@ -113,13 +113,33 @@ class PulsedExpGui(GuiBase):
             Qt.QueuedConnection
         )
 
-
-        self._mw.save_file_signal.connect(
-            self._pulsed_exp_logic().save_file,
+        ### DATA SAVING LOADING ###
+        self._mw.save_seq_file_signal.connect(
+            self._pulsed_exp_logic().save_seq_file,
             Qt.QueuedConnection
         )
-        self._mw.load_file_signal.connect(
-            self._pulsed_exp_logic().load_file,
+        self._mw.load_seq_file_signal.connect(
+            self._pulsed_exp_logic().load_seq_file,
+            Qt.QueuedConnection
+        )
+        self._mw.save_button.clicked.connect(
+            self._pulsed_exp_logic().save_data,
+            Qt.QueuedConnection
+        )
+        self._mw.load_button.clicked.connect(
+            self._pulsed_exp_logic().load_data,
+            Qt.QueuedConnection
+        )
+        self._mw.next_button.clicked.connect(
+            self._pulsed_exp_logic().load_next_data,
+            Qt.QueuedConnection
+        )
+        self._mw.previous_button.clicked.connect(
+            self._pulsed_exp_logic().load_previous_data,
+            Qt.QueuedConnection
+        )
+        self._mw.delete_button.clicked.connect(
+            self._pulsed_exp_logic().delete_file,
             Qt.QueuedConnection
         )
 
@@ -210,7 +230,8 @@ class PulsedExpGui(GuiBase):
             'track': track,
             'interval': interval
         }
-        self.run_exp_signal.emit(x_loop, Type, repeat_exp, track_options)
+        seq_name = self._mw.sequence_name_label.text()
+        self.run_exp_signal.emit(x_loop, Type, repeat_exp, track_options, seq_name)
 
     def stop_experiment_gui(self):
         # self._pulsed_exp_logic().Stop_Experiment()

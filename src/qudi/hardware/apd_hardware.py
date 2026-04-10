@@ -70,7 +70,9 @@ class APDHardware(Base):
             "Device": "Dev1",
             "Counter Source Channel": "ctr0",
             "Clock Output Channel": "PFI13",
-            "Clock Source Channel": "Ctr1"
+            "Clock Source Channel": "Ctr1",
+            "Clock Source Channel Train": "Ctr2",
+            "Clock Output Channel Train": "PFI14",
         }
         self.COUNTER_SOURCE_CHANNEL = 'ctr0'
         self.DEVICE = 'Dev1'
@@ -110,10 +112,12 @@ class APDHardware(Base):
         else:
             self.clock = clock
         if continuous is True:
+            # For Timetrace for example
             self.counter = self.set_continuous_counter_input(
                 frequency=frequency, samples=samples
             )
         elif continuous is False:
+            # For image
             self.counter = self.set_input_counter(
                 frequency=frequency, samples=samples
             )
@@ -288,10 +292,10 @@ class APDHardware(Base):
         nidaqmx.Task
         """
         self.log.debug('Creating digital pulse train counter task')
-        clock_source_channel = self.settings["Device"] + '/' + self.settings["Clock Source Channel"]
+        clock_source_channel = self.settings["Device"] + '/' + self.settings["Clock Source Channel Train"]
         task = nidaqmx.task.Task(new_task_name='APD clock')
         status = task.co_channels.add_co_pulse_chan_freq(
-            counter='Dev1/Ctr2',
+            counter=clock_source_channel,
             name_to_assign_to_channel='',
             units=nidaqmx.constants.FrequencyUnits.HZ,
             idle_state=nidaqmx.constants.Level.LOW,
@@ -365,12 +369,12 @@ class APDHardware(Base):
             Created task.
         """
         counter_source_channel = self.settings["Device"] + '/' + self.settings["Counter Source Channel"]
-        clock_output_channel = '/' + self.settings["Device"] + '/' + self.settings["Clock Output Channel"]
+        clock_output_channel = '/' + self.settings["Device"] + '/' + self.settings["Clock Output Channel Train"]
         self.log.debug('Creating counter fluorescence task')
         read_task = nidaqmx.Task(new_task_name='APD fluorescence counts')
         # Adds counter input channel (counter 0)
         read_task.ci_channels.add_ci_count_edges_chan(
-            counter='Dev1/Ctr0',
+            counter=counter_source_channel,
             name_to_assign_to_channel='',
             edge=nidaqmx.constants.Edge.RISING,
             initial_count=0,
@@ -379,7 +383,7 @@ class APDHardware(Base):
         # Configures the sampling clock
         status = read_task.timing.cfg_samp_clk_timing(
             rate=frequency,
-            source='/Dev1/PFI14',
+            source=clock_output_channel,
             active_edge=nidaqmx.constants.Edge.RISING,
             sample_mode=nidaqmx.constants.AcquisitionType.CONTINUOUS,
             samps_per_chan=samples
@@ -449,8 +453,8 @@ class APDHardware(Base):
             Sampling frequency to make the acquisition. Must be the same used
             in the `start_apd()` method
         time_out : float
-            Time that NI card wil wait to read data before raising and error
-
+            Time that NI card wil wait to read data before raising and error}
+        
         Returns
         -------
         counts : np.ndarray

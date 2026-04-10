@@ -114,7 +114,7 @@ class SpectrometerLogic(LogicBase):
         self.unit = 'wavelength'
 
         self.filemanager = FileManager(
-            data_dir=os.path.join(os.sep, 'c:' + os.sep, 'EXP', 'testdata'),
+            data_dir=os.path.join(os.sep, 'c:' + os.sep, 'EXP', 'data'),
             experiment_name='spectra',
             exp_str='SPR'
         )

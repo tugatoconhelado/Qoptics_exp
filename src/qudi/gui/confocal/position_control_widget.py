@@ -23,8 +23,8 @@ class PositionControlWidget(QWidget):
             self
         )
 
-        self.scrollbar_um = 200  # for the scrollbar only
-        self.scrollbar_steps = 20000  # Number of steps for scrollbar
+        self.scrollbar_um = 26  # for the scrollbar only
+        self.scrollbar_steps = 2600  # Number of steps for scrollbar
         self.slider_dragging = False
         self.xy_pos = (0, 0)
         self.z_pos = 0

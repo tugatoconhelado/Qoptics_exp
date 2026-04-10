@@ -69,6 +69,11 @@ class ConfocalGui(GuiBase):
             Qt.QueuedConnection
         )
 
+        self._mw.confocal_widget.device_signal.connect(
+            self._confocal_logic().set_galvo_device,
+            Qt.QueuedConnection
+        )
+
         # Connect all signals to and from the logic. Make sure the connections are QueuedConnection.
         # Experiment control signals
         self._mw.confocal_widget.start_confocal_image_signal.connect(

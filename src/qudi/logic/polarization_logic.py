@@ -53,7 +53,7 @@ class PolarizationLogic(LogicBase):
 
 
         self.filemanager = FileManager(
-            data_dir=os.path.join(os.sep, 'c:' + os.sep, 'EXP', 'testdata'),
+            data_dir=os.path.join(os.sep, 'c:' + os.sep, 'EXP', 'data'),
             experiment_name='polarization',
             exp_str='PLZ'
         )

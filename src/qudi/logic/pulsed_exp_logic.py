@@ -44,23 +44,39 @@ class SequenceData:
     pulses: list
 
 @dataclasses.dataclass
+class PulsedExpParameterData:
+
+    sequence: str
+    iterations: int = 30
+    repeat_exp: int = 10
+    loop: int = 10_000
+
+@dataclasses.dataclass
 class PulsedExpData:
 
-    sequence: list
-    iterations: np.ndarray
-    PL_data: np.ndarray
+    parameters: PulsedExpParameterData
+    tau: np.ndarray
+    pl_raw_mean: np.ndarray
+    pl_raw_std: np.ndarray
+    pl_mean: np.ndarray
+    pl_std: np.ndarray
 
 class PulsedExpLogic(LogicBase):
-    """This is a simple template logic measurement module for qudi.
+    """ Logic measurement module for pulsed experiments using PulseBlaster.
 
-    Example config that goes into the config file:
+    Config that goes into the config file:
 
-    example_logic:
-        module.Class: 'template_logic.TemplateLogic'
-        options:
-            increment_interval: 2
-        connect:
-            template_hardware: dummy_hardware
+    pulsed_exp_logic:
+      module.Class: pulsed_exp_logic.PulsedExpLogic
+      options: {}
+      connect:
+        pulse_blaster_hardware: pulse_blaster_hardware
+        apd_hardware: apd_hardware
+        tracking_logic: tracking_logic
+      allow_remote: false
+
+    Methods
+    -------
     """
 
     status_msg = Signal(str)
@@ -72,7 +88,8 @@ class PulsedExpLogic(LogicBase):
     add_iteration_txt = Signal(str)
     added_pulse_signal = Signal(int, float, float, str, str, int, int)
     error_str_signal = Signal(str)
-    data_signal = Signal(np.ndarray)
+    data_signal = Signal(np.ndarray, np.ndarray, np.ndarray)
+    file_changed_signal = Signal(str)
 
     # Declare static parameters that can/must be declared in the qudi configuration
     # _increment_interval = ConfigOption(name='increment_interval', default=1, missing='warn')
@@ -101,9 +118,9 @@ class PulsedExpLogic(LogicBase):
 
         self.time_counter = 0
         self.filemanager = FileManager(
-            data_dir=os.path.join(os.sep, "c:" + os.sep, "EXP", "testdata"),
-            experiment_name="timetrace",
-            exp_str="TMT",
+            data_dir=os.path.join(os.sep, "c:" + os.sep, "EXP", "data"),
+            experiment_name="pulsed_exp",
+            exp_str="PEXP",
         )
 
         self.added_channel_tags = ([])  
@@ -129,7 +146,21 @@ class PulsedExpLogic(LogicBase):
         self.TOTAL_CHANNELS = 21
 
     def on_activate(self):
-        pass
+        
+        parameters = PulsedExpParameterData(
+            [],
+            30,
+            10,
+            10000
+        )
+        self.data = PulsedExpData(
+            parameters,
+            np.zeros(10),
+            np.zeros(10),
+            np.zeros(10),
+            np.zeros(10),
+            np.zeros(10)
+        )
 
     def on_deactivate(self):
         pass
@@ -330,8 +361,8 @@ class PulsedExpLogic(LogicBase):
                 )
         print(f"self.Max_end_time:{self.Max_end_time}")
 
-    @Slot(int, int, int, dict)
-    def run_experiment(self, value_loop: int, loop_type: int, repeat_exp: int = 1, track_options: dict = None):
+    @Slot(int, int, int, dict, str)
+    def run_experiment(self, value_loop: int, loop_type: int, repeat_exp: int = 1, track_options: dict = None, sequence: str = "T1"):
         """
         Starts the pulsed experiment.
 
@@ -349,7 +380,6 @@ class PulsedExpLogic(LogicBase):
         repeat_exp : int, optional
             Number of times j to repeat the entire experiment, by default 1.
         """
-        print("Starting run experiment...")
         list_type_cero = []
         max_end_times_vars = []  # max end times per variation
         for i in range(1, self.max_variations + 1):
@@ -378,11 +408,23 @@ class PulsedExpLogic(LogicBase):
             loops=value_loop, separation=chunck_separation, max_separation=1_000_000
         )
 
+        det_pulses = 0
         for channel in self.channels:
             if channel.label == "apd":
                 self.apd_is_gated = True
+                det_pulses += len(channel.added_pulses)
+                self.time_function = channel.added_pulses[0].function_start
+
         self.pl_data = np.zeros((repeat_exp, self.max_variations))
-        
+        self.pl_std = np.zeros((repeat_exp, self.max_variations))
+        self.data.pl_raw_mean = np.zeros((repeat_exp, self.max_variations, det_pulses))
+        self.data.pl_raw_std = np.zeros((repeat_exp, self.max_variations, det_pulses))
+        self.data.parameters.iterations = self.max_variations
+        self.data.parameters.loop = sum(divide_exp)
+        self.data.parameters.repeat_exp = repeat_exp
+        self.data.parameters.sequence = sequence
+        print(f'Number of apd pulses: {det_pulses}')
+
         if loop_type == 0:
             """
             Variation loop_type A: Loop each variation x times individually
@@ -390,7 +432,12 @@ class PulsedExpLogic(LogicBase):
             Each variation is looped x times
             """
             self.run_sequence_type_a(
-                list_type_cero, repeat_exp, max_end_times_vars, divide_exp, track_options
+                list_type_cero,
+                repeat_exp,
+                max_end_times_vars,
+                divide_exp,
+                det_pulses,
+                track_options
             )
 
         elif loop_type == 1:
@@ -408,7 +455,7 @@ class PulsedExpLogic(LogicBase):
             )
             return
     
-    def run_sequence_type_a(self, Flat_exp, repeat_exp, max_end_times_vars, divided_value, track_options=None):
+    def run_sequence_type_a(self, Flat_exp, repeat_exp, max_end_times_vars, divided_value, det_pulses, track_options=None):
 
         """here we must iterate each variation a number of value_loop times. we do this for all variations so.
         However to the pulse blaster can only have about 40k instructions and the loop can only iterate a
@@ -420,7 +467,6 @@ class PulsedExpLogic(LogicBase):
             Options for tracking intensity during the experiment, by default None.
             Format: {'track': bool, 'by_repetition': bool, 'interval': int}
         """
-        print("Running sequence type A")
         #print("sending to pulse blaster")
         #print(f"len(Flat_exp):{len(Flat_exp)}")
         #print(f"divided_value:{divided_value}")
@@ -428,6 +474,7 @@ class PulsedExpLogic(LogicBase):
         #print(f"flat_exp:{Flat_exp}")
         #print(f"value_loop:{value_loop}")
         #print(f"counter:{counter}")
+        print(f'Max variations: {self.max_variations}')
 
         spinapi.pb_close()
         spinapi.pb_select_board(0)
@@ -447,11 +494,11 @@ class PulsedExpLogic(LogicBase):
 
             if self.apd_is_gated:
                 counter_task = self._apd_hardware().set_gated_apd(
-                    samples= 10 * sum(divided_value) * self.max_variations,
+                    samples= det_pulses * sum(divided_value) * self.max_variations,
                 )
                 self._apd_hardware().start_apd(start_clock=False)
 
-            last_pl_level = 0  
+            pl_level = 0
 
             for i in range(0, self.max_variations):
                 """
@@ -459,7 +506,7 @@ class PulsedExpLogic(LogicBase):
                 we will send one set of instructions 
                 to the pulse blaster
                 """         
-                fluorescence = np.zeros(sum(divided_value))
+                fluorescence = np.zeros((sum(divided_value), det_pulses))
                 for d in range(0, len(divided_value)):
 
                     # In case the x amount of loops is greater than 10k
@@ -477,17 +524,33 @@ class PulsedExpLogic(LogicBase):
 
                     if self.apd_is_gated:
                         
-                        counts = self._apd_hardware().get_fluorescence(
-                            samples= int(value_loop),
+                        readed_counts = self._apd_hardware().get_fluorescence(
+                            samples= det_pulses * int(value_loop),
                             frequency=1,
                             time_out=time_wait / 1e9 + 1
                         )
-                        
+                        counts = np.diff(readed_counts)
+                        # Add the 0 datum, because diff returns len - 1
+                        # Acoounting for fluorescence level of last reading
+                        counts = np.append(readed_counts[0] - pl_level, counts)
+                        pl_level = readed_counts[-1]
+
+                        # In order to process sequences with multiple apd
+                        # pulses, the extracted counts have to be divided
+                        # every det_pulses datums
+                        det_signals = np.zeros((value_loop, det_pulses))
+                        for idx_det in range(det_pulses):
+                            det_signals[:, idx_det] = counts[
+                                idx_det::det_pulses
+                            ]
+
                         if d != 0:
-                            fluorescence[sum(divided_value[0:d]):sum(divided_value[0:d + 1])] = counts
-                            
+                            fluorescence[
+                                sum(divided_value[0:d])
+                                :sum(divided_value[0:d + 1]), :
+                            ] = det_signals[:, :]
                         else:
-                            fluorescence[0:divided_value[d]] = counts
+                            fluorescence[0:divided_value[d], :] = det_signals[:, :]
                         
                     elif not self.apd_is_gated:
                         self.busy_wait_us(time_wait / 1000)
@@ -496,17 +559,34 @@ class PulsedExpLogic(LogicBase):
 
                     QApplication.processEvents()
 
-                # Store the last count of the fluorescence, minus the
-                # last level of the previous iteration (acumulated PL)
-                self.pl_data[j, i] = fluorescence[-1] - last_pl_level
-                last_pl_level = fluorescence[-1]
+                # Since the counts were diffed, now we avg them
+                # Each element here has det_pulses elements
+                self.data.pl_raw_mean[j, i] = np.average(fluorescence, axis=0)
+                self.data.pl_raw_std[j, i] = np.std(fluorescence, axis=0)
+            
+                processed_data, data_error = self.process_detector_data(fluorescence)
+                self.pl_data[j, i] = processed_data
+                self.pl_std[j, i] = data_error / np.sqrt(np.sum(divided_value))
 
                 # The factor (repeat_exp / (j + 1)) normalizes
                 # the data between repetitions
-                averaged_data = np.mean(self.pl_data, axis=0) * (repeat_exp / (j + 1))
-                self.data_signal.emit(averaged_data)
+                column_sums = np.sum(self.pl_data, axis=0)
+                std_sums = np.sum(self.pl_std, axis=0)
+                ocurrences = np.full(self.pl_data.shape[1], j)
+                ocurrences[:i + 1] += 1
+                divisor = np.where(ocurrences > 0, ocurrences, 1)
+                data_avg = column_sums / divisor
+                data_std = std_sums / divisor
+                #data_std = np.std(self.pl_data[:j + 1, :], axis=0)
+                x_data = np.linspace(1, self.max_variations, self.max_variations)
+                time_data = eval(self.time_function, {"S": 6300, "i": x_data})
+                time_data = time_data / 1e3 # In us
+
+                self.data.pl_mean = data_avg
+                self.data.pl_std = data_std
+                self.data.tau = time_data
+                self.data_signal.emit(time_data, data_avg, data_std)
                 
-        
                 if not self.continue_experiment:
                     break
                 
@@ -520,16 +600,39 @@ class PulsedExpLogic(LogicBase):
             )
             if track_options['track']:
                 if (j + 1) % track_options['interval'] == 0:
-                    self.switch_pb_outputs((0, 1, 0, 0, 0, 0))
+                    self.switch_pb_outputs((0, 1, 0, 0, 0, 0)) # Turns on green (imaging) laser
                     self.status_msg.emit(f"Tracking intensity at repetition {j + 1}")
                     self.log.info(f"Tracking intensity at repetition {j + 1}")
                     self._tracking_logic().handle_max_request('xyz')
                     self.stop_pb_outputs()
                     self.status_msg.emit("Resuming experiment")
                     self.log.info("Resuming experiment after tracking")
-        self.status_msg.emit("Experiment finished, stopping pulse blaster and apd hardware")
-        self.log.info("Experiment finished, stopping pulse blaster and apd hardware")
+        self.status_msg.emit("Pulsed Experiment finished, stopping pulse blaster and apd hardware")
+        self.log.info("Pulsed Experiment finished, stopping pulse blaster and apd hardware")
         self.stop_experiment()
+
+    def process_detector_data(self, det_signals: np.ndarray):
+
+        if det_signals.shape[1] == 2:
+            N = det_signals.shape[0]
+            avg = np.average(det_signals, axis=0)
+            d2 = np.abs(det_signals[:, :] - avg) ** 2
+            std = np.sqrt(d2.sum(axis=0) / (N - 1))
+            
+            num = avg[0]
+            den = avg[1]
+            num_std = std[0]
+            den_std = std[1]
+            if den == 0:
+                processed_signal = np.nan
+                error = np.nan
+            else:
+                processed_signal = num / den
+                error = num / den * np.sqrt((num_std / num) ** 2 + (den_std / den) ** 2)
+        elif det_signals.shape[1] == 1:
+            processed_signal = np.average(det_signals[:, 0])
+            error = np.std(det_signals[:, 0])
+        return processed_signal, error
 
     def run_sequence_type_b(self, Flat_exp, value_loop, max_end_times_vars, divided_value):
 
@@ -749,7 +852,12 @@ class PulsedExpLogic(LogicBase):
         self._pulse_blaster_hardware().stop()
         print('Stopping pulse blaster outputs')
 
-    def load_file(self, file_path):
+    def send_data(self, data):
+
+        x_data = np.linspace(1, self.max_variations, self.max_variations)
+        self.data_signal.emit(x_data, data.pl_mean, data.pl_std)
+
+    def load_seq_file(self, file_path):
         """
         This function is used to load a file
         """
@@ -783,7 +891,7 @@ class PulsedExpLogic(LogicBase):
                     pulse.channel_tag,
                 )
 
-    def save_file(self, file_path):
+    def save_seq_file(self, file_path):
         """
         This function is used to save a file
         """
@@ -802,17 +910,103 @@ class PulsedExpLogic(LogicBase):
             data["pulses"].append(pulse_data_dict)
         with open(file_path, "w") as json_file:
             json.dump(data, json_file, indent=4)
-            
+
+    @Slot()
+    def save_data(self) -> None:
+        """
+        Saves the data to a file.
+
+        Parameters
+        ----------
+        filepath : str
+            Path to the file where the data will be saved
+        """
+        data_dict = dataclasses.asdict(self.data)
+        data_dict.pop('parameters')
+        filepath = self.filemanager.save(
+            data=data_dict,
+            metadata=dataclasses.asdict(self.data.parameters)
+        )
+        self.log.info(f'Saved data to {filepath}')
+        self.file_changed_signal.emit(filepath)
+        return filepath
+
+    @Slot()
+    def save_data_as(self):
+        """
+        Opens a file dialog to save the data to a file.
+        """
+        data_dict = dataclasses.asdict(self.data)
+        data_dict.pop('parameters')
+        filepath = self.filemanager.save_as(
+            data=data_dict,
+            metadata=dataclasses.asdict(self.data.parameters)
+        )
+        self.log.info(f'Saved data to {filepath}')
+        self.file_changed_signal.emit(filepath)
+        return filepath
+
+    @Slot()
+    def load_data(self):
+
+        data, metadata, general, filepath = self.filemanager.load()
+        if filepath != '':
+            for key, value in metadata.items():
+                setattr(self.data.parameters, key, value)
+            for key, value in data.items():
+                setattr(self.data, key, value)
+            self.send_data(self.data)
+
+            self.log.info(f'Loaded data from {filepath}')
+            self.file_changed_signal.emit(filepath)
+            return filepath
+
+    @Slot()
+    def load_previous_data(self):
+
+        data, metadata, general, filepath = self.filemanager.load_previous()
+        if filepath != '':
+            for key, value in metadata.items():
+                setattr(self.data.parameters, key, value)
+            for key, value in data.items():
+                setattr(self.data, key, value)
+            self.send_data(self.data)
+            self.log.info(f'Loaded data from {filepath}')
+            self.file_changed_signal.emit(filepath)
+            return filepath
+
+    @Slot()
+    def load_next_data(self):
+
+        data, metadata, general, filepath = self.filemanager.load_next()
+        if filepath != '':
+            for key, value in metadata.items():
+                setattr(self.data.parameters, key, value)
+            for key, value in data.items():
+                setattr(self.data, key, value)
+            self.send_data(self.data)
+            self.log.info(f'Loaded data from {filepath}')
+            self.file_changed_signal.emit(filepath)
+            return filepath
+    
+    @Slot()
+    def delete_file(self):
+
+        file_to_delete = self.filemanager.current_file
+        self.load_previous_data()
+        self.filemanager.delete(file_to_delete)
+        self.log.info(f'Deleted file {file_to_delete}')
+
 
 class Channel(QObject):
 
-    def __init__(self, tag: int, binary: int, label: str, delay: list | tuple):
+    def __init__(self, tag: int, binary: int, label: str, delay: list or tuple):
         super().__init__()  # Call the base class's __init__ method
         # for each channel
         self.tag = tag  # the channel tag (ex: PB0, PB1, etc)
         self.label = label
         self.delay = delay
-        self.Sequence_hub = []  # in this list we keep all the sequences creates
+        self.Sequence_hub = []  # in this list we keep all the sequences created
         self.error_flag = False  # Flag to track if an error occurred
         self.binary = binary
         self.added_pulses = []  # list of pulses added to the channel

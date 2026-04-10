@@ -1,0 +1,19 @@
+# National Instruments Hardware Settings
+[ni_setup]
+device = "Dev1"
+analog_output_channel = "AO0:1"
+clock_source_channel = "Ctr1"
+clock_output_channel = "PFI13"
+ao_min_val = -10.0
+ao_max_val = 10.0
+timeout = 10000
+
+[scan_params]
+fast_um_per_volts = 128
+slow_um_per_volts = 128
+zero_offset = [ 0, 0 ] # In V, offsets the scanner's zero position
+
+# Constants used for moving to a point
+[navigation]
+pixel_time = 5 # In ms
+number_steps = 20
