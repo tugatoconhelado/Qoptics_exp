@@ -109,9 +109,9 @@ class GalvoHardware(Base):
         offset_x = offset[0]
         offset_y = offset[1]
 
-        if self.cfg.ni_setup.device == "Dev2":
-            offset_x = 0
-            offset_y = 0
+        #if self.cfg.ni_setup.device == "Dev2":
+        #    offset_x = 0
+        #    offset_y = 0
 
         pixel_time = pixel_time
         samp_rate = float(1 / pixel_time)

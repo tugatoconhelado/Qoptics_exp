@@ -220,7 +220,7 @@ class ConfocalLogic(LogicBase):
         self.save_data()
         self.stop_acquisition()
         if self._galvo_hardware().cfg.ni_setup.device == 'Dev2':
-            self._galvo_hardware().go_to_xy_point((0, 0))
+            self._galvo_hardware().go_to_xy_point(self.data.parameters.offset)
         elif self._galvo_hardware().cfg.ni_setup.device == 'Dev1':
             self.go_to_xy_point(self.data.parameters.offset)
         self._laser_controller_logic()._bh_laser_hardware().power = initial_laser_power

@@ -190,12 +190,12 @@ class SG384Hardware(Base):
 
     @property
     def enable_hf_output(self) -> int:
-        enable_hf_output = self.instrument.query('ENBH?').strip()
-        return int(enable_hf_output)
+        #enable_hf_output = self.instrument.query('ENBH?').strip()
+        return int(self._enable_hf_output)
     
     @enable_hf_output.setter
     def enable_hf_output(self, enable_hf_output: int) -> None:
-        self.instrument.write(f'ENBH {enable_hf_output}')
+        #self.instrument.write(f'ENBH {enable_hf_output}')
         self._enable_hf_output = self.enable_hf_output
 
     @property

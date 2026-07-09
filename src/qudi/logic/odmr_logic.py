@@ -313,7 +313,7 @@ class ODMRLogic(LogicBase):
 
         task = nidaqmx.Task()
         task.ai_channels.add_ai_voltage_chan(
-            physical_channel='Dev1/AI2',
+            physical_channel='Dev1/AI0',
             name_to_assign_to_channel='Signal generator ramp reader task',
             terminal_config=nidaqmx.constants.TerminalConfiguration.DIFF,
             min_val=-10,

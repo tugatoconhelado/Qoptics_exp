@@ -854,7 +854,7 @@ class PulsedExpLogic(LogicBase):
 
     def send_data(self, data):
 
-        x_data = np.linspace(1, self.max_variations, self.max_variations)
+        x_data = np.linspace(1, data.parameters.iterations, data.parameters.iterations)
         self.data_signal.emit(x_data, data.pl_mean, data.pl_std)
 
     def load_seq_file(self, file_path):
