@@ -9,10 +9,7 @@ from PySide2.QtCore import Slot, Qt, Signal
 
 from qudi.core.module import GuiBase
 from qudi.core.connector import Connector
-from qudi.gui.template.template_main_window import TemplateMainWindow
-from qudi.gui.timetrace.timetrace_mainwindow import TimeTraceMainWindow
-from qudi.logic import filemanager
-from qudi.logic import plot
+from qudi.gui.pulsed_exp.sequence_editor.structures import Sequence
 from qudi.gui.pulsed_exp.pulsed_exp_mainwindow import PulsedExpMainWindow
 import functools
 import pyqtgraph as pg
@@ -24,7 +21,7 @@ class PulsedExpGui(GuiBase):
     add_channel_to_logic_signal = Signal(int, list, str, int)
     prepare_frame_signal = Signal(int)
     add_pulse_to_logic_signal = Signal(float, float, str, str, list, int)
-    run_exp_signal = Signal(int, int, int, dict, str)
+    run_exp_signal = Signal(Sequence, int, int, dict)
     stop_exp_signal = Signal()
     frame_to_logic_signal = Signal(int)
     simulation_to_logic = Signal(int, int, int)
@@ -43,66 +40,17 @@ class PulsedExpGui(GuiBase):
 
         self._mw = PulsedExpMainWindow()  # initializes the UI form
 
-        ########## SIGNALS and connectios ##########
-
-        ##### ADDING CHANNELS #####
-        # from gui window to gui slots
-        self._mw.add_channel_button.clicked.connect(self.add_channel_gui)
-        self._pulsed_exp_logic().adding_channel_to_list.connect(
-            self._mw.update_channels_table, Qt.QueuedConnection
-        )
-        # from gui slots to logic
-        self.add_channel_to_logic_signal.connect(self._pulsed_exp_logic().add_channel)
-
-        ######## Adding and varying pulses ##############
-        # from gui window to gui slots
-        self._pulsed_exp_logic().error_str_signal.connect(self.show_error_message)
-        self._mw.add_pulse_button.clicked.connect(self.add_pulse_gui)
-        # from gui slots to logic
-        self.add_pulse_to_logic_signal.connect(
-            self._pulsed_exp_logic().add_pulse_to_channel
-        )
-        self._pulsed_exp_logic().added_pulse_signal.connect(
-            self._mw.update_pulse_table, Qt.QueuedConnection
-        )
-
-        ######## Selecting Frame for Display #######
-        # from gui window to gui slots
-        self._mw.iteration_frame_spinbox.setMinimum(1)
-        self._mw.iteration_frame_spinbox.valueChanged.connect(self.prepare_frame)
-        self._mw.update_button.clicked.connect(self.prepare_frame)
-        # from gui slots to logic
-        self.frame_to_logic_signal.connect(self._pulsed_exp_logic().prepare_frame)
-        self._pulsed_exp_logic().frame_data_signal.connect(
-            self._mw.create_frame
-        ) 
-
-        ####### Run Simulation ########
-        # from gui window to gui slots
-        self._mw.stop_simulation_button.clicked.connect(self.start_simulation)
-        self._pulsed_exp_logic().next_frame_signal.connect(
-            self.prepare_next_frame_simulation
-        )
-        self._pulsed_exp_logic().add_iteration_txt.connect(self._mw.add_iteration_text)
-        # from gui slots to logic
-        self.simulation_to_logic.connect(self._pulsed_exp_logic().Run_Simulation)
 
         ####### RUn Experiment #######
         # from gui window to gui slots
-        self._mw.run_sequence_button.clicked.connect(self.run_experiment_gui)
-        self._mw.stop_sequence_button.clicked.connect(self.stop_experiment_gui)
+        self._mw.run_sequence_button.clicked.connect(self.run_experiment)
+        self._mw.stop_sequence_button.clicked.connect(self.stop_experiment)
         # from gui slots to logic
         self.run_exp_signal.connect(
             self._pulsed_exp_logic().run_experiment, Qt.QueuedConnection)
         self.stop_exp_signal.connect(
             self._pulsed_exp_logic().stop_experiment, Qt.QueuedConnection)
 
-        ###### Clear Gui #######
-        # from gui window to gui slots
-        
-        self._mw.clear_channels_signal.connect(
-            self._pulsed_exp_logic().clear_channels
-        )
         ###### Switch outputs #######
         self._mw.pb_output_status_signal.connect(
             self._pulsed_exp_logic().switch_pb_outputs,
@@ -113,15 +61,6 @@ class PulsedExpGui(GuiBase):
             Qt.QueuedConnection
         )
 
-        ### DATA SAVING LOADING ###
-        self._mw.save_seq_file_signal.connect(
-            self._pulsed_exp_logic().save_seq_file,
-            Qt.QueuedConnection
-        )
-        self._mw.load_seq_file_signal.connect(
-            self._pulsed_exp_logic().load_seq_file,
-            Qt.QueuedConnection
-        )
         self._mw.save_button.clicked.connect(
             self._pulsed_exp_logic().save_data,
             Qt.QueuedConnection
@@ -143,15 +82,6 @@ class PulsedExpGui(GuiBase):
             Qt.QueuedConnection
         )
 
-        self._mw.update_channels_signal.connect(
-            self._pulsed_exp_logic().modify_channels,
-            Qt.QueuedConnection
-        )
-        self._mw.update_pulses_signal.connect(
-            self._pulsed_exp_logic().modify_pulses,
-            Qt.QueuedConnection
-        )
-
         self._pulsed_exp_logic().data_signal.connect(
             self._mw.update_pulsed_exp_plot,
             Qt.QueuedConnection
@@ -159,6 +89,10 @@ class PulsedExpGui(GuiBase):
         self._pulsed_exp_logic().status_msg.connect(
             self._mw.update_status_bar,
             Qt.QueuedConnection
+        )
+
+        self._pulsed_exp_logic().file_changed_signal.connect(
+            self._mw.update_filename
         )
 
         self.show()
@@ -170,58 +104,14 @@ class PulsedExpGui(GuiBase):
         # Close main window
         self._mw.close()
 
-    def add_channel_gui(self):
-        """
-        This function is called when the user clicks the "Add Channel" button.
-        It checks if the channel is valid and adds it to the list.
-        """
-        channel_tag = self._mw.channel_identifier_combobox.currentIndex()
-        print(f"channel added:{channel_tag}")
-        delay = [self._mw.delay_on_spinbox.value(), self._mw.delay_off_spinbox.value()]
-        channel_label = (
-            self._mw.channel_type_line_edit.text()
-        )  # we get the label of the channel from the gui
-        channel_label = channel_label.lower()  # we leave it undercase
-        channel_count = self._mw.channel_identifier_combobox.count()
-        
-        self.add_channel_to_logic_signal.emit(
-            channel_tag, delay, channel_label, channel_count
-        )
+    @property
+    def sequence(self):
+        return self._mw.sequence_editor.sequence
 
-    def add_pulse_gui(self):
-        """
-        This function is called when the user clicks the "Add Pulse" button.
-        It checks if the pulse is valid and adds it to the list.
-        """
-        start_time = self._mw.start_time_spinbox.value() * 1e9
-        width = self._mw.pulse_width_spinbox.value() * 1e9
-        print(f"start time: {start_time}")
-        print(f"width: {width}")
-        channel_tag = (
-            self._mw.pulse_channel_combobox.currentIndex()
-        )  # we get the channel from the gui
-        function_width = (
-            self._mw.width_function_line_edit.text()
-        )  # we get the function from the gui
-        function_start = self._mw.start_function_line_edit.text()
-        iteration_range = [
-            self._mw.iteration_start_spinbox.value(),
-            self._mw.iteration_end_spinbox.value(),
-        ]
-        # self._pulsed_exp_logic().add_pulse_to_channel(start_time, width,function_width,function_start,iteration_range, channel_tag)
-        self.add_pulse_to_logic_signal.emit(
-            start_time,
-            width,
-            function_width,
-            function_start,
-            iteration_range,
-            channel_tag,
-        )
-
-    def run_experiment_gui(self):
+    @Slot()
+    def run_experiment(self):
 
         x_loop = self._mw.loop_sequence_spinbox.value()
-        Type = self._mw.type_variation_combobox.currentIndex()
         repeat_exp = self._mw.repeat_exp_spinbox.value()
 
         track = self._mw.track_checkbox.isChecked()
@@ -230,44 +120,13 @@ class PulsedExpGui(GuiBase):
             'track': track,
             'interval': interval
         }
-        seq_name = self._mw.sequence_name_label.text()
-        self.run_exp_signal.emit(x_loop, Type, repeat_exp, track_options, seq_name)
+        self.run_exp_signal.emit(self.sequence, x_loop, repeat_exp, track_options)
+        self._mw.filename_label.setText("")
 
-    def stop_experiment_gui(self):
+    @Slot()
+    def stop_experiment(self):
         # self._pulsed_exp_logic().Stop_Experiment()
         self.stop_exp_signal.emit()
-
-    def prepare_frame(self):
-        Frame_i = self._mw.iteration_frame_spinbox.value()
-        self._mw.sequence_diagram_plot.clear()
-        self._mw.sequence_diagram_plot.enableAutoRange(
-            axis=pg.ViewBox.XAxis, enable=False
-        )
-        self._mw.sequence_diagram_plot.setXRange(
-            0, self._pulsed_exp_logic().Max_end_time, padding=0
-        )  # or whatever fixed length you want
-        self.frame_to_logic_signal.emit(Frame_i)
-
-    def start_simulation(self):
-        initial_frame = self._mw.iteration_frame_spinbox.value()
-        print(f"initial frame:{initial_frame}")
-        ms = self._mw.ms_per_iteration_spinbox.value()
-        print(f"ms:{ms}")
-        value_loop = self._mw.loop_sequence_spinbox.value()
-        print(f"value_loop: {value_loop}")
-        # self._pulsed_exp_logic().Run_Simulation(initial_frame,value_loop,ms)
-        self.simulation_to_logic.emit(initial_frame, value_loop, ms)
-        # Disable the button after click
-
-    def prepare_next_frame_simulation(self, Frame_i):
-        self._mw.sequence_diagram_plot.clear()
-        self._mw.sequence_diagram_plot.enableAutoRange(
-            axis=pg.ViewBox.XAxis, enable=False
-        )
-        self._mw.sequence_diagram_plot.setXRange(
-            0, self._pulsed_exp_logic().Max_end_time, padding=0
-        )  # or whatever fixed length you want
-        self.frame_to_logic_signal.emit(Frame_i)
 
     @Slot(str)
     def show_error_message(self, error_str):

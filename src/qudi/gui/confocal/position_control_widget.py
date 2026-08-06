@@ -152,7 +152,7 @@ class PositionControlWidget(QWidget):
     @Slot(tuple)
     def set_xy_point(self, point):
         """
-        Set the xy point and emit the position changed signal.
+        Set the xy point in the spinboxes and emit the position changed signal.
         """
         self.xy_pos = point
         self.x_position_spinbox.setValue(round(point[0], 2))

@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>900</width>
+    <height>576</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Pulsed Experiments</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="PlotWidget" name="pulsed_exp_plot" native="true"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>900</width>
+     <height>21</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QDockWidget" name="experiment_control_dockwidget">
+   <property name="windowTitle">
+    <string>Experiment Control</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_3">
+    <layout class="QVBoxLayout" name="verticalLayout_5" stretch="3,0,1,3,1">
+     <item>
+      <layout class="QFormLayout" name="parameters_form">
+       <item row="0" column="0">
+        <widget class="QLabel" name="loop_label">
+         <property name="text">
+          <string>Loop: </string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSpinBox" name="loop_sequence_spinbox">
+         <property name="prefix">
+          <string>x=</string>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>999999999</number>
+         </property>
+         <property name="singleStep">
+          <number>1000</number>
+         </property>
+         <property name="value">
+          <number>10</number>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="repeat_exp_label">
+         <property name="text">
+          <string>Repeat Experiment:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSpinBox" name="repeat_exp_spinbox">
+         <property name="prefix">
+          <string>j=</string>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>999999999</number>
+         </property>
+         <property name="singleStep">
+          <number>10</number>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QCheckBox" name="track_checkbox">
+         <property name="text">
+          <string>Track Every</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QSpinBox" name="track_every_spinbox">
+         <property name="prefix">
+          <string>j=</string>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>999999999</number>
+         </property>
+         <property name="value">
+          <number>1</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Sequence</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1,1">
+        <item>
+         <widget class="QPushButton" name="edit_sequence_btn">
+          <property name="text">
+           <string>Edit Sequence</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="sequence_name_label">
+          <property name="text">
+           <string>Sequence: </string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,3">
+          <item>
+           <widget class="QLabel" name="x_axis_label">
+            <property name="text">
+             <string>X-Axis</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="x_axis_param_combo">
+            <item>
+             <property name="text">
+              <string>Iteration Number (i)</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="filename_label">
+       <property name="text">
+        <string>file</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="exp_control_layout" stretch="1,2">
+       <item>
+        <layout class="QHBoxLayout" name="run_pulsed_exp_layout" stretch="1,1">
+         <item>
+          <widget class="QPushButton" name="run_sequence_button">
+           <property name="text">
+            <string>Run</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="stop_sequence_button">
+           <property name="text">
+            <string>Stop</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1,1">
+         <item>
+          <layout class="QHBoxLayout" name="save_data_layout" stretch="1,1">
+           <item>
+            <widget class="QPushButton" name="save_button">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../../../artwork/qudi_icons.qrc">
+               <normaloff>:/icons/icons/save.png</normaloff>:/icons/icons/save.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="delete_button">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../../../artwork/qudi_icons.qrc">
+               <normaloff>:/icons/icons/delete.png</normaloff>:/icons/icons/delete.png</iconset>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="load_data_layout" stretch="1,1,1">
+           <item>
+            <widget class="QPushButton" name="load_button">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../../../artwork/qudi_icons.qrc">
+               <normaloff>:/icons/icons/load.png</normaloff>:/icons/icons/load.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="previous_button">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../../../artwork/qudi_icons.qrc">
+               <normaloff>:/icons/icons/previous.png</normaloff>:/icons/icons/previous.png</iconset>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="next_button">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../../../artwork/qudi_icons.qrc">
+               <normaloff>:/icons/icons/next.png</normaloff>:/icons/icons/next.png</iconset>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="simulation_layout" stretch="1">
+       <item>
+        <layout class="QHBoxLayout" name="sim_status_layout" stretch="1">
+         <item>
+          <widget class="QLabel" name="loop_duration_label">
+           <property name="text">
+            <string>Duration: ()</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget">
+   <property name="windowTitle">
+    <string>PulseBlaster</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_6">
+    <layout class="QVBoxLayout" name="verticalLayout_7">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_6" stretch="2,1">
+       <item>
+        <layout class="QGridLayout" name="pb_output_layout" rowstretch="1,1" columnstretch="1,1,1">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="pb0_checkbox">
+           <property name="text">
+            <string>PB0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="pb1_checkbox">
+           <property name="text">
+            <string>PB1</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="pb2_checkbox">
+           <property name="text">
+            <string>PB2</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="pb3_checkbox">
+           <property name="text">
+            <string>PB3</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QCheckBox" name="pb4_checkbox">
+           <property name="text">
+            <string>PB4</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QCheckBox" name="pb5_checkbox">
+           <property name="text">
+            <string>PB5</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="run_turn_on_off_layout" stretch="1,1">
+         <item>
+          <widget class="QPushButton" name="run_output_button">
+           <property name="text">
+            <string>Run</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="stop_output_button">
+           <property name="text">
+            <string>Stop</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PlotWidget</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../../../../artwork/qudi_icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>

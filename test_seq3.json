@@ -1,0 +1,96 @@
+{
+    "channels": [
+        {
+            "name": "mw",
+            "pb_id": 0,
+            "color": [
+                0,
+                150,
+                255
+            ],
+            "pulses": [
+                {
+                    "start": 76,
+                    "duration": 20,
+                    "comment": "",
+                    "start_sweep": "",
+                    "duration_sweep": "",
+                    "ripple": "none"
+                }
+            ]
+        },
+        {
+            "name": "green",
+            "pb_id": 1,
+            "color": [
+                0,
+                255,
+                0
+            ],
+            "pulses": [
+                {
+                    "start": 130,
+                    "duration": 20,
+                    "comment": "",
+                    "start_sweep": "S + 10 * i",
+                    "duration_sweep": "",
+                    "ripple": "channel"
+                },
+                {
+                    "start": 30,
+                    "duration": 20,
+                    "comment": "",
+                    "start_sweep": "",
+                    "duration_sweep": "",
+                    "ripple": "none"
+                }
+            ]
+        },
+        {
+            "name": "red",
+            "pb_id": 2,
+            "color": [
+                255,
+                0,
+                0
+            ],
+            "pulses": [
+                {
+                    "start": 30,
+                    "duration": 20,
+                    "comment": "",
+                    "start_sweep": "",
+                    "duration_sweep": "",
+                    "ripple": "none"
+                },
+                {
+                    "start": 74,
+                    "duration": 20,
+                    "comment": "",
+                    "start_sweep": "S + 20 * i",
+                    "duration_sweep": "",
+                    "ripple": "none"
+                }
+            ]
+        },
+        {
+            "name": "yellow",
+            "pb_id": 3,
+            "color": [
+                255,
+                255,
+                0
+            ],
+            "pulses": [
+                {
+                    "start": 68,
+                    "duration": 38,
+                    "comment": "",
+                    "start_sweep": "",
+                    "duration_sweep": "",
+                    "ripple": "none"
+                }
+            ]
+        }
+    ]
+}

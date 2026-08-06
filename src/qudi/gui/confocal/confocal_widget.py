@@ -96,6 +96,7 @@ class ConfocalWidget(QWidget):
         self.image_bw_widget.set_image_size(scan_size, offset, pixels)
 
     def on_position_changed(self, new_position):
+        """Updates the central red cross. When user changes spinboxes or arrows."""
 
         self.image_fw_widget.move_pos_indicator(new_position)
         self.image_bw_widget.move_pos_indicator(new_position)
@@ -244,6 +245,7 @@ class HeatmapWidget(pg.GraphicsLayoutWidget):
         self.mouse_enabled = False
 
     def mouse_pressed(self, event):
+        """Gets the coordinates and emits them to the logic."""
         if self.mouse_enabled:
             pos = event.scenePos()
             mapped_pos = self.image_item.getViewBox().mapSceneToView(pos)
@@ -270,17 +272,20 @@ class HeatmapWidget(pg.GraphicsLayoutWidget):
 
     @Slot(tuple)
     def move_pos_indicator(self, new_pos: tuple):
+        """Moves the indicator visually"""
 
         self.v_line.setPos(new_pos[0])
         self.h_line.setPos(new_pos[1])
 
     def create_menu(self):
+        """Creates right click menu."""
 
         self.test_action = self.heatmap.vb.menu.addAction('Set (X, Y) point with cursor')
         self.test_action.setCheckable(True)
         self.test_action.toggled.connect(self.enable_set_point)
 
     def enable_set_point(self):
+        """Enables the right click menu option."""
 
         self.mouse_enabled = not self.mouse_enabled
         if self.mouse_enabled:

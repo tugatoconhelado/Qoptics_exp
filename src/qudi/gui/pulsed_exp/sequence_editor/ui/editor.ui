@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SequenceEditorMainWindow</class>
+ <widget class="QMainWindow" name="SequenceEditorMainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1059</width>
+    <height>578</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Sequence editor</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="SequencePlot" name="sequence_plot" native="true"/>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="slider_layout" stretch="0,0,0,0">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetDefaultConstraint</enum>
+      </property>
+      <item>
+       <widget class="QPushButton" name="play_btn">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset theme="QIcon::ThemeIcon::MediaPlaybackStart">
+          <normaloff>.</normaloff>.</iconset>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSlider" name="sim_slider">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="maximum">
+         <number>100</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="iteration_lbl">
+        <property name="text">
+         <string>Iteration</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="iteration_spin">
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="prefix">
+         <string>i=</string>
+        </property>
+        <property name="maximum">
+         <number>100</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1059</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="open_action"/>
+    <addaction name="save_action"/>
+    <addaction name="clear_action"/>
+   </widget>
+   <addaction name="menuFile"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QDockWidget" name="sequence_creator_dock">
+   <property name="windowTitle">
+    <string>Sequence</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="SequenceCreator" name="sequence_creator"/>
+  </widget>
+  <widget class="QDockWidget" name="inspector_dock">
+   <property name="windowTitle">
+    <string>Inspector</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="Inspector" name="inspector"/>
+  </widget>
+  <action name="open_action">
+   <property name="text">
+    <string>Open Sequence</string>
+   </property>
+   <property name="shortcut">
+    <string/>
+   </property>
+  </action>
+  <action name="save_action">
+   <property name="text">
+    <string>Save Sequence</string>
+   </property>
+  </action>
+  <action name="clear_action">
+   <property name="text">
+    <string>Clear</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SequencePlot</class>
+   <extends>QWidget</extends>
+   <header>pulsed_exp.sequence_plot</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SequenceCreator</class>
+   <extends>QWidget</extends>
+   <header>pulsed_exp.creator</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Inspector</class>
+   <extends>QWidget</extends>
+   <header>pulsed_exp.inspector</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>sim_slider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>iteration_spin</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>546</x>
+     <y>583</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1071</x>
+     <y>583</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>iteration_spin</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>sim_slider</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1071</x>
+     <y>583</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>546</x>
+     <y>583</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
